@@ -4,6 +4,7 @@ Motor Principal do Bot
 ATUALIZADO: Integração com 15 estratégias novas
 PATCH 28/02: Fix travamento Martingale step 2/3
 FIX 28/02 v2: _calcular_stake_recuperacao usa LUCRO_ALVO (não STAKE_INICIAL)
+FIX 01/03: Cálculo correto de profit (sell_price - buy_price) — corrige saldo positivo em LOSS
 """
 import time
 import sys
@@ -56,6 +57,7 @@ class AlphaDolar:
         self._ultimo_sinal_time   = time.time()
         self._aguardando_sinal    = False
         self._sem_sinal_streak    = 0
+        self._ultimo_stake_usado  = BotConfig.STAKE_INICIAL  # ✅ FIX: rastreia stake para fallback de profit
 
     def print_header(self):
         print("\n" + "="*70)
@@ -224,7 +226,7 @@ class AlphaDolar:
         if barrier is not None:
             proposal_params['barrier'] = barrier
 
-        self._ultimo_stake_usado = stake
+        self._ultimo_stake_usado = stake  # ✅ salva stake para usar no cálculo de profit
         self.api.get_proposal(**proposal_params)
         self.waiting_contract = True
         self.trades_hoje += 1
@@ -248,7 +250,23 @@ class AlphaDolar:
         if status not in ["won", "lost"]:
             return
 
-        profit = float(contract_data.get("profit", 0))
+        # ✅ FIX 01/03: Cálculo correto de profit usando sell_price - buy_price
+        # A Deriv retorna profit=0 ou positivo mesmo em LOSS (é o payout bruto).
+        # O lucro real é sempre: sell_price - buy_price
+        #   WIN:  sell_price > 0  → profit positivo (ex: 0.67 - 0.35 = +0.32)
+        #   LOSS: sell_price = 0  → profit negativo (ex: 0.00 - 0.35 = -0.35)
+        sell_price = float(contract_data.get("sell_price", 0))
+        buy_price  = float(contract_data.get("buy_price", 0))
+
+        if sell_price > 0 or buy_price > 0:
+            profit = sell_price - buy_price
+        else:
+            # fallback: campo profit direto da Deriv
+            profit = float(contract_data.get("profit", 0))
+            if status == "lost" and profit >= 0:
+                # Deriv retornou 0 em loss — usa stake como perda
+                profit = -(self._ultimo_stake_usado or BotConfig.STAKE_INICIAL)
+
         contract_id = contract_data.get("contract_id")
         vitoria = status == "won"
 
@@ -262,7 +280,7 @@ class AlphaDolar:
             self.log(f"🎉 VITÓRIA! Lucro: ${profit:.2f} | ID: {contract_id}", "WIN")
             self.perda_acumulada = 0.0
         else:
-            self.log(f"😞 DERROTA! Perda: ${profit:.2f} | ID: {contract_id}", "LOSS")
+            self.log(f"😞 DERROTA! Perda: ${abs(profit):.2f} | ID: {contract_id}", "LOSS")
             self.perda_acumulada += abs(profit)
 
         if hasattr(self.strategy, 'on_trade_result'):
@@ -339,7 +357,6 @@ class AlphaDolar:
             # ── Timeouts ──────────────────────────────────────────────────────
             WATCHDOG_CONTRATO = 45   # s preso em waiting_contract → libera
             TICK_TIMEOUT      = 15   # s sem tick → re-subscribe
-            TRADE_TIMEOUT     = 60   # s sem fazer trade → força operação
             TRADE_TIMEOUT     = 60   # s sem fazer trade → força operação
 
             while self.is_running:
