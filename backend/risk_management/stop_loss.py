@@ -3,6 +3,7 @@ Sistema de Stop Loss e Take Profit
 Alpha Dolar 2.0
 FIX 28/02: Lógica DC Bot — perda acumulada desde último ganho, reseta ao ganhar
            Corrige bug abs(saldo_liquido) que parava o bot com LUCRO
+FIX 01/03: Garante que profit de LOSS nunca seja somado como positivo no saldo_liquido
 """
 from datetime import datetime
 
@@ -39,6 +40,14 @@ class StopLoss:
         self.inicio_sessao = datetime.now()
 
     def registrar_trade(self, profit, vitoria=True):
+        # ✅ FIX 01/03: Garante sinal correto do profit antes de qualquer soma
+        # Em WIN: profit deve ser positivo
+        # Em LOSS: profit deve ser negativo (se chegar positivo/zero, inverte)
+        if vitoria:
+            profit = abs(profit)   # WIN sempre positivo
+        else:
+            profit = -abs(profit)  # LOSS sempre negativo
+
         if vitoria:
             self.vitorias += 1
             self.lucro_total += abs(profit)
@@ -58,6 +67,8 @@ class StopLoss:
             if self.perdas_consecutivas > self.max_perdas_consecutivas:
                 self.max_perdas_consecutivas = self.perdas_consecutivas
 
+        # ✅ saldo_liquido agora sempre reflete a realidade:
+        # +profit em WIN, -profit em LOSS
         self.saldo_liquido += profit
 
         trade_info = {
