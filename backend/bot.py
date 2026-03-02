@@ -145,7 +145,7 @@ class AlphaDolar:
         """
         Fórmula DC Bot: stake = (perda_acumulada + STAKE_INICIAL) / payout_rate
         Recupera todas as perdas + lucro mínimo de STAKE_INICIAL.
-        FIX 02/03b: limite aumentado para 50% do saldo (era 30%)
+        FIX 02/03b: limite aumentado para 70% do saldo (era 30%)
         """
         if self.perda_acumulada <= 0:
             return round(BotConfig.STAKE_INICIAL, 2)
@@ -154,7 +154,7 @@ class AlphaDolar:
         stake = round(stake_ideal, 2)
         stake = max(round(BotConfig.STAKE_INICIAL, 2), stake)
 
-        # Segurança: não arrisca mais que 50% do saldo
+        # Segurança: não arrisca mais que 70% do saldo
         max_stake = self.api.balance * 0.70
         return round(min(stake, max_stake), 2)
 
