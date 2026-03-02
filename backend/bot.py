@@ -6,7 +6,7 @@ PATCH 28/02: Fix travamento Martingale step 2/3
 FIX 28/02 v2: _calcular_stake_recuperacao usa LUCRO_ALVO (não STAKE_INICIAL)
 FIX 01/03: Cálculo correto de profit (sell_price - buy_price) — corrige saldo positivo em LOSS
 FIX 02/03: Lucro alvo verificado após cada trade + Martingale não conflita com recuperação
-FIX 02/03b: max_stake recuperação aumentado para 50% do saldo (era 30%)
+FIX 02/03b: max_stake recuperação aumentado para 70% do saldo (era 30%)
 """
 import time
 import sys
@@ -155,7 +155,7 @@ class AlphaDolar:
         stake = max(round(BotConfig.STAKE_INICIAL, 2), stake)
 
         # Segurança: não arrisca mais que 50% do saldo
-        max_stake = self.api.balance * 0.50
+        max_stake = self.api.balance * 0.70
         return round(min(stake, max_stake), 2)
 
     def _disparar_stop_loss(self, motivo="Stop Loss atingido"):
