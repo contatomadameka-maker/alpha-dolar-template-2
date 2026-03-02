@@ -9,7 +9,11 @@ FIXES v5:
 """
 
 from flask import Flask, request, jsonify, send_from_directory, redirect
-from flask_cors import CORS
+try:
+    from flask_cors import CORS
+except ImportError:
+    class CORS:
+        def __init__(self, app, **kw): pass
 import threading
 import time
 from datetime import datetime
