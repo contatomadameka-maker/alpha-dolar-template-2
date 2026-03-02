@@ -137,6 +137,10 @@ def dashboard():
 def guia():
     return send_from_directory(BASE_DIR, 'guia-digitos-alpha.html')
 
+@app.route('/videos')
+def videos():
+    return send_from_directory(BASE_DIR, 'videos.html')
+
 @app.route('/css/<path:filename>')
 def css_files(filename):
     return send_from_directory(os.path.join(BASE_DIR, 'css'), filename)
