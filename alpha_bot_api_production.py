@@ -543,6 +543,209 @@ def emergency_reset():
     } for k in ['manual', 'ia', 'ia_simples', 'ia_avancado']}
     return jsonify({'success': True, 'message': 'Estado resetado!'})
 
+# ═══════════════════════════════════════════════════════════════════
+#  PATCH — ROTAS IA ML
+#  Cole este bloco NO FINAL de alpha_bot_api_production.py
+#  ANTES da linha:  if __name__ == '__main__':
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Importa motor IA (só uma vez) ──────────────────────────────────
+try:
+    from backend.ia_bot import IABot
+    IA_BOT_AVAILABLE = True
+    print("✅ Motor IA ML carregado!")
+except ImportError as e:
+    IA_BOT_AVAILABLE = False
+    print(f"⚠️ Motor IA não disponível: {e}")
+
+# ── Estado do bot IA (separado do bots_state existente) ────────────
+ia_state = {
+    'running':      False,
+    'instance':     None,
+    'thread':       None,
+    'stop_reason':  None,
+    'stop_message': None,
+}
+
+
+# ─────────────────────────────────────────────────────────────────────
+#  POST /api/ia/start
+# ─────────────────────────────────────────────────────────────────────
+@app.route('/api/ia/start', methods=['POST'])
+def ia_start():
+    global ia_state
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'Dados não fornecidos'}), 400
+
+        if ia_state.get('running'):
+            return jsonify({'success': False, 'error': 'Bot IA já está rodando'}), 400
+
+        if not IA_BOT_AVAILABLE:
+            return jsonify({'success': False, 'error': 'Motor IA não disponível no servidor'}), 500
+
+        token = data.get('token')
+        if not token:
+            return jsonify({'success': False, 'error': 'Token não fornecido'}), 400
+
+        config = data.get('config', {})
+        config['token'] = token
+
+        # Resolve símbolo (usa o mesmo SYMBOL_MAP já existente)
+        config['symbol'] = resolve_symbol(config.get('symbol', 'R_100'))
+
+        print(f"\n{'='*60}")
+        print(f"🧠 Iniciando Bot IA ML")
+        print(f"   Mercado:   {config['symbol']}")
+        print(f"   Contrato:  {config.get('contract_type','DIGITEVEN')}")
+        print(f"   Stake:     ${config.get('stake_inicial',0.35)}")
+        print(f"   Mult:      {config.get('multiplicador',2.2)}×")
+        print(f"   Virt:      {config.get('perdas_virtuais',3)} perdas")
+        print(f"{'='*60}\n")
+
+        bot = IABot(config=config)
+
+        # Callback que registra no ia_state ao terminar cada trade
+        def on_trade(direction, won, profit, stake, symbol_used, exit_tick=None):
+            if not ia_state.get('running'):
+                return
+            trades    = ia_state.get('trades', [])
+            total     = len(trades) + 1
+            wins      = sum(1 for t in trades if t.get('result') == 'win') + (1 if won else 0)
+            wr        = round((wins / total) * 100, 1) if total > 0 else 0
+            trade = {
+                'id':        int(time.time() * 1000),
+                'direction': direction,
+                'result':    'win' if won else 'loss',
+                'profit':    round(profit, 2),
+                'stake':     round(stake, 2),
+                'symbol':    symbol_used,
+                'timestamp': datetime.now().strftime('%H:%M:%S'),
+                'win_rate':  wr,
+                'total_trades': total,
+                'exit_tick': str(exit_tick) if exit_tick else None,
+                'ml_fase':   bot.ml.get_info()['fase'],
+                'ml_acuracia': bot.ml.get_info()['acuracia'],
+            }
+            trades.append(trade)
+            if len(trades) > 200:
+                trades.pop(0)
+            ia_state['trades'] = trades
+
+            # Verifica stop_loss / take_profit
+            if bot.stop_reason:
+                ia_state['running']      = False
+                ia_state['stop_reason']  = bot.stop_reason
+                ia_state['stop_message'] = bot.stop_message
+
+        bot._on_trade_completed = on_trade
+
+        def run_ia():
+            try:
+                bot.start()
+            except Exception as e:
+                print(f"❌ Erro thread IA: {e}")
+                import traceback
+                traceback.print_exc()
+            finally:
+                ia_state['running']      = False
+                ia_state['stop_reason']  = ia_state.get('stop_reason') or bot.stop_reason or 'finished'
+                ia_state['stop_message'] = ia_state.get('stop_message') or bot.stop_message
+
+        thread = threading.Thread(target=run_ia, daemon=True)
+        thread.start()
+
+        ia_state.update({
+            'running':      True,
+            'instance':     bot,
+            'thread':       thread,
+            'trades':       [],
+            'stop_reason':  None,
+            'stop_message': None,
+        })
+
+        return jsonify({
+            'success': True,
+            'message': 'Bot IA ML iniciado!',
+            'symbol':  config['symbol'],
+            'contract_type': config.get('contract_type', 'DIGITEVEN'),
+            'ml_fase': 'Coletando dados para treinar ML...',
+        })
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ─────────────────────────────────────────────────────────────────────
+#  POST /api/ia/stop
+# ─────────────────────────────────────────────────────────────────────
+@app.route('/api/ia/stop', methods=['POST'])
+def ia_stop():
+    global ia_state
+    if not ia_state.get('running'):
+        return jsonify({'success': False, 'error': 'Bot IA não está rodando'}), 400
+
+    bot = ia_state.get('instance')
+    if bot:
+        try:
+            bot.stop()
+        except:
+            pass
+
+    ia_state['running']     = False
+    ia_state['stop_reason'] = ia_state.get('stop_reason') or 'manual'
+
+    return jsonify({'success': True, 'message': 'Bot IA parado!'})
+
+
+# ─────────────────────────────────────────────────────────────────────
+#  GET /api/ia/stats
+# ─────────────────────────────────────────────────────────────────────
+@app.route('/api/ia/stats')
+def ia_stats():
+    bot    = ia_state.get('instance')
+    stats  = bot.get_stats() if bot else {}
+    thread = ia_state.get('thread')
+    alive  = thread is not None and thread.is_alive()
+
+    # Detecta crash de thread
+    if ia_state.get('running') and not alive:
+        ia_state['running']     = False
+        ia_state['stop_reason'] = ia_state.get('stop_reason') or 'crashed'
+
+    return jsonify({
+        'success':      True,
+        'running':      ia_state.get('running', False),
+        'stop_reason':  ia_state.get('stop_reason'),
+        'stop_message': ia_state.get('stop_message'),
+        'stats':        stats,
+        'trades':       ia_state.get('trades', [])[-20:],  # últimos 20
+        'ml':           stats.get('ml', {}),
+        # Campos que o dashboard já espera (compatível com /api/bot/stats/ia)
+        'bot_running':    ia_state.get('running', False),
+        'saldo_atual':    stats.get('balance', 0),
+        'lucro_liquido':  stats.get('saldo_liquido', 0),
+        'total_trades':   stats.get('total_trades', 0),
+        'win_rate':       stats.get('win_rate', 0),
+        'vitorias':       stats.get('vitorias', 0),
+        'derrotas':       stats.get('derrotas', 0),
+        'mart_step':      stats.get('mart_step', 0),
+        'perda_dc':       stats.get('perda_acumulada', 0),
+        'limite_perda':   bot.limite_perda if bot else 5.0,
+    })
+
+
+# ─────────────────────────────────────────────────────────────────────
+#  GET /api/ia/trades
+# ─────────────────────────────────────────────────────────────────────
+@app.route('/api/ia/trades')
+def ia_trades():
+    trades = ia_state.get('trades', [])
+    return jsonify({'success': True, 'trades': trades, 'total': len(trades)})
+
 if __name__ == '__main__':
     print("\n" + "="*70)
     print("🚀 ALPHA DOLAR 2.0 - API PRODUCTION v6")
