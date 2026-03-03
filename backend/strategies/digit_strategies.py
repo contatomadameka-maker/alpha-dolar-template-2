@@ -2,6 +2,7 @@
 ALPHA DOLAR 2.0 - Estratégias de Dígitos
 Compatível com alpha_bot_api_production.py
 FREE: Alpha Bot 4 | VIP: Digit Sniper, Digit Pulse | PREMIUM: Mega Digit 1.0, 2.0
+FIX 03/03: Barreira mínima 4 em _best_barrier para payout justo
 """
 from collections import Counter, deque
 
@@ -101,8 +102,13 @@ class _DigitBase(BaseStrategy):
         return {d: c.get(d, 0) / t * 100 for d in range(10)}
 
     def _best_barrier(self, freq):
+        """
+        ✅ FIX 03/03: Começa em 4 para garantir payout justo.
+        Barreira 1-3 = payout muito baixo (ganho irrisório vs risco).
+        Barreira 4+ = payout razoável (~60%+)
+        """
         best = None
-        for barrier in range(1, 9):
+        for barrier in range(4, 9):  # ✅ mínimo 4, não mais 1
             po = sum(freq.get(d, 0) for d in range(barrier + 1, 10))
             pu = sum(freq.get(d, 0) for d in range(0, barrier))
             direction  = 'OVER' if po >= pu else 'UNDER'
@@ -183,6 +189,8 @@ class DigitSniper(_DigitBase):
             barrier    = hottest + 1
             direction  = 'OVER'
             confidence = sum(freq.get(d, 0) for d in range(barrier + 1, 10))
+        # ✅ Garante barreira mínima 4
+        barrier = max(barrier, 4)
         cold_bonus = max(0, (10.0 - freq.get(coldest, 10)) * 0.5)
         confidence = min(confidence + cold_bonus, 95.0)
         if confidence / 100 >= self.min_confidence:
