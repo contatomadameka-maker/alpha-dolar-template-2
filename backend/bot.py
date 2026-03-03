@@ -7,6 +7,7 @@ FIX 28/02 v2: _calcular_stake_recuperacao usa LUCRO_ALVO (não STAKE_INICIAL)
 FIX 01/03: Cálculo correto de profit (sell_price - buy_price) — corrige saldo positivo em LOSS
 FIX 02/03: Lucro alvo verificado após cada trade + Martingale não conflita com recuperação
 FIX 02/03b: max_stake recuperação aumentado para 70% do saldo (era 30%)
+FIX 03/03: barrier passado corretamente para estratégias digit (DIGITOVER/DIGITUNDER)
 """
 import time
 import sys
@@ -133,11 +134,17 @@ class AlphaDolar:
         elif hasattr(self.strategy, 'should_enter'):
             should_enter, direction, confidence = self.strategy.should_enter(tick_data)
             if should_enter and direction:
+                # ✅ FIX 03/03: tenta pegar barrier para estratégias digit
+                params = None
+                if hasattr(self.strategy, 'get_contract_params'):
+                    raw = self.strategy.get_contract_params(direction)
+                    if raw.get('barrier') is not None:
+                        params = raw
                 return {
                     'signal': direction,
                     'confidence': confidence * 100,
-                    'contract_type': direction,
-                    'parameters': None
+                    'contract_type': params.get('contract_type', direction) if params else direction,
+                    'parameters': params
                 }
         return None
 
@@ -385,12 +392,28 @@ class AlphaDolar:
 
                     try:
                         direction = "CALL"
+                        signal_data_forcado = None
+
+                        # ✅ FIX 03/03: tenta obter sinal completo com barrier
                         if hasattr(self.strategy, 'analyze'):
                             resultado = self.strategy.analyze(self.tick_history)
                             if resultado and resultado.get('signal'):
                                 direction = resultado['signal']
+                                signal_data_forcado = resultado
+
+                        # Se não veio signal_data mas estratégia é digit, monta manualmente
+                        if signal_data_forcado is None and hasattr(self.strategy, 'get_contract_params'):
+                            params = self.strategy.get_contract_params(direction)
+                            if params.get('barrier') is not None:
+                                signal_data_forcado = {
+                                    'signal': direction,
+                                    'contract_type': params.get('contract_type', direction),
+                                    'confidence': 0,
+                                    'parameters': params
+                                }
+
                         self.log(f"🔧 Forçando trade {direction} para desbloquear bot", "WARNING")
-                        self.executar_trade(direction)
+                        self.executar_trade(direction, signal_data_forcado)
                     except Exception as e_force:
                         self.log(f"Erro ao forçar trade: {e_force}", "ERROR")
 
