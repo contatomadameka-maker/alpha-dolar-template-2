@@ -103,19 +103,18 @@ class _DigitBase(BaseStrategy):
 
     def _best_barrier(self, freq):
         """
-        ✅ FIX 03/03: Começa em 4 para garantir payout justo.
-        Barreira 1-3 = payout muito baixo (ganho irrisório vs risco).
-        Barreira 4+ = payout razoável (~60%+)
+        ✅ FIX 03/03: Barreira FIXA em 5 = payout justo (~95%).
+        Barreira 5 é o único ponto de equilíbrio real:
+        - DIGITOVER 5: dígito > 5 (~50% chance, payout ~95%)
+        - DIGITUNDER 5: dígito < 5 (~50% chance, payout ~95%)
+        Barreiras 1-4 e 6-9 = desequilíbrio de payout (ganho irrisório vs risco).
         """
-        best = None
-        for barrier in range(4, 9):  # ✅ mínimo 4, não mais 1
-            po = sum(freq.get(d, 0) for d in range(barrier + 1, 10))
-            pu = sum(freq.get(d, 0) for d in range(0, barrier))
-            direction  = 'OVER' if po >= pu else 'UNDER'
-            confidence = max(po, pu)
-            if best is None or confidence > best[2]:
-                best = (barrier, direction, confidence)
-        return best
+        barrier = 5
+        po = sum(freq.get(d, 0) for d in range(6, 10))   # prob dígito > 5
+        pu = sum(freq.get(d, 0) for d in range(0, 5))    # prob dígito < 5
+        direction  = 'OVER' if po >= pu else 'UNDER'
+        confidence = max(po, pu)
+        return barrier, direction, confidence
 
     def _cooldown_ok(self):
         return (len(self.ticks_history) - self.last_signal_tick) >= self.cooldown_ticks
