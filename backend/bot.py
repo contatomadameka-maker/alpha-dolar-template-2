@@ -8,6 +8,10 @@ FIX 01/03: Cálculo correto de profit (sell_price - buy_price) — corrige saldo
 FIX 02/03: Lucro alvo verificado após cada trade + Martingale não conflita com recuperação
 FIX 02/03b: max_stake recuperação aumentado para 70% do saldo (era 30%)
 FIX 03/03: barrier passado corretamente para estratégias digit (DIGITOVER/DIGITUNDER)
+FIX 05/03: _calcular_stake_recuperacao removido limite 70% — causava recuperação insuficiente
+FIX 05/03b: _calcular_stake_recuperacao usa Martingale normal (multiplicador) em vez de formula
+            DC que explodia o stake quando lucro_alvo era alto (ex: $40 com stake $0.35)
+            Formula DC so e usada como fallback se stake Martingale for insuficiente para cobrir perdas
 """
 import time
 import sys
@@ -47,7 +51,7 @@ class AlphaDolar:
         self.current_contract_id = None
 
         self.perda_acumulada = 0.0
-        self.PAYOUT_RATE = 0.88  # retorno médio Deriv (88%)
+        self.PAYOUT_RATE = 0.88
 
         self.tick_history = []
         self.max_tick_history = 200
@@ -134,7 +138,6 @@ class AlphaDolar:
         elif hasattr(self.strategy, 'should_enter'):
             should_enter, direction, confidence = self.strategy.should_enter(tick_data)
             if should_enter and direction:
-                # ✅ FIX 03/03: tenta pegar barrier para estratégias digit
                 params = None
                 if hasattr(self.strategy, 'get_contract_params'):
                     raw = self.strategy.get_contract_params(direction)
@@ -150,26 +153,64 @@ class AlphaDolar:
 
     def _calcular_stake_recuperacao(self):
         """
-        Fórmula DC Bot: stake = (perda_acumulada + STAKE_INICIAL) / payout_rate
-        Recupera todas as perdas + lucro mínimo de STAKE_INICIAL.
-        FIX 02/03b: limite aumentado para 70% do saldo (era 30%)
+        FIX 05/03b: Usa progressao Martingale normal (multiplicador) para recuperacao.
+
+        PROBLEMA ANTERIOR: formula DC (perda + lucro_alvo) / payout explodia o stake
+        quando lucro_alvo era alto. Exemplo:
+          - Stake $0.35, Lucro alvo $40
+          - 1a derrota: perda $0.35 -> stake = ($0.35 + $40) / 0.88 = $45.85 ERRADO!
+
+        SOLUCAO: usar stake do Martingale (multiplicador progressivo).
+        Formula DC so como fallback quando Martingale nao cobre as perdas.
+
+        Sequencia correta com stake $0.35 e mult 2.27:
+          LOSS 1: $0.35 -> proximo $0.80
+          LOSS 2: $0.80 -> proximo $1.70
+          LOSS 3: $1.70 -> proximo $3.64
+          LOSS 4: $3.64 -> proximo $7.77
+          WIN: recupera tudo + lucro
         """
         if self.perda_acumulada <= 0:
             return round(BotConfig.STAKE_INICIAL, 2)
 
-        stake_ideal = (self.perda_acumulada + BotConfig.STAKE_INICIAL) / self.PAYOUT_RATE
-        stake = round(stake_ideal, 2)
+        if self.martingale:
+            stake_martingale = self.martingale.stake_atual
+        else:
+            stake_martingale = round(
+                (self.perda_acumulada + BotConfig.STAKE_INICIAL) / self.PAYOUT_RATE, 2
+            )
+
+        ganho_potencial = round(stake_martingale * self.PAYOUT_RATE, 2)
+        if ganho_potencial >= self.perda_acumulada:
+            stake = stake_martingale
+        else:
+            stake = round(
+                (self.perda_acumulada + BotConfig.STAKE_INICIAL) / self.PAYOUT_RATE, 2
+            )
+            self.log(
+                f"⚠️ Martingale ${stake_martingale:.2f} insuficiente para cobrir "
+                f"perda ${self.perda_acumulada:.2f}. Usando formula DC: ${stake:.2f}",
+                "WARNING"
+            )
+
         stake = max(round(BotConfig.STAKE_INICIAL, 2), stake)
 
-        # Segurança: não arrisca mais que 70% do saldo
-        max_stake = self.api.balance * 0.70
-        return round(min(stake, max_stake), 2)
+        max_stake = self.api.balance * 0.90
+        if stake > max_stake:
+            self.log(
+                f"⚠️ Stake ${stake:.2f} supera 90% do saldo (${max_stake:.2f}). "
+                f"Usando ${max_stake:.2f}. Recuperacao parcial.",
+                "WARNING"
+            )
+            return round(max_stake, 2)
+
+        return round(stake, 2)
 
     def _disparar_stop_loss(self, motivo="Stop Loss atingido"):
         perda = self.perda_acumulada
         limite = BotConfig.LIMITE_PERDA
         self.log(f"🛑 STOP LOSS ATINGIDO! Perda acum: ${perda:.2f} / Limite: ${limite:.2f}", "STOP_LOSS")
-        self.log(f"🛑 Bot encerrado automaticamente por proteção de capital", "STOP_LOSS")
+        self.log(f"🛑 Bot encerrado automaticamente por protecao de capital", "STOP_LOSS")
         self.stop()
 
     def executar_trade(self, direction, signal_data=None):
@@ -183,7 +224,7 @@ class AlphaDolar:
             stake = self.current_stake
 
         if self.api.balance < stake:
-            self.log(f"Saldo insuficiente! Necessário: ${stake:.2f} | Disponível: ${self.api.balance:.2f}", "ERROR")
+            self.log(f"Saldo insuficiente! Necessario: ${stake:.2f} | Disponivel: ${self.api.balance:.2f}", "ERROR")
             if stake > self.api.balance * 0.50:
                 self.log("⚠️ Stake muito alto para saldo! Resetando martingale para continuar.", "WARNING")
                 self.perda_acumulada = 0.0
@@ -230,7 +271,7 @@ class AlphaDolar:
 
         if (contract_data.get("_timeout") or contract_data.get("_reconnect") or
                 contract_data.get("_buy_error") or contract_data.get("_proposal_error")):
-            self.log("⚠️ Operação interrompida — liberando bot para próximo sinal", "WARNING")
+            self.log("⚠️ Operacao interrompida — liberando bot para proximo sinal", "WARNING")
             self.waiting_contract = False
             self.current_contract_id = None
             self._ultimo_trade_time = time.time()
@@ -260,7 +301,7 @@ class AlphaDolar:
         self._sem_sinal_streak  = 0
 
         if vitoria:
-            self.log(f"🎉 VITÓRIA! Lucro: ${profit:.2f} | ID: {contract_id}", "WIN")
+            self.log(f"🎉 VITORIA! Lucro: ${profit:.2f} | ID: {contract_id}", "WIN")
             self.perda_acumulada = 0.0
         else:
             self.log(f"😞 DERROTA! Perda: ${abs(profit):.2f} | ID: {contract_id}", "LOSS")
@@ -269,17 +310,17 @@ class AlphaDolar:
         if hasattr(self.strategy, 'on_trade_result'):
             self.strategy.on_trade_result(vitoria)
 
-        # ✅ FIX 02/03: Martingale NÃO conflita com sistema de recuperação
+        # Martingale: incrementa step na derrota, reseta na vitoria
         if self.martingale:
-            if self.perda_acumulada <= 0:
-                self.martingale.calcular_proximo_stake(vitoria)
+            if vitoria:
+                self.martingale.reset()
             else:
-                if vitoria:
-                    self.martingale.reset()
+                self.martingale.calcular_proximo_stake(vitoria=False)
+
             info = self.martingale.get_info()
             proximo = self._calcular_stake_recuperacao() if self.perda_acumulada > 0 else info['stake_atual']
             self.log(
-                f"📊 Próximo stake: ${proximo:.2f} | Perda acum: ${self.perda_acumulada:.2f} | "
+                f"📊 Proximo stake: ${proximo:.2f} | Perda acum: ${self.perda_acumulada:.2f} | "
                 f"Step: {info['step_atual']}/{info['max_steps']}",
                 "INFO"
             )
@@ -287,13 +328,12 @@ class AlphaDolar:
         self.stop_loss.registrar_trade(profit, vitoria)
         stats = self.stop_loss.get_estatisticas()
         self.log(
-            f"📈 Líquido: ${stats['saldo_liquido']:+.2f} | "
+            f"📈 Liquido: ${stats['saldo_liquido']:+.2f} | "
             f"Win Rate: {stats['win_rate']:.1f}% | "
             f"Trades: {stats['total_trades']}",
             "INFO"
         )
 
-        # ✅ FIX 02/03: Verificar lucro alvo após cada trade
         lucro_sessao = stats.get('saldo_liquido', 0)
         if lucro_sessao >= BotConfig.LUCRO_ALVO:
             self.log(f"🎯 LUCRO ALVO ATINGIDO! Lucro: ${lucro_sessao:.2f} / Alvo: ${BotConfig.LUCRO_ALVO:.2f}", "WIN")
@@ -314,20 +354,20 @@ class AlphaDolar:
 
             self.print_header()
 
-            self.log("Conectando à Deriv API...", "INFO")
+            self.log("Conectando a Deriv API...", "INFO")
             if not self.api.connect():
-                self.log("Falha na conexão!", "ERROR")
+                self.log("Falha na conexao!", "ERROR")
                 return False
 
             self.log("Autorizando...", "INFO")
             if not self.api.authorize():
-                self.log("Falha na autorização!", "ERROR")
+                self.log("Falha na autorizacao!", "ERROR")
                 return False
 
             self.log(f"✅ Autorizado! Saldo: ${self.api.balance:.2f} {self.api.currency}", "SUCCESS")
 
             if self.api.balance <= 0:
-                self.log("Saldo zerado! Impossível operar.", "ERROR")
+                self.log("Saldo zerado! Impossivel operar.", "ERROR")
                 return False
 
             self.api.set_tick_callback(self.on_tick)
@@ -375,7 +415,7 @@ class AlphaDolar:
 
                 sem_trade = agora - self._ultimo_sinal_time
                 if sem_trade > TRADE_TIMEOUT:
-                    self.log(f"⚠️ WATCHDOG: {sem_trade:.0f}s sem operar — forçando trade!", "WARNING")
+                    self.log(f"⚠️ WATCHDOG: {sem_trade:.0f}s sem operar — forcando trade!", "WARNING")
 
                     if hasattr(self.strategy, 'reset_state'):
                         self.strategy.reset_state()
@@ -394,14 +434,12 @@ class AlphaDolar:
                         direction = "CALL"
                         signal_data_forcado = None
 
-                        # Tenta analyze() primeiro (estratégias CALL/PUT)
                         if hasattr(self.strategy, 'analyze'):
                             resultado = self.strategy.analyze(self.tick_history)
                             if resultado and resultado.get('signal'):
                                 direction = resultado['signal']
                                 signal_data_forcado = resultado
 
-                        # Tenta should_enter() (estratégias digit como AlphaBot4Digit)
                         if signal_data_forcado is None and hasattr(self.strategy, 'should_enter'):
                             try:
                                 tick_fake = {'quote': self.tick_history[-1]} if self.tick_history else {'quote': 0}
@@ -418,7 +456,6 @@ class AlphaDolar:
                             except Exception:
                                 pass
 
-                        # ✅ Fallback seguro: se estratégia é digit, nunca forçar CALL
                         if signal_data_forcado is None and hasattr(self.strategy, 'get_contract_params'):
                             params = self.strategy.get_contract_params('DIGITOVER')
                             if params.get('barrier') is not None:
@@ -430,10 +467,10 @@ class AlphaDolar:
                                     'parameters': params
                                 }
 
-                        self.log(f"🔧 Forçando trade {direction} para desbloquear bot", "WARNING")
+                        self.log(f"🔧 Forcando trade {direction} para desbloquear bot", "WARNING")
                         self.executar_trade(direction, signal_data_forcado)
                     except Exception as e_force:
-                        self.log(f"Erro ao forçar trade: {e_force}", "ERROR")
+                        self.log(f"Erro ao forcar trade: {e_force}", "ERROR")
 
                     self._ultimo_sinal_time = agora
                     self._sem_sinal_streak  = 0
@@ -441,7 +478,7 @@ class AlphaDolar:
             return True
 
         except KeyboardInterrupt:
-            self.log("\n⏹️ Bot interrompido pelo usuário", "WARNING")
+            self.log("\n⏹️ Bot interrompido pelo usuario", "WARNING")
             self.stop()
             return True
         except Exception as e:
@@ -459,17 +496,17 @@ class AlphaDolar:
 
     def exibir_relatorio_final(self):
         print("\n" + "="*70)
-        print("📊 RELATÓRIO FINAL DA SESSÃO")
+        print("📊 RELATORIO FINAL DA SESSAO")
         print("="*70)
         stats = self.stop_loss.get_estatisticas()
         print(f"\n💰 Resultados Financeiros:")
-        print(f"   Saldo Líquido: ${stats['saldo_liquido']:+.2f}")
+        print(f"   Saldo Liquido: ${stats['saldo_liquido']:+.2f}")
         print(f"   Lucro Total: ${stats['lucro_total']:.2f}")
         print(f"   Perda Total: ${stats['perda_total']:.2f}")
-        print(f"\n📈 Estatísticas:")
+        print(f"\n📈 Estatisticas:")
         print(f"   Total de Trades: {stats['total_trades']}")
-        print(f"   Vitórias: {stats['vitorias']}")
+        print(f"   Vitorias: {stats['vitorias']}")
         print(f"   Derrotas: {stats['derrotas']}")
         print(f"   Win Rate: {stats['win_rate']:.2f}%")
-        print(f"\n⏱️ Tempo de Sessão: {stats['tempo_sessao']}")
+        print(f"\n⏱️ Tempo de Sessao: {stats['tempo_sessao']}")
         print("\n" + "="*70 + "\n")
