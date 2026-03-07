@@ -1,0 +1,216 @@
+{
+  "continuous": [
+    {
+      "id": "R_10",
+      "name": "Volatility 10 Index",
+      "description": "Vol. 10% · 2s",
+      "icon": "volatility-10",
+      "symbol": "R_10"
+    },
+    {
+      "id": "R_25",
+      "name": "Volatility 25 Index",
+      "description": "Vol. 25% · 2s",
+      "icon": "volatility-25",
+      "symbol": "R_25"
+    },
+    {
+      "id": "R_50",
+      "name": "Volatility 50 Index",
+      "description": "Vol. 50% · 2s",
+      "icon": "volatility-50",
+      "symbol": "R_50"
+    },
+    {
+      "id": "R_75",
+      "name": "Volatility 75 Index",
+      "description": "Vol. 75% · 2s",
+      "icon": "volatility-75",
+      "symbol": "R_75"
+    },
+    {
+      "id": "R_100",
+      "name": "Volatility 100 Index",
+      "description": "Vol. 100% · 2s",
+      "icon": "volatility-100",
+      "symbol": "R_100"
+    }
+  ],
+  "dailyReset": [
+    {
+      "id": "1HZ10V",
+      "name": "Volatility 10 (1s) Index",
+      "description": "Vol. 10% · 1s",
+      "icon": "volatility-10-1s",
+      "badge": "1s",
+      "symbol": "1HZ10V",
+      "tradingview_symbol": "DERIV:10V"
+    },
+    {
+      "id": "1HZ25V",
+      "name": "Volatility 25 (1s) Index",
+      "description": "Vol. 25% · 1s",
+      "icon": "volatility-25-1s",
+      "badge": "1s",
+      "symbol": "1HZ25V",
+      "tradingview_symbol": "DERIV:25V"
+    },
+    {
+      "id": "1HZ50V",
+      "name": "Volatility 50 (1s) Index",
+      "description": "Vol. 50% · 1s",
+      "icon": "volatility-50-1s",
+      "badge": "1s",
+      "symbol": "1HZ50V",
+      "tradingview_symbol": "DERIV:50V"
+    },
+    {
+      "id": "1HZ75V",
+      "name": "Volatility 75 (1s) Index",
+      "description": "Vol. 75% · 1s",
+      "icon": "volatility-75-1s",
+      "badge": "1s",
+      "symbol": "1HZ75V",
+      "tradingview_symbol": "DERIV:75V"
+    },
+    {
+      "id": "1HZ100V",
+      "name": "Volatility 100 (1s) Index",
+      "description": "Vol. 100% · 1s",
+      "icon": "volatility-100-1s",
+      "badge": "1s",
+      "symbol": "1HZ100V",
+      "tradingview_symbol": "DERIV:100V"
+    },
+    {
+      "id": "1HZ150V",
+      "name": "Volatility 150 (1s) Index",
+      "description": "Vol. 150% · 1s",
+      "icon": "volatility-150-1s",
+      "badge": "1s",
+      "symbol": "1HZ150V",
+      "tradingview_symbol": "DERIV:100V"
+    },
+    {
+      "id": "1HZ250V",
+      "name": "Volatility 250 (1s) Index",
+      "description": "Vol. 250% · 1s",
+      "icon": "volatility-250-1s",
+      "badge": "1s",
+      "symbol": "1HZ250V",
+      "tradingview_symbol": "DERIV:100V"
+    }
+  ],
+  "jump": [
+    {
+      "id": "JD10",
+      "name": "Jump 10 Index",
+      "description": "Vol. 10 + picos",
+      "icon": "jump-10",
+      "symbol": "JD10",
+      "tradingview_symbol": "DERIV:10V"
+    },
+    {
+      "id": "JD25",
+      "name": "Jump 25 Index",
+      "description": "Vol. 25 + picos",
+      "icon": "jump-25",
+      "symbol": "JD25",
+      "tradingview_symbol": "DERIV:25V"
+    },
+    {
+      "id": "JD50",
+      "name": "Jump 50 Index",
+      "description": "Vol. 50 + picos",
+      "icon": "jump-50",
+      "symbol": "JD50",
+      "tradingview_symbol": "DERIV:50V"
+    },
+    {
+      "id": "JD75",
+      "name": "Jump 75 Index",
+      "description": "Vol. 75 + picos",
+      "icon": "jump-75",
+      "symbol": "JD75",
+      "tradingview_symbol": "DERIV:75V"
+    },
+    {
+      "id": "JD100",
+      "name": "Jump 100 Index",
+      "description": "Vol. 100 + picos",
+      "icon": "jump-100",
+      "symbol": "JD100",
+      "tradingview_symbol": "DERIV:100V"
+    }
+  ],
+  "forex": [
+    {
+      "id": "frxEURUSD",
+      "name": "EUR/USD",
+      "description": "Euro/USD",
+      "icon": "forex",
+      "symbol": "frxEURUSD",
+      "tradingview_symbol": "FX:EURUSD"
+    },
+    {
+      "id": "frxGBPUSD",
+      "name": "GBP/USD",
+      "description": "Libra Esterlina/USD",
+      "icon": "forex",
+      "symbol": "frxGBPUSD",
+      "tradingview_symbol": "FX:GBPUSD"
+    },
+    {
+      "id": "frxUSDJPY",
+      "name": "USD/JPY",
+      "description": "USDvs Iene Japonês",
+      "icon": "forex",
+      "symbol": "frxUSDJPY",
+      "tradingview_symbol": "FX:USDJPY"
+    }
+  ],
+  "crypto": [
+    {
+      "id": "cryBTCUSD",
+      "name": "Bitcoin",
+      "description": "Bitcoin/USD",
+      "icon": "crypto",
+      "symbol": "cryBTCUSD",
+      "tradingview_symbol": "BINANCE:BTCUSDT"
+    },
+    {
+      "id": "cryETHUSD",
+      "name": "Ethereum",
+      "description": "Ethereum/USD",
+      "icon": "crypto",
+      "symbol": "cryETHUSD",
+      "tradingview_symbol": "BINANCE:ETHUSDT"
+    }
+  ],
+  "commodities": [
+    {
+      "id": "frxXAUUSD",
+      "name": "Ouro",
+      "description": "Ouro/USD",
+      "icon": "gold",
+      "symbol": "frxXAUUSD",
+      "tradingview_symbol": "TVC:GOLD"
+    },
+    {
+      "id": "frxXAGUSD",
+      "name": "Prata",
+      "description": "Prata/USD",
+      "icon": "silver",
+      "symbol": "frxXAGUSD",
+      "tradingview_symbol": "TVC:SILVER"
+    },
+    {
+      "id": "frxXTIUSD",
+      "name": "Petróleo WTI",
+      "description": "Petróleo West Texas Intermediate",
+      "icon": "oil",
+      "symbol": "frxXTIUSD",
+      "tradingview_symbol": "TVC:USOIL"
+    }
+  ]
+}
