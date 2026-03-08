@@ -1,0 +1,11 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/dashboard", "destination": "/dashboard-fixed.html" },
+    { "source": "/videos", "destination": "/videos.html" },
+    { "source": "/guia-deposito-saque", "destination": "/guia-deposito-saque.html" },
+    { "source": "/guia-digitos-alpha", "destination": "/guia-digitos-alpha.html" },
+    { "source": "/trading", "destination": "/trading.html" }
+  ]
+}
