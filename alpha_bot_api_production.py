@@ -519,3 +519,44 @@ if __name__ == '__main__':
     print("✅ BOTS PYTHON REAIS!" if BOTS_AVAILABLE else "⚠️ MODO SIMULADO")
     print("="*70 + "\n")
     app.run(host='0.0.0.0', port=5000, debug=True)
+# ─────────────────────────────────────────────
+# BANCO DE DADOS — CLIENTES
+# ─────────────────────────────────────────────
+from database import get_db, init_db
+init_db()
+
+@app.route('/api/salvar-cliente', methods=['POST'])
+def salvar_cliente():
+    data = request.json
+    try:
+        conn = get_db()
+        conn.execute('''
+            INSERT INTO clientes (deriv_id, nome, email, token_demo, token_real, account_type, ultimo_acesso)
+            VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(deriv_id) DO UPDATE SET
+                token_demo = excluded.token_demo,
+                token_real = excluded.token_real,
+                ultimo_acesso = CURRENT_TIMESTAMP
+        ''', (
+            data.get('deriv_id'),
+            data.get('nome'),
+            data.get('email'),
+            data.get('token_demo'),
+            data.get('token_real'),
+            data.get('account_type', 'demo')
+        ))
+        conn.commit()
+        conn.close()
+        return jsonify({'ok': True})
+    except Exception as e:
+        return jsonify({'ok': False, 'erro': str(e)}), 500
+
+@app.route('/api/clientes', methods=['GET'])
+def listar_clientes():
+    try:
+        conn = get_db()
+        rows = conn.execute('SELECT * FROM clientes ORDER BY ultimo_acesso DESC').fetchall()
+        conn.close()
+        return jsonify([dict(r) for r in rows])
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 500
