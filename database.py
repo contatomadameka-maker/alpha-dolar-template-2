@@ -1,43 +1,37 @@
-import sqlite3
 import os
+import requests
 
-DB_PATH = os.path.join(os.path.dirname(__file__), 'alpha_dolar.db')
+SUPABASE_URL = os.environ.get('SUPABASE_URL', '')
+SUPABASE_KEY = os.environ.get('SUPABASE_KEY', '')
 
-def get_db():
-    conn = sqlite3.connect(DB_PATH, timeout=30, check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    return conn
+HEADERS = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': f'Bearer {SUPABASE_KEY}',
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+}
 
 def init_db():
-    conn = get_db()
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS clientes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            deriv_id TEXT UNIQUE NOT NULL,
-            nome TEXT,
-            email TEXT,
-            token_demo TEXT,
-            token_real TEXT,
-            account_type TEXT DEFAULT 'demo',
-            criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            ultimo_acesso TIMESTAMP
-        )
-    ''')
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS operacoes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            cliente_id TEXT,
-            bot_name TEXT,
-            tipo TEXT,
-            stake REAL,
-            resultado TEXT,
-            lucro REAL,
-            criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    conn.commit()
-    conn.close()
-    print("Banco criado com sucesso!")
+    print("Supabase conectado!")
 
-if __name__ == '__main__':
-    init_db()
+def salvar_cliente(data):
+    url = f"{SUPABASE_URL}/rest/v1/clientes"
+    payload = {
+        'deriv_id': data.get('deriv_id'),
+        'nome': data.get('nome'),
+        'email': data.get('email'),
+        'token_demo': data.get('token_demo'),
+        'token_real': data.get('token_real'),
+        'account_type': data.get('account_type', 'demo'),
+        'ultimo_acesso': 'now()'
+    }
+    headers = {**HEADERS, 'Prefer': 'resolution=merge-duplicates,return=representation'}
+    r = requests.post(url, json=payload, headers=headers)
+    return r.status_code in [200, 201]
+
+def listar_clientes():
+    url = f"{SUPABASE_URL}/rest/v1/clientes?order=ultimo_acesso.desc"
+    r = requests.get(url, headers=HEADERS)
+    if r.status_code == 200:
+        return r.json()
+    return []
