@@ -181,6 +181,19 @@
 
         // Salva no localStorage — dashboard vai ler daqui
         localStorage.setItem('deriv_accounts', JSON.stringify(contas));
+        // Salva cliente no backend
+        fetch('https://alpha-dolar-backend.onrender.com/api/salvar-cliente', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                deriv_id: contas[0]?.acct,
+                nome: contas[0]?.fullname || '',
+                email: contas[0]?.email || '',
+                token_demo: contas.find(c=>c.account_type==='demo')?.token || '',
+                token_real: contas.find(c=>c.account_type==='real')?.token || '',
+                account_type: contas[0]?.account_type || 'demo'
+            })
+        }).then(r => r.json()).then(d => console.log('salvo:', d)).catch(e => console.log('erro salvar:', e));
         localStorage.setItem('deriv_conta_ativa', 'demo');
 
         const real = contas.find(c => !c.isDemo);
