@@ -15,9 +15,10 @@ def init_db():
     print("Supabase conectado!")
 
 def salvar_cliente(data):
+    deriv_id = data.get('deriv_id')
     url = f"{SUPABASE_URL}/rest/v1/clientes"
     payload = {
-        'deriv_id': data.get('deriv_id'),
+        'deriv_id': deriv_id,
         'nome': data.get('nome'),
         'email': data.get('email'),
         'token_demo': data.get('token_demo'),
@@ -25,14 +26,13 @@ def salvar_cliente(data):
         'account_type': data.get('account_type', 'demo'),
         'bot_name': data.get('bot_name', ''),
     }
-    headers = {**HEADERS, 'Prefer': 'resolution=merge-duplicates,return=representation', 'Content-Type': 'application/json'}
-    # Tenta upsert
-    r = requests.post(url, json=payload, headers=headers)
-    if r.status_code == 409:
-        # Faz update direto
-        deriv_id = data.get('deriv_id')
-        r = requests.patch(f"{url}?deriv_id=eq.{deriv_id}", json=payload, headers=headers)
-    return r.status_code in [200, 201, 204]
+    # Tenta insert primeiro
+    r = requests.post(url, json=payload, headers={**HEADERS, 'Prefer': 'return=representation'})
+    if r.status_code in [200, 201]:
+        return True
+    # Se já existe, faz update
+    r = requests.patch(f"{url}?deriv_id=eq.{deriv_id}", json=payload, headers=HEADERS)
+    return r.status_code in [200, 204]
 
 def listar_clientes():
     url = f"{SUPABASE_URL}/rest/v1/clientes?order=ultimo_acesso.desc"
