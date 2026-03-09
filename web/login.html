@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpha Dolar 2.0 — Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary:#00e5ff; --accent:#007bff; --dark:#060912; --panel:rgba(255,255,255,0.04); --border:rgba(0,229,255,0.15); }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{min-height:100vh;background:var(--dark);font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+        .bg-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.03)1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.03)1px,transparent 1px);background-size:60px 60px;animation:grid-drift 20s linear infinite;}
+        @keyframes grid-drift{to{transform:translateY(60px)}}
+        .bg-glow{position:fixed;width:600px;height:600px;background:radial-gradient(circle,rgba(0,123,255,0.12)0%,transparent 70%);top:-100px;left:-100px;animation:glow 6s ease-in-out infinite alternate;}
+        .bg-glow2{position:fixed;width:500px;height:500px;background:radial-gradient(circle,rgba(0,229,255,0.08)0%,transparent 70%);bottom:-100px;right:-100px;animation:glow 8s ease-in-out infinite alternate-reverse;}
+        @keyframes glow{to{transform:scale(1.3);opacity:1;}}
+        .card{position:relative;z-index:10;width:100%;max-width:460px;padding:52px 44px;background:var(--panel);border:1px solid var(--border);border-radius:24px;backdrop-filter:blur(20px);box-shadow:0 40px 80px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.05);animation:card-in 0.8s cubic-bezier(0.16,1,0.3,1) both;}
+        @keyframes card-in{from{opacity:0;transform:translateY(30px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+        .logo-wrap{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:6px;}
+        .logo-icon{width:48px;height:48px;background:linear-gradient(135deg,var(--accent),var(--primary));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 20px rgba(0,229,255,0.3);animation:icon-pulse 3s ease-in-out infinite;}
+        @keyframes icon-pulse{50%{box-shadow:0 0 35px rgba(0,229,255,0.6)}}
+        .logo-name{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:#fff;}
+        .logo-name span{color:var(--primary);}
+        .tagline{text-align:center;color:rgba(255,255,255,0.4);font-size:13px;margin-bottom:44px;}
+        .divider{display:flex;align-items:center;gap:12px;margin-bottom:28px;}
+        .div-line{flex:1;height:1px;background:var(--border);}
+        .div-text{color:rgba(255,255,255,0.3);font-size:11px;text-transform:uppercase;letter-spacing:2px;}
+        .btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:18px 24px;border-radius:14px;border:none;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;transition:all 0.2s cubic-bezier(0.16,1,0.3,1);margin-bottom:12px;letter-spacing:0.3px;}
+        .btn:last-child{margin-bottom:0;}
+        .btn:active{transform:scale(0.98);}
+        .btn-auth{background:linear-gradient(135deg,var(--accent),var(--primary));color:#fff;box-shadow:0 4px 20px rgba(0,123,255,0.4),inset 0 1px 0 rgba(255,255,255,0.1);}
+        .btn-auth:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,123,255,0.5);}
+        .btn-register{background:transparent;color:#fff;border:1px solid var(--border);}
+        .btn-register:hover{transform:translateY(-2px);border-color:rgba(0,229,255,0.4);}
+        .footer{margin-top:36px;text-align:center;}
+        .footer-powered{color:rgba(255,255,255,0.25);font-size:12px;}
+        .footer-powered strong{color:rgba(255,255,255,0.4);}
+        .footer-warn{margin-top:12px;color:rgba(255,255,255,0.18);font-size:11px;line-height:1.6;}
+        .auth-state{display:none;text-align:center;}
+        .auth-state.active{display:block;}
+        .auth-icon{font-size:52px;margin-bottom:14px;animation:bounce-in 0.5s cubic-bezier(0.16,1,0.3,1);}
+        @keyframes bounce-in{from{transform:scale(0)}to{transform:scale(1)}}
+        .auth-title{font-family:'Orbitron',monospace;font-size:18px;color:#fff;margin-bottom:6px;}
+        .auth-sub{color:rgba(255,255,255,0.5);font-size:14px;margin-bottom:28px;}
+        .account-cards{display:flex;gap:10px;margin-bottom:24px;}
+        .account-card{flex:1;padding:16px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;text-align:left;}
+        .ac-label{font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+        .ac-id{font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px;}
+        .ac-bal{font-size:18px;font-weight:700;color:var(--primary);}
+        .btn-enter{width:100%;padding:18px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--accent),var(--primary));color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 4px 20px rgba(0,123,255,0.4);transition:all 0.2s;}
+        .btn-enter:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,123,255,0.5);}
+        .loading{position:fixed;inset:0;background:rgba(6,9,18,0.92);backdrop-filter:blur(10px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:18px;}
+        .loading.active{display:flex;}
+        .spinner{width:46px;height:46px;border:3px solid rgba(0,229,255,0.1);border-top-color:var(--primary);border-radius:50%;animation:spin 0.8s linear infinite;}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .loading-txt{color:rgba(255,255,255,0.6);font-size:14px;letter-spacing:1px;}
+        .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(30,33,40,0.97);color:#fff;padding:14px 24px;border-radius:12px;font-size:13px;opacity:0;transition:all 0.3s;z-index:99999;border-left:3px solid var(--primary);}
+        .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+    </style>
+<!-- ══ ALPHA DOLAR FAVICON ══ -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'><rect width='256' height='256' rx='52' fill='%230d1018'/%3E<rect width='256' height='256' rx='52' fill='none' stroke='%2300d2ff' stroke-width='8' stroke-opacity='0.4'/%3E<text x='32' y='195' font-family='Arial Black,sans-serif' font-weight='900' font-size='185' fill='%2300d2ff'>A</text><text x='58' y='195' font-family='Arial Black,sans-serif' font-weight='900' font-size='185' fill='none' stroke='%2300d2ff' stroke-width='8' stroke-opacity='0.4'>%24</text></svg>">
+<!-- ══ FIM FAVICON ══ -->
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+<div class="bg-glow2"></div>
+<div class="loading" id="loading"><div class="spinner"></div><div class="loading-txt" id="loadingTxt">Aguarde...</div></div>
+<div class="toast" id="toast"></div>
+
+<div class="card">
+    <div id="loginState">
+        <div class="logo-wrap">
+            <div class="logo-icon">💹</div>
+            <div class="logo-name"><svg width="210" height="36" viewBox="0 0 210 36" xmlns="http://www.w3.org/2000/svg" style="display:block">
+  <defs>
+    <linearGradient id="logograd" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d2ff"/>
+      <stop offset="100%" style="stop-color:#0ea5e9"/>
+    </linearGradient>
+  </defs>
+  <text x="0" y="32" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-size="34" fill="url(#logograd)">A</text>
+  <text x="12" y="32" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-size="34" fill="none" stroke="url(#logograd)" stroke-width="1.5" opacity="0.45">$</text>
+  <line x1="38" y1="4" x2="38" y2="32" stroke="#1e2230" stroke-width="1.5"/>
+  <text x="46" y="20" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-size="13" fill="#e2e8f0" letter-spacing="2">ALPHA DOLAR</text>
+  <text x="48" y="32" font-family="Arial,sans-serif" font-size="9" fill="#475569" letter-spacing="3">TRADING BOT 2.0</text>
+</svg></div>
+        </div>
+        <p class="tagline">Sua plataforma automatizada para trades</p>
+        <div class="divider"><div class="div-line"></div><span class="div-text">Comece sua jornada</span><div class="div-line"></div></div>
+        <button class="btn btn-auth" onclick="autenticar()"><span>🔑</span><span>ENTRAR COM DERIV</span></button>
+        <a class="btn btn-register"
+           href="https://deriv.partners/rx?sidc=72538F17-C625-49E9-A0DC-8D4A4B83E65F&utm_campaign=dynamicworks&utm_medium=affiliate&utm_source=CU301082"
+           target="_blank" rel="noopener">
+           <span>👤</span><span>CRIAR CONTA NA DERIV</span>
+        </a>
+        <div class="footer">
+            <div class="footer-powered">Powered by <strong>Deriv OAuth 2.0</strong> · App ID <strong>128988</strong></div>
+            <p class="footer-warn">A Deriv oferece produtos de alto risco. Negocie apenas com recursos que pode perder.</p>
+        </div>
+    </div>
+
+    <div class="auth-state" id="authState">
+        <div class="auth-icon">✅</div>
+        <div class="auth-title">Autenticado!</div>
+        <div class="auth-sub" id="authSub">Bem-vindo ao Alpha Dolar 2.0</div>
+        <div class="account-cards" id="accountCards"></div>
+        <button class="btn-enter" onclick="entrar()">ENTRAR NA PLATAFORMA →</button>
+    </div>
+</div>
+
+<script>
+(() => {
+    const APP_ID    = '128988';
+    const DASHBOARD = '/home';
+
+    // ✅ Link de afiliado — usado para autenticar (quem já tem conta entra por aqui
+    // e quem não tem é redirecionado para criar conta pelo link de afiliado)
+    const AFFILIATE_LINK = 'https://deriv.partners/rx?sidc=72538F17-C625-49E9-A0DC-8D4A4B83E65F&utm_campaign=dynamicworks&utm_medium=affiliate&utm_source=CU301082';
+
+    // URL OAuth da Deriv com redirect para capturar os tokens
+    const OAUTH_URL = `https://oauth.deriv.com/oauth2/authorize?app_id=${APP_ID}&l=PT&brand=deriv`;
+
+    const setLoading = (on, txt='Aguarde...') => {
+        document.getElementById('loadingTxt').innerText = txt;
+        document.getElementById('loading').classList.toggle('active', on);
+    };
+
+    window.autenticar = () => {
+        setLoading(true, 'Redirecionando para a Deriv...');
+        // Salva link de afiliado no localStorage para rastrear origem
+        localStorage.setItem('deriv_affiliate', AFFILIATE_LINK);
+        setTimeout(() => { window.location.href = OAUTH_URL; }, 500);
+    };
+
+    function buscarInfoConta(token) {
+        return new Promise(resolve => {
+            const ws = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${APP_ID}`);
+            const t  = setTimeout(() => { ws.close(); resolve(null); }, 8000);
+            ws.onopen    = () => ws.send(JSON.stringify({ authorize: token }));
+            ws.onmessage = e => {
+                const d = JSON.parse(e.data);
+                if (d.msg_type === 'authorize') {
+                    clearTimeout(t); ws.close();
+                    resolve(d.error ? null : d.authorize);
+                }
+            };
+            ws.onerror = () => { clearTimeout(t); resolve(null); };
+        });
+    }
+
+    async function processarCallback() {
+        const params = new URLSearchParams(window.location.search);
+        if (!params.has('acct1')) return false;
+
+        setLoading(true, 'Verificando contas na Deriv...');
+
+        const raw = [];
+        let i = 1;
+        while (params.get(`acct${i}`)) {
+            raw.push({
+                acct: params.get(`acct${i}`),
+                token: params.get(`token${i}`),
+                cur: params.get(`cur${i}`),
+                isDemo: params.get(`acct${i}`).startsWith('VRTC')
+            });
+            i++;
+        }
+
+        const contas = await Promise.all(raw.map(async c => {
+            const info = await buscarInfoConta(c.token);
+            return {
+                acct: c.acct,
+                token: c.token,
+                currency: c.cur || info?.currency || 'USD',
+                balance: info?.balance ?? null,
+                fullname: info?.fullname || '',
+                isDemo: c.isDemo
+            };
+        }));
+
+        // Salva no localStorage — dashboard vai ler daqui
+        localStorage.setItem('deriv_accounts', JSON.stringify(contas));
+        // Salva cliente no backend
+        fetch('https://alpha-dolar-backend.onrender.com/api/salvar-cliente', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                deriv_id: contas[0]?.loginid,
+                nome: contas[0]?.fullname || '',
+                email: contas[0]?.email || '',
+                token_demo: contas.find(c=>c.account_type==='demo')?.token || '',
+                token_real: contas.find(c=>c.account_type==='real')?.token || '',
+                account_type: contas[0]?.account_type || 'demo'
+            })
+        }).catch(e => console.log('erro ao salvar cliente:', e));
+        localStorage.setItem('deriv_conta_ativa', 'demo');
+
+        const real = contas.find(c => !c.isDemo);
+        const demo = contas.find(c =>  c.isDemo);
+        if (demo) {
+            localStorage.setItem('deriv_token_demo', demo.token);
+            localStorage.setItem('deriv_balance_demo', demo.balance);
+        }
+        if (real) {
+            localStorage.setItem('deriv_token_real', real.token);
+            localStorage.setItem('deriv_balance_real', real.balance);
+        }
+
+        window.history.replaceState({}, '', window.location.pathname);
+        setLoading(false);
+        mostrarAutenticado(contas);
+        return true;
+    }
+
+    function mostrarAutenticado(contas) {
+        document.getElementById('loginState').style.display = 'none';
+        document.getElementById('authState').classList.add('active');
+        const nome = contas.find(c => c.fullname)?.fullname || 'Trader';
+        document.getElementById('authSub').innerText = `Bem-vindo, ${nome}!`;
+        const container = document.getElementById('accountCards');
+        container.innerHTML = '';
+        contas.forEach(c => {
+            const div = document.createElement('div');
+            div.className = 'account-card';
+            div.innerHTML = `
+                <div class="ac-label">${c.isDemo ? '🧪 Demo' : '💰 Real'}</div>
+                <div class="ac-id">${c.acct}</div>
+                <div class="ac-bal">${c.balance != null ? `${c.currency} ${parseFloat(c.balance).toFixed(2)}` : '—'}</div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    window.entrar = () => {
+        setLoading(true, 'Carregando dashboard...');
+        setTimeout(() => { window.location.href = '/home'; }, 600);
+    };
+
+    // Verifica sessão existente
+    try {
+        const raw = localStorage.getItem('deriv_accounts');
+        if (raw) {
+            const contas = JSON.parse(raw);
+            if (contas?.length > 0) { mostrarAutenticado(contas); }
+        }
+    } catch {}
+
+    // Processa retorno OAuth
+    if (new URLSearchParams(window.location.search).has('acct1')) processarCallback();
+})();
+</script>
+</body>
+</html>
