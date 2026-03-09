@@ -23,6 +23,7 @@ def salvar_cliente(data):
         'token_demo': data.get('token_demo'),
         'token_real': data.get('token_real'),
         'account_type': data.get('account_type', 'demo'),
+        'bot_name': data.get('bot_name', ''),
         'ultimo_acesso': None
     }
     headers = {**HEADERS, 'Prefer': 'resolution=merge-duplicates,return=representation'}
