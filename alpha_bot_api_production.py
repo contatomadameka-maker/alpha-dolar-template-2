@@ -1,17 +1,7 @@
-# VERSÃO CORRIGIDA 2026-03-05 v7
-"""
-ALPHA DOLAR 2.0 - API PRODUCTION INTEGRADA
-FIXES v7:
-  ✅ debug=False — remove reloader que matava processo e perdia estado Martingale
-  ✅ Persistência de perda_acumulada em JSON — sobrevive a reinicializações
-  ✅ Todos os fixes v6 mantidos
-"""
-
 import sys
 import os
-import json
-import time
 import threading
+import time
 import traceback as _tb
 from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory, redirect
@@ -31,57 +21,7 @@ if backend_path not in sys.path:
 app = Flask(__name__, static_folder='web', static_url_path='')
 CORS(app)
 
-# ==================== PERSISTÊNCIA DE ESTADO ====================
-STATE_FILE = os.path.join(project_path, 'bot_state.json')
-
-def salvar_estado(bot_type, perda_acumulada, step_atual=0):
-    """Salva estado do Martingale em disco para sobreviver reinicializações."""
-    try:
-        estado = {}
-        if os.path.exists(STATE_FILE):
-            with open(STATE_FILE, 'r') as f:
-                estado = json.load(f)
-        estado[bot_type] = {
-            'perda_acumulada': round(perda_acumulada, 2),
-            'step_atual': step_atual,
-            'timestamp': datetime.now().isoformat()
-        }
-        with open(STATE_FILE, 'w') as f:
-            json.dump(estado, f, indent=2)
-    except Exception as e:
-        print(f"⚠️ Erro ao salvar estado: {e}")
-
-def carregar_estado(bot_type):
-    """Carrega estado salvo do Martingale."""
-    try:
-        if os.path.exists(STATE_FILE):
-            with open(STATE_FILE, 'r') as f:
-                estado = json.load(f)
-            if bot_type in estado:
-                s = estado[bot_type]
-                print(f"📂 Estado restaurado [{bot_type}]: perda_acum=${s.get('perda_acumulada',0):.2f} step={s.get('step_atual',0)}")
-                return s.get('perda_acumulada', 0.0), s.get('step_atual', 0)
-    except Exception as e:
-        print(f"⚠️ Erro ao carregar estado: {e}")
-    return 0.0, 0
-
-def limpar_estado(bot_type):
-    """Limpa estado salvo após vitória ou stop manual."""
-    try:
-        if os.path.exists(STATE_FILE):
-            with open(STATE_FILE, 'r') as f:
-                estado = json.load(f)
-            if bot_type in estado:
-                del estado[bot_type]
-                with open(STATE_FILE, 'w') as f:
-                    json.dump(estado, f, indent=2)
-    except Exception as e:
-        print(f"⚠️ Erro ao limpar estado: {e}")
-
 # ==================== IMPORTAR BOTS ====================
-print(f"📁 project_path: {project_path}")
-print(f"📁 backend_path: {backend_path}")
-print(f"📁 sys.path: {sys.path[:3]}")
 
 try:
     try:
@@ -108,9 +48,8 @@ try:
     from backend.strategies.alpha_smart import AlphaSmart
     from backend.strategies.alpha_analytics_sniper import AlphaAnalytics, AlphaSniper
     from backend.strategies.premium_strategies import MegaAlpha1, MegaAlpha2, MegaAlpha3, AlphaElite, AlphaNexus
-    from backend.strategies.digit_strategies import AlphaBot4Digit, DigitSniper, DigitPulse, MegaDigit1, MegaDigit2
     BOTS_AVAILABLE = True
-    print("✅ Todas as 20 estratégias carregadas (15 Rise/Fall + 5 Dígitos)!")
+    print("✅ Todas as 15 estratégias carregadas!")
 except ImportError as e:
     BOTS_AVAILABLE = False
     print(f"⚠️ Erro ao importar bots: {e}")
@@ -133,14 +72,7 @@ STRATEGY_MAP = {
     'mega_alpha_3':       lambda tm, rm: MegaAlpha3(tm, rm),
     'alpha_elite':        lambda tm, rm: AlphaElite(tm, rm),
     'alpha_nexus':        lambda tm, rm: AlphaNexus(tm, rm),
-    'alpha_bot_4':        lambda tm, rm: AlphaBot4Digit(tm, rm),
-    'digit_sniper':       lambda tm, rm: DigitSniper(tm, rm),
-    'digit_pulse':        lambda tm, rm: DigitPulse(tm, rm),
-    'mega_digit_1':       lambda tm, rm: MegaDigit1(tm, rm),
-    'mega_digit_2':       lambda tm, rm: MegaDigit2(tm, rm),
 }
-
-DIGIT_STRATEGIES = {'alpha_bot_4', 'digit_sniper', 'digit_pulse', 'mega_digit_1', 'mega_digit_2'}
 
 SYMBOL_MAP = {
     'Volatility 10 Index':       'R_10',
@@ -182,6 +114,10 @@ bots_state = {
 # ==================== ROTAS ESTÁTICAS ====================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+@app.route('/login')
+def login():
+    return send_from_directory(os.path.join(BASE_DIR, 'web'), 'login.html')
+
 @app.route('/')
 def root():
     return redirect('/home')
@@ -190,9 +126,12 @@ def root():
 def home():
     return send_from_directory(BASE_DIR, 'index.html')
 
+# /dashboard e /dashboard-fixed ambos servem o mesmo arquivo
 @app.route('/dashboard')
+@app.route('/dashboard-fixed')
+@app.route('/dashboard-fixed.html')
 def dashboard():
-    return send_from_directory(BASE_DIR, 'dashboard-fixed.html')
+     return send_from_directory(os.path.join(BASE_DIR, 'web'), 'dashboard-fixed.html')
 
 @app.route('/guia')
 def guia():
@@ -204,15 +143,15 @@ def videos():
 
 @app.route('/css/<path:filename>')
 def css_files(filename):
-    return send_from_directory(os.path.join(BASE_DIR, 'css'), filename)
+    return send_from_directory(os.path.join(BASE_DIR, 'web/css'), filename)
 
 @app.route('/js/<path:filename>')
 def js_files(filename):
-    return send_from_directory(os.path.join(BASE_DIR, 'js'), filename)
+    return send_from_directory(os.path.join(BASE_DIR, 'web/js'), filename)
 
 @app.route('/data/<path:filename>')
 def data_files(filename):
-    return send_from_directory(os.path.join(BASE_DIR, 'data'), filename)
+    return send_from_directory(os.path.join(BASE_DIR, 'web/data'), filename)
 
 @app.route('/<path:path>')
 def serve_static(path):
@@ -223,13 +162,7 @@ def serve_static(path):
 
 @app.route('/api/health')
 def health():
-    return jsonify({
-        'status': 'ok',
-        'message': 'Alpha Dolar API Running',
-        'bots_available': BOTS_AVAILABLE,
-        'total_strategies': len(STRATEGY_MAP),
-        'digit_strategies': len(DIGIT_STRATEGIES),
-    })
+    return jsonify({'status': 'ok', 'message': 'Alpha Dolar API Running', 'bots_available': BOTS_AVAILABLE})
 
 # ==================== START BOT ====================
 @app.route('/api/bot/start', methods=['POST'])
@@ -249,13 +182,10 @@ def start_bot():
         lucro_alvo    = float(config.get('lucro_alvo', 2.0))
         limite_perda  = float(config.get('limite_perda', 5.0))
 
-        strategy_id = config.get('strategy', 'alpha_bot_1')
-        is_digit    = strategy_id in DIGIT_STRATEGIES
-
         print(f"\n{'='*60}")
         print(f"📥 Iniciar bot: {bot_type} | conta: {account_type.upper()}")
         print(f"📊 Símbolo: {config.get('symbol')} → {symbol}")
-        print(f"🎯 Estratégia: {strategy_id} ({'DÍGITOS' if is_digit else 'RISE/FALL'})")
+        print(f"🎯 Estratégia: {config.get('strategy', 'alpha_bot_1')} ({config.get('strategy_type','').upper() or 'RISE/FALL'})")
         print(f"💰 stake={stake_inicial} target={lucro_alvo} stop={limite_perda}")
         print(f"🔑 Token recebido: {'✅ SIM (' + account_type.upper() + ')' if token else '❌ NÃO'}")
         print(f"{'='*60}\n")
@@ -288,6 +218,7 @@ def start_bot():
 
             trading_mode   = config.get('trading_mode', 'faster')
             risk_mode      = config.get('risk_mode', 'conservative')
+            strategy_id    = config.get('strategy', 'alpha_bot_1')
             stop_loss_type = config.get('stop_loss_type', 'value')
             max_losses     = int(config.get('max_losses', 5))
 
@@ -307,17 +238,6 @@ def start_bot():
                 bot = AlphaDolar(strategy=strategy, use_martingale=strategy.usar_martingale)
             except Exception as e:
                 return jsonify({'success': False, 'error': f'Erro bot: {str(e)}'}), 500
-
-            # ✅ FIX v7: Restaura perda_acumulada salva em disco
-            perda_salva, step_salvo = carregar_estado(bot_type)
-            if perda_salva > 0:
-                bot.perda_acumulada = perda_salva
-                if bot.martingale:
-                    bot.martingale.step_atual  = step_salvo
-                    bot.martingale.stake_atual = round(
-                        BotConfig.STAKE_INICIAL * (bot.martingale.multiplicador ** step_salvo), 2
-                    )
-                print(f"♻️ Estado restaurado: perda_acum=${perda_salva:.2f} step={step_salvo}")
 
             if hasattr(bot, 'log') and callable(getattr(bot, 'log', None)):
                 _orig_log = bot.log
@@ -351,13 +271,9 @@ def start_bot():
                     bots_state[bot_type]['_perda_desde_ultimo_ganho'] = 0.0
                     bots_state[bot_type]['_lucro_desde_ultimo_reset'] = round(
                         bots_state[bot_type]['_lucro_desde_ultimo_reset'] + abs(profit), 2)
-                    # ✅ FIX v7: Limpa estado salvo em vitória
-                    limpar_estado(bot_type)
                 else:
                     bots_state[bot_type]['_perda_desde_ultimo_ganho'] = round(
                         bots_state[bot_type]['_perda_desde_ultimo_ganho'] + abs(profit), 2)
-                    # ✅ FIX v7: Salva estado a cada derrota
-                    salvar_estado(bot_type, perda_acum, step_atual)
 
                 perda_dc = bots_state[bot_type]['_perda_desde_ultimo_ganho']
                 limite   = BotConfig.LIMITE_PERDA
@@ -366,7 +282,6 @@ def start_bot():
                     bots_state[bot_type]['stop_reason']  = 'stop_loss'
                     bots_state[bot_type]['stop_message'] = f'Perda acumulada: ${perda_dc:.2f} / Limite: ${limite:.2f}'
                     bots_state[bot_type]['running']      = False
-                    limpar_estado(bot_type)
                     if hasattr(bot, 'stop'):
                         try: bot.stop()
                         except: pass
@@ -383,7 +298,6 @@ def start_bot():
                     'exit_tick': str(exit_tick) if exit_tick else None,
                     'longcode': getattr(getattr(bot, 'api', None), '_ultimo_longcode', None),
                     'perda_acum': round(perda_acum, 2),
-                    'is_digit': is_digit,
                 }
                 bots_state[bot_type]['trades'].append(trade)
                 if len(bots_state[bot_type]['trades']) > 100:
@@ -429,11 +343,7 @@ def start_bot():
             return jsonify({
                 'success': True, 'message': 'Bot iniciado!',
                 'bot_type': bot_type, 'account_type': account_type,
-                'symbol': symbol, 'strategy': strategy_id,
-                'is_digit': is_digit,
-                'mode': f'REAL BOT - {account_type.upper()}',
-                'estado_restaurado': perda_salva > 0,
-                'perda_restaurada': perda_salva,
+                'symbol': symbol, 'mode': f'REAL BOT - {account_type.upper()}'
             })
 
         # ==================== SIMULADO ====================
@@ -486,13 +396,6 @@ def stop_bot():
 
         bot = bots_state[bot_type].get('instance')
         if bot:
-            # ✅ FIX v7: Salva estado ao parar manualmente (pode ter perdas pendentes)
-            perda_acum = getattr(bot, 'perda_acumulada', 0)
-            step_atual = bot.martingale.step_atual if bot.martingale else 0
-            if perda_acum > 0:
-                salvar_estado(bot_type, perda_acum, step_atual)
-                print(f"💾 Estado salvo ao parar: perda=${perda_acum:.2f} step={step_atual}")
-
             if hasattr(bot, 'stop'):      bot.stop()
             elif hasattr(bot, 'running'): bot.running = False
 
@@ -505,13 +408,7 @@ def stop_bot():
 
             bots_state[bot_type]['running']     = False
             bots_state[bot_type]['stop_reason'] = bots_state[bot_type].get('stop_reason') or 'manual'
-            return jsonify({
-                'success': True,
-                'message': 'Bot parado!',
-                'stats': stats,
-                'perda_salva': perda_acum > 0,
-                'perda_acumulada': perda_acum,
-            })
+            return jsonify({'success': True, 'message': 'Bot parado!', 'stats': stats})
 
         return jsonify({'success': False, 'error': 'Instância não encontrada'}), 500
 
@@ -613,153 +510,12 @@ def emergency_reset():
         'running': False, 'instance': None, 'thread': None,
         'trades': [], 'stop_reason': None, 'stop_message': None
     } for k in ['manual', 'ia', 'ia_simples', 'ia_avancado']}
-    # ✅ FIX v7: Limpa todos os estados salvos no reset de emergência
-    try:
-        if os.path.exists(STATE_FILE):
-            os.remove(STATE_FILE)
-    except: pass
     return jsonify({'success': True, 'message': 'Estado resetado!'})
-
-# ==================== ROTAS IA ML ====================
-try:
-    from backend.ia_bot import IABot
-    IA_BOT_AVAILABLE = True
-    print("✅ Motor IA ML carregado!")
-except ImportError as e:
-    IA_BOT_AVAILABLE = False
-    print(f"⚠️ Motor IA não disponível: {e}")
-
-ia_state = {
-    'running':      False,
-    'instance':     None,
-    'thread':       None,
-    'stop_reason':  None,
-    'stop_message': None,
-}
-
-@app.route('/api/ia/start', methods=['POST'])
-def ia_start():
-    global ia_state
-    try:
-        data = request.get_json()
-        if not data:
-            return jsonify({'success': False, 'error': 'Dados não fornecidos'}), 400
-        if ia_state.get('running'):
-            return jsonify({'success': False, 'error': 'Bot IA já está rodando'}), 400
-        if not IA_BOT_AVAILABLE:
-            return jsonify({'success': False, 'error': 'Motor IA não disponível no servidor'}), 500
-        token = data.get('token')
-        if not token:
-            return jsonify({'success': False, 'error': 'Token não fornecido'}), 400
-        config = data.get('config', {})
-        config['token'] = token
-        config['symbol'] = resolve_symbol(config.get('symbol', 'R_100'))
-        bot = IABot(config=config)
-
-        def on_trade(direction, won, profit, stake, symbol_used, exit_tick=None):
-            if not ia_state.get('running'):
-                return
-            trades    = ia_state.get('trades', [])
-            total     = len(trades) + 1
-            wins      = sum(1 for t in trades if t.get('result') == 'win') + (1 if won else 0)
-            wr        = round((wins / total) * 100, 1) if total > 0 else 0
-            trade = {
-                'id':        int(time.time() * 1000),
-                'direction': direction,
-                'result':    'win' if won else 'loss',
-                'profit':    round(profit, 2),
-                'stake':     round(stake, 2),
-                'symbol':    symbol_used,
-                'timestamp': datetime.now().strftime('%H:%M:%S'),
-                'win_rate':  wr,
-                'total_trades': total,
-                'exit_tick': str(exit_tick) if exit_tick else None,
-                'ml_fase':   bot.ml.get_info()['fase'],
-                'ml_acuracia': bot.ml.get_info()['acuracia'],
-            }
-            trades.append(trade)
-            if len(trades) > 200:
-                trades.pop(0)
-            ia_state['trades'] = trades
-            if bot.stop_reason:
-                ia_state['running']      = False
-                ia_state['stop_reason']  = bot.stop_reason
-                ia_state['stop_message'] = bot.stop_message
-
-        bot._on_trade_completed = on_trade
-
-        def run_ia():
-            try:
-                bot.start()
-            except Exception as e:
-                print(f"❌ Erro thread IA: {e}")
-                _tb.print_exc()
-            finally:
-                ia_state['running']      = False
-                ia_state['stop_reason']  = ia_state.get('stop_reason') or bot.stop_reason or 'finished'
-                ia_state['stop_message'] = ia_state.get('stop_message') or bot.stop_message
-
-        thread = threading.Thread(target=run_ia, daemon=True)
-        thread.start()
-        ia_state.update({
-            'running': True, 'instance': bot, 'thread': thread,
-            'trades': [], 'stop_reason': None, 'stop_message': None,
-        })
-        return jsonify({
-            'success': True, 'message': 'Bot IA ML iniciado!',
-            'symbol': config['symbol'],
-            'contract_type': config.get('contract_type', 'DIGITEVEN'),
-            'ml_fase': 'Coletando dados para treinar ML...',
-        })
-    except Exception as e:
-        _tb.print_exc()
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@app.route('/api/ia/stop', methods=['POST'])
-def ia_stop():
-    global ia_state
-    if not ia_state.get('running'):
-        return jsonify({'success': False, 'error': 'Bot IA não está rodando'}), 400
-    bot = ia_state.get('instance')
-    if bot:
-        try: bot.stop()
-        except: pass
-    ia_state['running']     = False
-    ia_state['stop_reason'] = ia_state.get('stop_reason') or 'manual'
-    return jsonify({'success': True, 'message': 'Bot IA parado!'})
-
-@app.route('/api/ia/stats')
-def ia_stats():
-    bot    = ia_state.get('instance')
-    stats  = bot.get_stats() if bot else {}
-    thread = ia_state.get('thread')
-    alive  = thread is not None and thread.is_alive()
-    if ia_state.get('running') and not alive:
-        ia_state['running']     = False
-        ia_state['stop_reason'] = ia_state.get('stop_reason') or 'crashed'
-    return jsonify({
-        'success': True, 'running': ia_state.get('running', False),
-        'stop_reason': ia_state.get('stop_reason'), 'stop_message': ia_state.get('stop_message'),
-        'stats': stats, 'trades': ia_state.get('trades', [])[-20:], 'ml': stats.get('ml', {}),
-        'bot_running': ia_state.get('running', False),
-        'saldo_atual': stats.get('balance', 0), 'lucro_liquido': stats.get('saldo_liquido', 0),
-        'total_trades': stats.get('total_trades', 0), 'win_rate': stats.get('win_rate', 0),
-        'vitorias': stats.get('vitorias', 0), 'derrotas': stats.get('derrotas', 0),
-        'mart_step': stats.get('mart_step', 0), 'perda_dc': stats.get('perda_acumulada', 0),
-        'limite_perda': bot.limite_perda if bot else 5.0,
-    })
-
-@app.route('/api/ia/trades')
-def ia_trades():
-    trades = ia_state.get('trades', [])
-    return jsonify({'success': True, 'trades': trades, 'total': len(trades)})
 
 if __name__ == '__main__':
     print("\n" + "="*70)
-    print("🚀 ALPHA DOLAR 2.0 - API PRODUCTION v7")
-    print("🌐 URLs: /home | /dashboard | /guia")
-    print(f"📊 {len(STRATEGY_MAP)} estratégias disponíveis ({len(DIGIT_STRATEGIES)} de dígitos)")
+    print("🚀 ALPHA DOLAR 2.0 - API PRODUCTION v5")
+    print("🌐 URLs: / → /home | /operar → /dashboard | /guia | /videos")
     print("✅ BOTS PYTHON REAIS!" if BOTS_AVAILABLE else "⚠️ MODO SIMULADO")
     print("="*70 + "\n")
-    # ✅ FIX v7: debug=False — remove reloader que matava processo e perdia estado
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=True)

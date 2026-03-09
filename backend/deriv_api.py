@@ -240,30 +240,17 @@ class DerivAPI:
                     self.on_balance_callback(self.balance)
 
             elif msg_type == "tick":
-                # ✅ Atualiza timestamp do último tick para watchdog
-                if hasattr(self, '_bot_ref') and self._bot_ref:
-                    self._bot_ref._ultimo_tick_time = time.time()
                 if self.on_tick_callback:
                     self.on_tick_callback(data.get("tick", {}))
 
             elif msg_type == "proposal":
                 if "error" in data:
                     self.log(f"Erro proposta: {data['error']['message']}", "ERROR")
-                    # ✅ Libera waiting_contract se proposta falhou
-                    self._clear_contract()
-                    if self.on_contract_callback:
-                        self.on_contract_callback({
-                            "status": "lost", "profit": 0,
-                            "contract_id": None, "_proposal_error": True
-                        })
                 else:
                     proposal    = data.get("proposal", {})
                     proposal_id = proposal.get("id")
                     price       = proposal.get("ask_price")
-                    longcode    = proposal.get("longcode", "")
                     self.log(f"Proposta recebida: ID {proposal_id}", "INFO")
-                    # ✅ Salva longcode para o dashboard exibir como DC Bot
-                    self._ultimo_longcode = longcode
                     if proposal_id and price:
                         self.log(f"🛒 Comprando automaticamente por ${price}", "TRADE")
                         self.buy_contract(proposal_id, price)
@@ -290,19 +277,13 @@ class DerivAPI:
                 contract = data.get("proposal_open_contract", {})
                 status   = contract.get("status")
 
-                # ✅ Captura tique de saída para o log
-                exit_tick = contract.get("exit_tick") or contract.get("exit_tick_display_value")
-                if exit_tick:
-                    contract["exit_tick_value"] = exit_tick
-
                 if self.on_contract_callback:
                     self.on_contract_callback(contract)
 
                 if status in ["won", "lost"]:
                     profit = float(contract.get("profit", 0))
                     emoji  = "🎉 VITÓRIA" if status == "won" else "😞 DERROTA"
-                    tick_info = f" | Tique: {exit_tick}" if exit_tick else ""
-                    self.log(f"{emoji}! Lucro: ${profit:.2f}{tick_info}", "TRADE")
+                    self.log(f"{emoji}! Lucro: ${profit:.2f}", "TRADE")
                     # ✅ Limpa timeout ao receber resultado
                     self._clear_contract()
 

@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<!-- ══ ALPHA GUARD ══ -->
+<script>
+(function(){
+  try {
+    var raw = localStorage.getItem('deriv_accounts');
+    if (!raw) throw 'sem_token';
+    var contas = JSON.parse(raw);
+    if (!contas || contas.length === 0) throw 'sem_contas';
+    var temToken = contas.some(function(c){ return c.token && c.token.length > 5; });
+    if (!temToken) throw 'token_invalido';
+  } catch(e) {
+    window.location.replace('/login');
+  }
+})();
+</script>
+<!-- ══ FIM ALPHA GUARD ══ -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Alpha Dolar 2.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080a0f;--panel:#0d1018;--border:#151a26;--blue:#0ea5e9;--cyan:#06b6d4;--gold:#f59e0b;--green:#22c55e;--red:#ef4444;--pink:#ec4899;--text:#e2e8f0;--muted:#475569}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(14,165,233,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(14,165,233,.025) 1px,transparent 1px);background-size:44px 44px}
+
+/* ══ NAV ══ */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:rgba(8,10,15,.97);border-bottom:1px solid var(--border);backdrop-filter:blur(20px)}
+nav::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--pink),var(--blue),var(--cyan))}
+.nav-logo{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:2px;text-decoration:none;flex-shrink:0}
+.nav-logo svg{display:block;width:auto;height:32px}
+.nav-links{display:flex;align-items:center;gap:2px}
+.nav-link{color:#94a3b8;font-size:13px;font-weight:500;padding:7px 13px;border-radius:8px;cursor:pointer;transition:all .18s;text-decoration:none;border:none;background:none;font-family:inherit;white-space:nowrap}
+.nav-link:hover{color:#fff;background:rgba(255,255,255,.06)}
+.nav-link.ativo{background:var(--blue);color:#fff;font-weight:700}
+.nav-link.signals{background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.35);color:var(--blue);font-weight:600}
+.nav-link.signals:hover{background:rgba(14,165,233,.2)}
+.btn-deposito{padding:7px 14px;border-radius:8px;background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.25);color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.5px;text-decoration:none;transition:all .18s;white-space:nowrap}
+.btn-deposito:hover{background:rgba(14,165,233,.18)}
+.nav-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.nav-hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:6px;border:none;background:none;flex-shrink:0}
+.nav-hamburger span{width:22px;height:2px;background:#94a3b8;border-radius:2px;transition:all .3s}
+.nav-mobile{display:none;position:fixed;top:58px;left:0;right:0;bottom:0;background:rgba(8,10,15,.98);z-index:999;flex-direction:column;padding:16px;gap:6px;border-top:1px solid var(--border);overflow-y:auto}
+.nav-mobile.open{display:flex}
+.nav-mobile .nav-link{font-size:15px;padding:13px 16px;border-radius:10px;border:1px solid var(--border);text-align:left}
+.nav-mobile .nav-link.ativo{background:var(--blue);color:#fff;border-color:var(--blue)}
+.nav-mobile .signals{background:rgba(14,165,233,.1);border-color:rgba(14,165,233,.35);color:var(--blue)}
+.btn-sair{padding:7px 12px;border-radius:8px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#ef4444;font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit;white-space:nowrap}
+.btn-sair:hover{background:rgba(239,68,68,.18)}
+.btn-operar-nav{padding:8px 16px;border-radius:8px;background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;font-size:12px;font-weight:700;cursor:pointer;border:none;box-shadow:0 0 16px rgba(14,165,233,.3);transition:all .2s;letter-spacing:.5px;white-space:nowrap}
+.btn-operar-nav:hover{transform:translateY(-1px);box-shadow:0 0 26px rgba(14,165,233,.5)}
+.soc-row{display:flex;gap:5px}
+.soc-btn{width:30px;height:30px;border-radius:7px;background:rgba(255,255,255,.04);border:1px solid #1e2230;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;color:#64748b;text-decoration:none;flex-shrink:0}
+.soc-btn:hover{background:rgba(255,255,255,.09);color:#fff}
+.nav-bell{width:32px;height:32px;background:transparent;border:none;color:#64748b;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .18s;border-radius:8px;flex-shrink:0}
+.nav-bell:hover{color:#fff;background:rgba(255,255,255,.05)}
+.nav-acc{display:flex;flex-direction:column;align-items:flex-end;cursor:pointer;font-size:11px;color:#64748b;flex-shrink:0}
+.nav-acc strong{font-size:13px;color:#e2e8f0;font-family:'Orbitron',monospace}
+
+/* ══ STATS BAR ══ */
+.stats-bar{display:flex;align-items:center;justify-content:center;gap:0;padding:8px 16px;position:relative;z-index:1;background:rgba(14,165,233,.04);border-bottom:1px solid rgba(14,165,233,.1);margin-top:58px;flex-wrap:wrap}
+.st-item{display:flex;align-items:center;gap:8px;padding:6px 14px;border-right:1px solid rgba(255,255,255,.05)}
+.st-item:last-child{border-right:none}
+.st-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.st-dot.g{background:var(--green);box-shadow:0 0 7px var(--green);animation:blink 2s infinite}
+.st-dot.b{background:var(--blue);box-shadow:0 0 7px var(--blue);animation:blink 2.5s infinite}
+.st-dot.y{background:var(--gold);box-shadow:0 0 7px var(--gold)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+.st-lbl{font-size:9px;color:#64748b;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.st-val{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;white-space:nowrap}
+.st-val.g{color:var(--green)}.st-val.b{color:var(--blue)}.st-val.y{color:var(--gold)}
+
+/* ══ MAIN ══ */
+main{position:relative;z-index:1;padding:22px 16px 60px;max-width:1380px;margin:0 auto}
+
+/* ══ BANNERS 3 ══ */
+.bg3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.bc{position:relative;border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .25s,box-shadow .25s;border:1px solid var(--border);min-height:205px}
+.bc:hover{transform:translateY(-5px);box-shadow:0 22px 55px rgba(0,0,0,.6)}
+.bc:hover .brobot{opacity:.42;transform:scale(1.06)}
+.bc-bg{position:absolute;inset:0}
+.bc-cnt{position:relative;z-index:2;padding:22px 18px;height:100%;display:flex;flex-direction:column;justify-content:space-between}
+.bc-tag{display:inline-block;font-size:9px;letter-spacing:1.5px;font-weight:700;text-transform:uppercase;padding:3px 10px;border-radius:10px;margin-bottom:9px}
+.bc-h{font-size:17px;font-weight:700;line-height:1.25;margin-bottom:7px}
+.bc-p{font-size:12px;color:rgba(255,255,255,.48);line-height:1.5;margin-bottom:14px;max-width:220px}
+.bc-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:none;transition:all .2s;width:fit-content}
+.brobot{position:absolute;right:-12px;bottom:-8px;width:130px;opacity:.17;filter:drop-shadow(0 0 16px rgba(14,165,233,.5));transition:opacity .3s,transform .3s;pointer-events:none}
+.bcirc{position:absolute;right:18px;top:50%;transform:translateY(-50%);width:75px;height:75px;border-radius:50%;border:1.5px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-size:28px;opacity:.18;pointer-events:none}
+
+/* ══ NOVO BAR ══ */
+.novo-bar{background:rgba(14,165,233,.04);border:1px solid rgba(14,165,233,.11);border-radius:12px;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap}
+.novo-bar strong{font-size:14px;font-weight:700}
+.novo-bar p{font-size:12px;color:#64748b;margin-top:2px}
+.btn-criar{padding:9px 18px;border-radius:8px;white-space:nowrap;background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.3);color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
+.btn-criar:hover{background:rgba(14,165,233,.2)}
+
+/* ══ BIG CARDS ══ */
+.bg2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:30px}
+.bcard{border-radius:16px;overflow:hidden;position:relative;border:1px solid var(--border);min-height:185px;cursor:pointer;transition:all .25s}
+.bcard:hover{transform:translateY(-4px);box-shadow:0 18px 50px rgba(0,0,0,.5)}
+.bcard:hover .bcard-robot{opacity:.38;transform:scale(1.05) translateY(-4px)}
+.bcard-bg{position:absolute;inset:0}
+.bcard-cnt{position:relative;z-index:2;padding:24px 20px;height:100%;display:flex;flex-direction:column;justify-content:space-between}
+.bcard-title{font-size:20px;font-weight:700;margin-bottom:7px}
+.bcard-desc{font-size:12px;color:rgba(255,255,255,.48);line-height:1.5;max-width:240px}
+.bcard-robot{position:absolute;right:0;bottom:0;width:130px;opacity:.17;filter:drop-shadow(0 0 18px rgba(14,165,233,.5));transition:opacity .3s,transform .3s;pointer-events:none}
+.bcard-circ{position:absolute;right:50px;top:50%;transform:translateY(-50%);width:95px;height:95px;border-radius:50%;border:1.5px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:38px;opacity:.14;pointer-events:none}
+.small-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:none;transition:all .2s}
+
+/* ══ BOTTOM GRID ══ */
+.bot-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border)}
+.panel-hdr h3{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#64748b}
+.panel-hdr a{font-size:11px;color:var(--blue);cursor:pointer;letter-spacing:1px;text-decoration:none}
+.rank-row{display:flex;align-items:center;gap:11px;padding:12px 20px;border-bottom:1px solid rgba(255,255,255,.04);transition:background .14s}
+.rank-row:last-child{border-bottom:none}
+.rank-row:hover{background:rgba(255,255,255,.02)}
+.r-pos{width:25px;height:25px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:10px;font-weight:700;flex-shrink:0}
+.rp1{background:rgba(245,158,11,.15);color:var(--gold);border:1px solid rgba(245,158,11,.3)}
+.rp2{background:rgba(148,163,184,.1);color:#94a3b8;border:1px solid rgba(148,163,184,.2)}
+.rp3{background:rgba(180,83,9,.15);color:#b45309;border:1px solid rgba(180,83,9,.3)}
+.rpn{background:rgba(255,255,255,.04);color:#475569;border:1px solid rgba(255,255,255,.06)}
+.r-av{width:33px;height:33px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,rgba(14,165,233,.2),rgba(6,182,212,.1));border:1px solid rgba(14,165,233,.2);display:flex;align-items:center;justify-content:center;font-size:14px}
+.r-info{flex:1;min-width:0}
+.r-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r-sub{font-size:11px;color:#475569;margin-top:1px}
+.r-pct{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;padding:3px 9px;border-radius:6px;white-space:nowrap}
+.rg{background:rgba(34,197,94,.1);color:var(--green)}
+.rr{background:rgba(239,68,68,.1);color:var(--red)}
+.ia-row{display:flex;align-items:center;gap:11px;padding:11px 20px;border-bottom:1px solid rgba(255,255,255,.04);transition:background .14s;cursor:pointer}
+.ia-row:last-child{border-bottom:none}
+.ia-row:hover{background:rgba(255,255,255,.02)}
+.ia-ico{width:35px;height:35px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px}
+.ia-name{font-size:13px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ia-tier{font-size:9px;letter-spacing:1px;font-weight:700;margin-top:2px}
+.ia-bw{width:55px;height:3px;background:#1e293b;border-radius:2px;overflow:hidden;flex-shrink:0}
+.ia-bf{height:100%;border-radius:2px}
+.ia-pct{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;min-width:32px;text-align:right;flex-shrink:0}
+.ia-pl{width:25px;height:25px;border-radius:50%;background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.3);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--blue);cursor:pointer;transition:all .18s;flex-shrink:0}
+.ia-pl:hover{background:rgba(14,165,233,.25)}
+
+/* ══ MODAL LOJA ══ */
+.modal-ov{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:16px}
+.modal-ov.open{display:flex}
+.modal-box{background:#0b0e15;border:1px solid #1e2230;border-radius:20px;max-width:980px;width:100%;max-height:93vh;overflow-y:auto;animation:mIn .22s ease;display:flex;flex-direction:column}
+@keyframes mIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.modal-inner{display:flex}
+.modal-side{width:155px;flex-shrink:0;border-right:1px solid #1e2230;padding:18px 0}
+.ms-ttl{font-size:10px;letter-spacing:2px;color:#475569;padding:0 18px 10px;text-transform:uppercase;font-weight:700}
+.ms-item{padding:10px 18px;font-size:13px;color:#64748b;cursor:pointer;transition:all .14s;border-left:2px solid transparent}
+.ms-item:hover{color:#e2e8f0;background:rgba(255,255,255,.03)}
+.ms-item.on{color:var(--blue);border-left-color:var(--blue);background:rgba(14,165,233,.05)}
+.modal-content{flex:1;padding:22px;min-width:0}
+.modal-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.modal-top h2{font-family:'Orbitron',monospace;font-size:17px;font-weight:900}
+.btn-close{width:33px;height:33px;border-radius:50%;background:rgba(255,255,255,.05);border:1px solid #1e2230;color:#64748b;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0}
+.btn-close:hover{background:rgba(255,255,255,.1);color:#fff}
+.planos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.plano{border-radius:13px;padding:20px;border:1px solid var(--border);position:relative;overflow:hidden;transition:border-color .2s}
+.plano:hover{border-color:rgba(14,165,233,.4)}
+.plano.dest{border-color:rgba(14,165,233,.5);background:rgba(14,165,233,.04)}
+.plano.dest::after{content:'POPULAR';position:absolute;top:13px;right:-28px;background:var(--blue);color:#fff;font-size:8px;font-weight:700;letter-spacing:2px;padding:4px 42px;transform:rotate(45deg)}
+.pl-banner{width:100%;height:80px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:12px}
+.pl-nome{font-size:13px;font-weight:700;margin-bottom:5px}
+.pl-desc{font-size:11px;color:#64748b;margin-bottom:12px;line-height:1.5}
+.pl-price{margin-bottom:12px}
+.pl-price .m{font-size:11px;color:#94a3b8;vertical-align:top;margin-top:3px}
+.pl-price .v{font-family:'Orbitron',monospace;font-size:22px;font-weight:900}
+.pl-price .p{font-size:11px;color:#64748b}
+.pl-price .a{font-size:10px;color:var(--blue);margin-top:2px}
+.pl-tog{display:flex;gap:5px;margin-bottom:11px}
+.ptog{flex:1;padding:6px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid #1e2230;background:transparent;color:#64748b;transition:all .14s;font-family:inherit;text-align:center}
+.ptog.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.pl-badge{position:absolute;top:7px;right:7px;background:rgba(34,197,94,.15);color:var(--green);font-size:8px;font-weight:700;letter-spacing:1px;padding:3px 7px;border-radius:9px;border:1px solid rgba(34,197,94,.3)}
+.pl-feats{list-style:none;margin-bottom:14px;display:flex;flex-direction:column;gap:6px}
+.pl-feats li{font-size:11px;color:#94a3b8;display:flex;align-items:center;gap:7px}
+.pl-feats li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0}
+.btn-cmp{width:100%;padding:11px;border-radius:10px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:none;transition:all .2s;font-family:inherit}
+.btn-cmp.az{background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;box-shadow:0 4px 14px rgba(14,165,233,.25)}
+.btn-cmp.ou{background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-weight:800;box-shadow:0 4px 14px rgba(245,158,11,.25)}
+.btn-cmp:hover{transform:translateY(-1px);filter:brightness(1.1)}
+.garantia{text-align:center;font-size:10px;color:#475569;margin-top:7px}
+
+footer{text-align:center;padding:26px;border-top:1px solid var(--border);color:#1e293b;font-size:11px;letter-spacing:2px;font-family:'Orbitron',monospace;position:relative;z-index:1}
+
+/* ══════════════════════════════════════
+   RESPONSIVIDADE MOBILE - CORRIGIDA
+══════════════════════════════════════ */
+
+/* TABLET (601px - 900px) */
+@media(max-width:900px){
+  .nav-links{display:none}
+  .soc-row{display:none}
+  .nav-bell{display:none}
+  .nav-acc{display:none}
+  .btn-deposito{display:none}
+  .nav-hamburger{display:flex}
+  .btn-operar-nav{font-size:11px;padding:6px 12px}
+  .bg3{grid-template-columns:1fr}
+  .bc{min-height:160px}
+  .bc-h{font-size:18px}
+  .brobot{width:110px;opacity:.12}
+  .bg2{grid-template-columns:1fr 1fr}
+  .bot-grid{grid-template-columns:1fr}
+  .stats-bar{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;padding:6px 12px}
+  .st-item{flex-shrink:0;padding:6px 12px}
+  main{padding:18px 14px 50px}
+}
+
+/* MOBILE (até 600px) */
+@media(max-width:600px){
+  /* NAVBAR */
+  nav{padding:0 12px;height:54px}
+  .nav-logo svg{height:26px}
+  .btn-sair{font-size:10px;padding:5px 8px}
+  .btn-operar-nav{font-size:10px;padding:5px 10px}
+  .nav-right{gap:4px}
+  .nav-mobile{top:54px;padding:12px}
+  .nav-mobile .nav-link{font-size:14px;padding:12px 14px}
+
+  /* STATS BAR */
+  .stats-bar{
+    margin-top:54px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:0;
+    padding:0;
+    overflow:visible;
+    flex-wrap:unset;
+  }
+  .st-item{
+    padding:10px 12px;
+    border-right:1px solid rgba(255,255,255,.05);
+    border-bottom:1px solid rgba(255,255,255,.05);
+    justify-content:flex-start;
+  }
+  .st-item:nth-child(2n){border-right:none}
+  .st-item:nth-child(3),.st-item:nth-child(4){border-bottom:none}
+  .st-lbl{font-size:8px;letter-spacing:.5px}
+  .st-val{font-size:12px}
+
+  /* MAIN */
+  main{padding:14px 12px 50px}
+
+  /* BANNERS - 1 coluna */
+  .bg3{
+    grid-template-columns:1fr;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .bc{min-height:140px}
+  .bc-cnt{padding:18px 16px}
+  .bc-tag{font-size:8px;margin-bottom:6px}
+  .bc-h{font-size:17px;margin-bottom:5px}
+  .bc-p{font-size:11px;margin-bottom:12px;max-width:100%}
+  .bc-btn{font-size:10px;padding:8px 16px}
+  .brobot{width:90px;right:-5px;bottom:-5px}
+  .bcirc{width:60px;height:60px;font-size:22px;right:12px}
+
+  /* NOVO BAR */
+  .novo-bar{flex-direction:column;align-items:flex-start;gap:10px;padding:14px}
+  .btn-criar{width:100%;text-align:center}
+
+  /* BIG CARDS - 1 coluna */
+  .bg2{
+    grid-template-columns:1fr;
+    gap:10px;
+    margin-bottom:20px;
+  }
+  .bcard{min-height:150px}
+  .bcard-cnt{padding:20px 18px}
+  .bcard-title{font-size:18px}
+  .bcard-desc{font-size:12px;max-width:100%}
+  .bcard-robot{width:110px}
+  .bcard-circ{right:40px;width:80px;height:80px;font-size:32px}
+  .small-btn{font-size:10px;padding:8px 16px}
+
+  /* RANKING + IAs - 1 coluna */
+  .bot-grid{
+    grid-template-columns:1fr;
+    gap:12px;
+  }
+  .rank-row{padding:10px 14px;gap:8px}
+  .r-name{font-size:12px}
+  .r-av{width:28px;height:28px;font-size:12px}
+  .ia-row{padding:10px 14px;gap:8px}
+  .ia-name{font-size:12px}
+  .ia-bw{display:none}
+
+  /* MODAL */
+  .modal-box{border-radius:14px;max-height:95vh}
+  .modal-inner{flex-direction:column}
+  .modal-side{width:100%;border-right:none;border-bottom:1px solid #1e2230;padding:10px 0;display:flex;flex-direction:row;overflow-x:auto;gap:0}
+  .ms-ttl{display:none}
+  .ms-item{padding:10px 16px;font-size:12px;white-space:nowrap;border-left:none;border-bottom:2px solid transparent}
+  .ms-item.on{border-left:none;border-bottom-color:var(--blue)}
+  .modal-content{padding:16px}
+  .planos-grid{grid-template-columns:1fr;gap:12px}
+  .modal-top h2{font-size:14px}
+}
+
+/* MUITO PEQUENO (até 380px) */
+@media(max-width:380px){
+  .nav-logo svg{height:22px}
+  .btn-sair{display:none}
+  .st-val{font-size:11px}
+  .bc-h{font-size:15px}
+}
+</style>
+<!-- ALPHA DOLAR FAVICON -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'><rect width='256' height='256' rx='52' fill='%230d1018'/%3E<rect width='256' height='256' rx='52' fill='none' stroke='%2300d2ff' stroke-width='8' stroke-opacity='0.4'/%3E<text x='32' y='195' font-family='Arial Black,sans-serif' font-weight='900' font-size='185' fill='%2300d2ff'>A</text><text x='58' y='195' font-family='Arial Black,sans-serif' font-weight='900' font-size='185' fill='none' stroke='%2300d2ff' stroke-width='8' stroke-opacity='0.4'>%24</text></svg>">
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/home"><svg width="210" height="36" viewBox="0 0 210 36" xmlns="http://www.w3.org/2000/svg" style="display:block"><defs><linearGradient id="logograd" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#00d2ff"/><stop offset="100%" style="stop-color:#0ea5e9"/></linearGradient></defs><text x="0" y="32" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="34" fill="url(#logograd)">A</text><text x="12" y="32" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="34" fill="none" stroke="url(#logograd)" stroke-width="1.5" opacity="0.45">$</text><line x1="38" y1="4" x2="38" y2="32" stroke="#1e2230" stroke-width="1.5"/><text x="46" y="20" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="13" fill="#e2e8f0" letter-spacing="2">ALPHA DOLAR</text><text x="48" y="32" font-family="Arial,sans-serif" font-size="9" fill="#475569" letter-spacing="3">TRADING BOT 2.0</text></svg></a>
+  <div class="nav-links">
+    <a class="nav-link ativo" href="/home">Início</a>
+    <a class="nav-link" href="/dashboard">Operar</a>
+    <button class="nav-link signals" onclick="abrirLoja('sinais')">✦ AI Signals 🔒</button>
+    <button class="nav-link" onclick="abrirLoja('assinaturas')">Loja</button>
+    <button class="nav-link" onclick="location.href='/videos'">Vídeos</button>
+    <button class="nav-link" onclick="window.open('https://wa.me/5547996214217','_blank')">Suporte</button>
+  </div>
+  <div class="nav-right">
+    <a class="btn-deposito" href="https://deriv.partners/rx?sidc=72538F17-C625-49E9-A0DC-8D4A4B83E65F&utm_campaign=dynamicworks&utm_medium=affiliate&utm_source=CU301082" target="_blank">💰 Depósito</a>
+    <div class="soc-row">
+      <a href="https://instagram.com" target="_blank" class="soc-btn" title="Instagram">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+      </a>
+      <a href="https://t.me" target="_blank" class="soc-btn" title="Telegram">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.820 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.800-.994-.643-.35-1.022.228-1.596.148-.153 2.718-2.49 2.768-2.703.006-.025.012-.12-.045-.170s-.141-.033-.203-.019c-.088.016-1.485.944-4.192 2.772-.397.272-.757.404-1.082.397-.356-.008-1.041-.200-1.551-.367-.625-.204-1.122-.312-1.079-.659.023-.18.273-.367.75-.560 2.936-1.278 4.895-2.12 5.876-2.524 2.8-1.164 3.382-1.367 3.764-1.374z"/></svg>
+      </a>
+      <a href="https://youtube.com" target="_blank" class="soc-btn" title="YouTube">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+      </a>
+    </div>
+    <button class="nav-bell">🔔</button>
+    <div class="nav-acc" onclick="toggleContaHome()">
+      <span id="homeContaTipo">Conta demo</span>
+      <strong id="homeContaSaldo">Ð — <span style="color:var(--blue);font-size:10px">▼</span></strong>
+    </div>
+    <button class="btn-sair" onclick="fazerLogout()">⏻ Sair</button>
+    <button class="nav-hamburger" onclick="toggleMenu()" id="hambBtn">
+      <span></span><span></span><span></span>
+    </button>
+    <button class="btn-operar-nav" onclick="location.href='/dashboard'">▶ Operar</button>
+  </div>
+</nav>
+
+<!-- MENU MOBILE -->
+<div class="nav-mobile" id="navMobile">
+  <a class="nav-link ativo" href="/home">🏠 Início</a>
+  <a class="nav-link" href="/dashboard">⚡ Operar</a>
+  <button class="nav-link signals" onclick="abrirLoja('sinais');fecharMenu()">✦ AI Signals 🔒</button>
+  <button class="nav-link" onclick="abrirLoja('assinaturas');fecharMenu()">🛒 Loja</button>
+  <button class="nav-link" onclick="location.href='/videos'">📺 Vídeos</button>
+  <button class="nav-link" onclick="window.open('https://wa.me/5547996214217','_blank')">💬 Suporte</button>
+  <a class="nav-link" href="https://deriv.partners/rx?sidc=72538F17-C625-49E9-A0DC-8D4A4B83E65F&utm_campaign=dynamicworks&utm_medium=affiliate&utm_source=CU301082" target="_blank" style="background:rgba(14,165,233,.08);border-color:rgba(14,165,233,.25);color:var(--blue)">💰 Depósito Deriv</a>
+  <hr style="border-color:#1e2230;margin:4px 0">
+  <div style="display:flex;gap:10px;padding:8px 16px">
+    <a href="https://instagram.com" target="_blank" class="soc-btn">📷</a>
+    <a href="https://t.me" target="_blank" class="soc-btn">✈️</a>
+    <a href="https://youtube.com" target="_blank" class="soc-btn">▶️</a>
+  </div>
+  <button onclick="fazerLogout()" style="margin-top:4px;padding:12px 16px;border-radius:10px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#ef4444;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;text-align:left">⏻ Sair da conta</button>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="st-item"><div class="st-dot g"></div><div><div class="st-lbl">Traders Ativos</div><div class="st-val g" id="sT">—</div></div></div>
+  <div class="st-item"><div class="st-dot b"></div><div><div class="st-lbl">Robôs Rodando</div><div class="st-val b" id="sR">—</div></div></div>
+  <div class="st-item"><div class="st-dot y"></div><div><div class="st-lbl">Lucro Acumulado Hoje</div><div class="st-val y" id="sL">—</div></div></div>
+  <div class="st-item"><div class="st-dot g"></div><div><div class="st-lbl">Win Rate Médio</div><div class="st-val g" id="sW">—</div></div></div>
+</div>
+
+<main>
+
+<!-- BANNERS 3 -->
+<div class="bg3">
+  <!-- AI SIGNALS -->
+  <div class="bc" onclick="abrirLoja('sinais')">
+    <div class="bc-bg" style="background:linear-gradient(135deg,#060f08,#091408)"></div>
+    <div class="bcirc">🤖</div>
+    <svg class="brobot" style="filter:drop-shadow(0 0 16px rgba(34,197,94,.5))" viewBox="0 0 120 200" xmlns="http://www.w3.org/2000/svg"><rect x="35" y="30" width="50" height="45" rx="12" fill="none" stroke="#22c55e" stroke-width="2"/><circle cx="48" cy="50" r="7" fill="#22c55e" opacity=".8"/><circle cx="72" cy="50" r="7" fill="#22c55e" opacity=".8"/><rect x="50" y="62" width="20" height="4" rx="2" fill="#22c55e" opacity=".5"/><rect x="44" y="18" width="5" height="13" rx="2" fill="#22c55e"/><circle cx="46.5" cy="15" r="4" fill="#22c55e" opacity=".6"/><rect x="28" y="78" width="64" height="70" rx="10" fill="none" stroke="#22c55e" stroke-width="2"/><rect x="42" y="93" width="36" height="7" rx="3" fill="#22c55e" opacity=".4"/><rect x="42" y="108" width="26" height="7" rx="3" fill="#22c55e" opacity=".3"/><rect x="42" y="123" width="18" height="7" rx="3" fill="#22c55e" opacity=".2"/><rect x="8" y="84" width="16" height="40" rx="8" fill="none" stroke="#22c55e" stroke-width="1.5"/><rect x="96" y="84" width="16" height="40" rx="8" fill="none" stroke="#22c55e" stroke-width="1.5"/><rect x="38" y="150" width="15" height="34" rx="7" fill="none" stroke="#22c55e" stroke-width="1.5"/><rect x="67" y="150" width="15" height="34" rx="7" fill="none" stroke="#22c55e" stroke-width="1.5"/></svg>
+    <div class="bc-cnt">
+      <div>
+        <div class="bc-tag" style="background:rgba(34,197,94,.13);color:var(--green);border:1px solid rgba(34,197,94,.3)">🕐 Oferta por tempo limitado</div>
+        <div class="bc-h">Libere o potencial<br>com AI Signals</div>
+        <div class="bc-p">Sinais gerados por IA com taxa de acerto acima de 80%. Alertas em tempo real.</div>
+      </div>
+      <button class="bc-btn" style="background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;box-shadow:0 4px 16px rgba(34,197,94,.35)">SAIBA MAIS →</button>
+    </div>
+  </div>
+
+  <!-- TUTORIAIS -->
+  <div class="bc" onclick="location.href='/dashboard'">
+    <div class="bc-bg" style="background:linear-gradient(135deg,#06080f,#0a0e1a)"></div>
+    <div class="bcirc">▶</div>
+    <svg class="brobot" viewBox="0 0 120 200" xmlns="http://www.w3.org/2000/svg"><rect x="35" y="30" width="50" height="45" rx="12" fill="none" stroke="#0ea5e9" stroke-width="2"/><circle cx="48" cy="50" r="7" fill="#0ea5e9" opacity=".8"/><circle cx="72" cy="50" r="7" fill="#0ea5e9" opacity=".8"/><path d="M50 64 L60 59 L70 64 L70 70 L60 65 L50 70Z" fill="#0ea5e9" opacity=".5"/><rect x="44" y="18" width="5" height="13" rx="2" fill="#0ea5e9"/><circle cx="46.5" cy="15" r="4" fill="#0ea5e9" opacity=".6"/><rect x="28" y="78" width="64" height="70" rx="10" fill="none" stroke="#0ea5e9" stroke-width="2"/><path d="M50 103 L72 116 L50 129Z" fill="#0ea5e9" opacity=".45"/><rect x="8" y="84" width="16" height="40" rx="8" fill="none" stroke="#0ea5e9" stroke-width="1.5"/><rect x="96" y="84" width="16" height="40" rx="8" fill="none" stroke="#0ea5e9" stroke-width="1.5"/><rect x="38" y="150" width="15" height="34" rx="7" fill="none" stroke="#0ea5e9" stroke-width="1.5"/><rect x="67" y="150" width="15" height="34" rx="7" fill="none" stroke="#0ea5e9" stroke-width="1.5"/></svg>
+    <div class="bc-cnt">
+      <div>
+        <div class="bc-tag" style="background:rgba(14,165,233,.12);color:var(--blue);border:1px solid rgba(14,165,233,.3)">📚 Aprendizado</div>
+        <div class="bc-h">Tutoriais</div>
+        <div class="bc-p">Acesse a página de tutoriais para aprender como usar a plataforma do zero.</div>
+      </div>
+      <button class="bc-btn" style="background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff">COMECE A APRENDER →</button>
+    </div>
+  </div>
+
+  <!-- INDICADORES SECRETOS -->
+  <div class="bc" onclick="abrirLoja('premium')">
+    <div class="bc-bg" style="background:linear-gradient(135deg,#100800,#1e0f00)"></div>
+    <div class="bcirc">🔒</div>
+    <svg class="brobot" style="filter:drop-shadow(0 0 16px rgba(245,158,11,.5))" viewBox="0 0 120 200" xmlns="http://www.w3.org/2000/svg"><rect x="35" y="30" width="50" height="45" rx="12" fill="none" stroke="#f59e0b" stroke-width="2"/><circle cx="48" cy="50" r="7" fill="#f59e0b" opacity=".8"/><circle cx="72" cy="50" r="7" fill="#f59e0b" opacity=".8"/><rect x="50" y="62" width="20" height="4" rx="2" fill="#f59e0b" opacity=".5"/><rect x="44" y="18" width="5" height="13" rx="2" fill="#f59e0b"/><circle cx="46.5" cy="15" r="4" fill="#f59e0b" opacity=".6"/><rect x="28" y="78" width="64" height="70" rx="10" fill="none" stroke="#f59e0b" stroke-width="2"/><rect x="50" y="94" width="20" height="25" rx="5" fill="none" stroke="#f59e0b" stroke-width="1.5"/><circle cx="60" cy="116" r="4.5" fill="#f59e0b" opacity=".6"/><rect x="8" y="84" width="16" height="40" rx="8" fill="none" stroke="#f59e0b" stroke-width="1.5"/><rect x="96" y="84" width="16" height="40" rx="8" fill="none" stroke="#f59e0b" stroke-width="1.5"/><rect x="38" y="150" width="15" height="34" rx="7" fill="none" stroke="#f59e0b" stroke-width="1.5"/><rect x="67" y="150" width="15" height="34" rx="7" fill="none" stroke="#f59e0b" stroke-width="1.5"/></svg>
+    <div class="bc-cnt">
+      <div>
+        <div class="bc-tag" style="background:rgba(245,158,11,.12);color:var(--gold);border:1px solid rgba(245,158,11,.3)">🏆 Exclusivo Premium</div>
+        <div class="bc-h">Indicadores<br>Secretos</div>
+        <div class="bc-p">Aprenda os indicadores exclusivos que usamos nas estratégias Premium.</div>
+      </div>
+      <button class="bc-btn" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-weight:800">DESCUBRA AGORA →</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOVO USUÁRIO -->
+<div class="novo-bar">
+  <div>
+    <strong>Você é novo? Confira os links abaixo</strong>
+    <p>Aprenda como funciona a plataforma e como criar sua conta na corretora hoje mesmo!</p>
+  </div>
+  <button class="btn-criar" onclick="window.open('https://track.deriv.com/?affiliate_id=CU301082','_blank')">Criar conta na Deriv →</button>
+</div>
+
+<!-- BIG CARDS -->
+<div class="bg2">
+  <div class="bcard" onclick="abrirLoja('premium')">
+    <div class="bcard-bg" style="background:linear-gradient(135deg,#100800,#1c1000)"></div>
+    <div class="bcard-circ">⭐</div>
+    <svg class="bcard-robot" style="filter:drop-shadow(0 0 18px rgba(245,158,11,.5))" viewBox="0 0 120 200" xmlns="http://www.w3.org/2000/svg"><rect x="35" y="30" width="50" height="45" rx="12" fill="none" stroke="#f59e0b" stroke-width="2"/><circle cx="48" cy="50" r="8" fill="#f59e0b" opacity=".8"/><circle cx="72" cy="50" r="8" fill="#f59e0b" opacity=".8"/><rect x="44" y="18" width="5" height="14" rx="2" fill="#f59e0b"/><circle cx="46.5" cy="15" r="5" fill="#f59e0b" opacity=".6"/><rect x="28" y="78" width="64" height="72" rx="10" fill="none" stroke="#f59e0b" stroke-width="2"/><polygon points="60,92 66,104 80,106 70,116 72,130 60,123 48,130 50,116 40,106 54,104" fill="none" stroke="#f59e0b" stroke-width="1.5" opacity=".6"/><rect x="8" y="84" width="16" height="44" rx="8" fill="none" stroke="#f59e0b" stroke-width="1.5"/><rect x="96" y="84" width="16" height="44" rx="8" fill="none" stroke="#f59e0b" stroke-width="1.5"/><rect x="38" y="152" width="16" height="36" rx="8" fill="none" stroke="#f59e0b" stroke-width="1.5"/><rect x="66" y="152" width="16" height="36" rx="8" fill="none" stroke="#f59e0b" stroke-width="1.5"/></svg>
+    <div class="bcard-cnt">
+      <div>
+        <div style="font-size:10px;letter-spacing:2px;color:var(--gold);font-weight:700;text-transform:uppercase;margin-bottom:9px">🏆 Plano Premium</div>
+        <div class="bcard-title">Premium</div>
+        <div class="bcard-desc">IAs Premium com deep learning e taxa de acerto acima de 84%. Acesso vitalício.</div>
+      </div>
+      <button class="small-btn" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-weight:800">IR PARA A LOJA →</button>
+    </div>
+  </div>
+  <div class="bcard" onclick="abrirLoja('vip')">
+    <div class="bcard-bg" style="background:linear-gradient(135deg,#04091c,#07102a)"></div>
+    <div class="bcard-circ" style="right:55px">💎</div>
+    <svg class="bcard-robot" viewBox="0 0 120 200" xmlns="http://www.w3.org/2000/svg"><rect x="35" y="30" width="50" height="45" rx="12" fill="none" stroke="#0ea5e9" stroke-width="2"/><circle cx="48" cy="50" r="8" fill="#0ea5e9" opacity=".8"/><circle cx="72" cy="50" r="8" fill="#0ea5e9" opacity=".8"/><rect x="44" y="18" width="5" height="14" rx="2" fill="#0ea5e9"/><circle cx="46.5" cy="15" r="5" fill="#0ea5e9" opacity=".6"/><rect x="28" y="78" width="64" height="72" rx="10" fill="none" stroke="#0ea5e9" stroke-width="2"/><path d="M45 100 L60 92 L75 100 L75 125 L45 125Z" fill="none" stroke="#0ea5e9" stroke-width="1.5" opacity=".5"/><rect x="8" y="84" width="16" height="44" rx="8" fill="none" stroke="#0ea5e9" stroke-width="1.5"/><rect x="96" y="84" width="16" height="44" rx="8" fill="none" stroke="#0ea5e9" stroke-width="1.5"/><rect x="38" y="152" width="16" height="36" rx="8" fill="none" stroke="#0ea5e9" stroke-width="1.5"/><rect x="66" y="152" width="16" height="36" rx="8" fill="none" stroke="#0ea5e9" stroke-width="1.5"/></svg>
+    <div class="bcard-cnt">
+      <div>
+        <div style="font-size:10px;letter-spacing:2px;color:var(--blue);font-weight:700;text-transform:uppercase;margin-bottom:9px">💎 Plano VIP</div>
+        <div class="bcard-title">Bots VIP</div>
+        <div class="bcard-desc">7 IAs exclusivas com análise neural e scalping inteligente. Win Rate até 82%.</div>
+      </div>
+      <button class="small-btn" style="background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff">ATIVAR VIP →</button>
+    </div>
+  </div>
+</div>
+
+<!-- RANKING + IAs -->
+<div class="bot-grid">
+  <div class="panel">
+    <div class="panel-hdr"><h3>🏆 Melhores Traders</h3><a>Ver todos</a></div>
+    <div id="rankList"></div>
+  </div>
+  <div class="panel">
+    <div class="panel-hdr"><h3>🤖 IAs Mais Usadas</h3><a onclick="location.href='/dashboard'">Usar agora</a></div>
+    <div id="iaList"></div>
+  </div>
+</div>
+
+</main>
+<footer>ALPHA DOLAR 2.0 · TRADING AUTOMATIZADO COM IA · POWERED BY DERIV</footer>
+
+<!-- MODAL LOJA -->
+<div class="modal-ov" id="lojaModal">
+  <div class="modal-box">
+    <div class="modal-inner">
+      <div class="modal-side">
+        <div class="ms-ttl">Categorias</div>
+        <div class="ms-item" id="ms-comprados" onclick="filtrar('comprados')">Comprados</div>
+        <div class="ms-item on" id="ms-assinaturas" onclick="filtrar('assinaturas')">Assinaturas</div>
+      </div>
+      <div class="modal-content">
+        <div class="modal-top">
+          <h2 id="mTitle">Assinaturas</h2>
+          <button class="btn-close" onclick="fecharLoja()">✕</button>
+        </div>
+        <div class="planos-grid" id="planosGrid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// STATS SIMULADOS
+let _t=847,_r=312,_l=48320,_w=73.4;
+function osc(v,p=.025){return v*(1+(Math.random()*2-1)*p)}
+function fmt(n){return Math.round(n).toLocaleString('pt-BR')}
+function tick(){
+  _t=Math.max(200,Math.min(2000,osc(_t,.02)));
+  _r=Math.max(50,Math.min(500,osc(_r,.025)));
+  _l+=Math.random()*45-5;
+  _w=Math.max(60,Math.min(85,osc(_w,.005)));
+  document.getElementById('sT').textContent=fmt(_t);
+  document.getElementById('sR').textContent=fmt(_r);
+  document.getElementById('sL').textContent='R$ '+fmt(_l);
+  document.getElementById('sW').textContent=_w.toFixed(1)+'%';
+}
+tick();setInterval(tick,3500);
+
+// RANKING
+const TRADERS=[
+  {nome:'Pedro Santos',pais:'🇧🇷',pct:'+30%',p:1},
+  {nome:'Mariana Oliveira',pais:'🇧🇷',pct:'+29%',p:2},
+  {nome:'João Silva',pais:'🇧🇷',pct:'+28%',p:3},
+  {nome:'Carlos Mendes',pais:'🇪🇸',pct:'+25%',p:4},
+  {nome:'Ana Beatriz',pais:'🇧🇷',pct:'+23%',p:5},
+  {nome:'Lucas Ferreira',pais:'🇧🇷',pct:'+21%',p:6},
+  {nome:'Sofia Lima',pais:'🇵🇹',pct:'+19%',p:7},
+];
+const AV=['🧑','👩','👨','🧑‍💼','👩‍💼','🧔','👱'];
+const PC=['rp1','rp2','rp3','rpn','rpn','rpn','rpn'];
+const TR=['👑','🥈','🥉','','','',''];
+document.getElementById('rankList').innerHTML=TRADERS.map((t,i)=>`
+  <div class="rank-row">
+    <div class="r-pos ${PC[i]}">${t.p}</div>
+    <div class="r-av">${AV[i]}</div>
+    <div class="r-info"><div class="r-name">${t.nome} ${t.pais}</div><div class="r-sub">Trader ativo</div></div>
+    <div class="r-pct rg">${t.pct}</div>
+    ${TR[i]?`<span style="font-size:13px">${TR[i]}</span>`:''}
+  </div>
+`).join('');
+
+// IAs
+const IAS=[
+  {n:'Alpha Sniper',t:'VIP',p:94,c:'#0ea5e9',bg:'rgba(14,165,233,.1)',e:'🎯'},
+  {n:'Mega Alpha 2.0',t:'PREMIUM',p:87,c:'#f59e0b',bg:'rgba(245,158,11,.1)',e:'🔥'},
+  {n:'Quantum Trader',t:'VIP',p:81,c:'#0ea5e9',bg:'rgba(14,165,233,.1)',e:'⚡'},
+  {n:'Alpha Elite',t:'PREMIUM',p:76,c:'#f59e0b',bg:'rgba(245,158,11,.1)',e:'👑'},
+  {n:'Alpha Bot 1',t:'FREE',p:68,c:'#22c55e',bg:'rgba(34,197,94,.1)',e:'🤖'},
+  {n:'Alpha Nexus',t:'PREMIUM',p:62,c:'#f59e0b',bg:'rgba(245,158,11,.1)',e:'🧠'},
+];
+const TC={FREE:'#22c55e',VIP:'#0ea5e9',PREMIUM:'#f59e0b'};
+document.getElementById('iaList').innerHTML=IAS.map(ia=>`
+  <div class="ia-row" onclick="location.href='/dashboard'">
+    <div class="ia-ico" style="background:${ia.bg}">${ia.e}</div>
+    <div style="flex:1;min-width:0"><div class="ia-name">${ia.n}</div><div class="ia-tier" style="color:${TC[ia.t]}">${ia.t}</div></div>
+    <div class="ia-bw"><div class="ia-bf" style="width:${ia.p}%;background:${ia.c}"></div></div>
+    <div class="ia-pct" style="color:${ia.c}">${ia.p}%</div>
+    <div class="ia-pl">▶</div>
+  </div>
+`).join('');
+
+// PLANOS
+const PLANOS={
+  assinaturas:[
+    {nome:'Assinatura AI Signals',desc:'Acesso a todos os sinais em tempo real. Estatísticas, teoria e tudo que você precisa para dominar o mercado.',banner:'📡',preco:'97',periodo:'/mês',acesso:'Acesso mensal',tog:true,badge:'OFERTA',feats:['Sinais em tempo real','Análise de mercado IA','Aba Vídeos completa','Suporte prioritário','Grupo VIP Telegram'],btn:'az'},
+    {nome:'Inteligência Artificial VIP',desc:'IAs exclusivas, Modo Avançado com IA para tomar decisões automáticas de negociação.',banner:'💎',preco:'297',periodo:' único',acesso:'Acesso para sempre',tog:false,badge:'',feats:['7 IAs VIP exclusivas','Modo Avançado IA','Martingale automático','Win Rate até 82%','Suporte VIP'],btn:'az',dest:true},
+    {nome:'Recursos Premium',desc:'Modo Baixo Risco + IAs Premium com deep learning e taxa de acerto acima de 84%.',banner:'⭐',preco:'97',periodo:' único',acesso:'Acesso para sempre',tog:false,badge:'',feats:['3 IAs Premium','Modo Baixo Risco','Deep Learning','Win Rate até 88%','Alpha Elite incluído'],btn:'ou'},
+  ],
+  sinais:[
+    {nome:'Assinatura AI Signals',desc:'Acesso a todos os sinais gerados por nossos algoritmos.',banner:'📡',preco:'97',periodo:'/mês',acesso:'Acesso mensal',tog:true,badge:'OFERTA',feats:['Sinais em tempo real','Análise de mercado IA','Aba Vídeos completa','Suporte prioritário'],btn:'az'},
+  ],
+  vip:[
+    {nome:'Plano VIP Completo',desc:'7 IAs exclusivas com análise neural, detecção de padrões, scalping inteligente e martingale automático.',banner:'💎',preco:'297',periodo:' único',acesso:'Acesso para sempre',tog:false,badge:'POPULAR',feats:['Alpha Mind (78%)','Quantum Trader (80%)','Titan Core (79%)','Alpha Pulse (77%)','Alpha Smart (76%)','Alpha Analytics (78%)','Alpha Sniper (82%)'],btn:'az',dest:true},
+  ],
+  premium:[
+    {nome:'Mega Alpha 1.0',desc:'IA preditiva de alta performance com deep learning treinado em dados históricos da Deriv.',banner:'🏆',preco:'97',periodo:' único',acesso:'Acesso para sempre',tog:false,badge:'',feats:['Deep Learning','Win Rate 84%','Volatility 100 (1s)','Martingale auto','Suporte Premium'],btn:'ou'},
+    {nome:'Mega Alpha 2.0',desc:'Machine learning com aprendizado contínuo. Melhora a cada sessão operada na plataforma.',banner:'🔥',preco:'147',periodo:' único',acesso:'Acesso para sempre',tog:false,badge:'NOVO',feats:['Aprendizado contínuo','Win Rate 86%','Multi-mercado','Análise adaptativa','Suporte 24h'],btn:'ou',dest:true},
+    {nome:'Alpha Elite',desc:'A IA mais poderosa da plataforma. Alta frequência + 5 indicadores fusão. Win Rate 88%.',banner:'👑',preco:'297',periodo:' único',acesso:'Acesso para sempre',tog:false,badge:'TOP',feats:['Win Rate 88%','Alta frequência','5 indicadores','Alpha Nexus incluído','Gestão automática'],btn:'ou'},
+  ],
+};
+
+function abrirLoja(tipo='assinaturas'){
+  const titles={assinaturas:'Assinaturas',sinais:'AI Signals',vip:'Bots VIP',premium:'Recursos Premium'};
+  document.getElementById('mTitle').textContent=titles[tipo]||'Assinaturas';
+  renderPlanos(tipo);
+  document.getElementById('lojaModal').classList.add('open');
+}
+window.abrirLoja=abrirLoja;
+function fecharLoja(){document.getElementById('lojaModal').classList.remove('open')}
+window.fecharLoja=fecharLoja;
+document.getElementById('lojaModal').addEventListener('click',function(e){if(e.target===this)fecharLoja()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')fecharLoja()});
+
+function filtrar(cat){
+  document.querySelectorAll('.ms-item').forEach(i=>i.classList.remove('on'));
+  document.getElementById('ms-'+cat).classList.add('on');
+  if(cat==='comprados'){
+    document.getElementById('planosGrid').innerHTML='<div style="padding:40px;text-align:center;color:#475569;grid-column:1/-1">Você ainda não possui planos ativos.<br><br><button onclick="filtrar(\'assinaturas\')" style="margin-top:8px;padding:10px 24px;background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.3);color:var(--blue);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">Ver planos disponíveis →</button></div>';
+    return;
+  }
+  renderPlanos('assinaturas');
+}
+
+function renderPlanos(tipo){
+  const lista=PLANOS[tipo]||PLANOS.assinaturas;
+  document.getElementById('planosGrid').innerHTML=lista.map((p,i)=>`
+    <div class="plano${p.dest?' dest':''}">
+      ${p.badge?`<div class="pl-badge">${p.badge}</div>`:''}
+      <div class="pl-banner" style="background:linear-gradient(135deg,#0a0e1a,#0d1628)">${p.banner}</div>
+      <div class="pl-nome">${p.nome}</div>
+      <div class="pl-desc">${p.desc}</div>
+      ${p.tog?`<div style="margin-bottom:7px;font-size:11px;font-weight:600;color:#64748b">Escolha seu plano:</div><div class="pl-tog" id="tog${i}"><button class="ptog on" onclick="swTog(${i},0,'97')">Mensal</button><button class="ptog" onclick="swTog(${i},1,'497')">Vitalício <span style="background:var(--green);color:#000;font-size:7px;padding:1px 4px;border-radius:3px;margin-left:2px">MELHOR</span></button></div>`:''}
+      <div class="pl-price"><span class="m">R$</span><span class="v" id="pv${i}">${p.preco}</span><span class="p">${p.periodo}</span><div class="a">✦ ${p.acesso}</div></div>
+      <ul class="pl-feats">${p.feats.map(f=>`<li>${f}</li>`).join('')}</ul>
+      <button class="btn-cmp ${p.btn}" onclick="checkout('${p.nome}')">🛒 Comprar</button>
+      <div class="garantia">Garantia de 7 dias</div>
+    </div>
+  `).join('');
+}
+renderPlanos('assinaturas');
+
+function swTog(i,op,preco){
+  document.getElementById('pv'+i).textContent=preco;
+  document.getElementById('tog'+i).querySelectorAll('.ptog').forEach((b,j)=>b.classList.toggle('on',j===op));
+}
+function checkout(nome){alert('Em breve: checkout para "'+nome+'" — integração Stripe em desenvolvimento! 🚀')}
+
+// SALDO E CONTA
+function carregarContaHome(){
+  try {
+    const tipo = localStorage.getItem('alpha_account_type') || 'demo';
+    const label = tipo === 'real' ? '🔴 Conta Real' : '🔵 Conta Demo';
+    document.getElementById('homeContaTipo').textContent = label;
+    const key = tipo === 'real' ? 'deriv_balance_real' : 'deriv_balance_demo';
+    const accs = JSON.parse(localStorage.getItem('deriv_accounts') || '{}');
+    const acc = accs[tipo] || {};
+    const currency = acc.currency || 'USD';
+    const saved = localStorage.getItem(key);
+    if(saved && parseFloat(saved) > 0){
+      const val = parseFloat(saved).toLocaleString('pt-BR',{minimumFractionDigits:2});
+      document.getElementById('homeContaSaldo').innerHTML =
+        `${currency} ${val} <span style="color:var(--blue);font-size:10px">▼</span>`;
+      return;
+    }
+    fetch('/api/balance').then(r=>r.json()).then(d=>{
+      if(d.balance){
+        const val = parseFloat(d.balance).toLocaleString('pt-BR',{minimumFractionDigits:2});
+        document.getElementById('homeContaSaldo').innerHTML =
+          `${d.currency||'USD'} ${val} <span style="color:var(--blue);font-size:10px">▼</span>`;
+      }
+    }).catch(()=>{});
+  } catch(e){}
+}
+function toggleContaHome(){
+  try {
+    const tipo = localStorage.getItem('alpha_account_type') || 'demo';
+    const novo = tipo === 'demo' ? 'real' : 'demo';
+    localStorage.setItem('alpha_account_type', novo);
+    carregarContaHome();
+    const el = document.getElementById('homeContaTipo');
+    el.style.color = novo === 'real' ? '#ef4444' : '#0ea5e9';
+    setTimeout(()=>el.style.color='',1500);
+  } catch(e){}
+}
+carregarContaHome();
+setInterval(carregarContaHome, 5000);
+
+// LOGOUT
+function fazerLogout(){
+  if(!confirm('Deseja sair da sua conta?')) return;
+  ['deriv_accounts','deriv_token_demo','deriv_token_real',
+   'deriv_balance_demo','deriv_balance_real','deriv_conta_ativa',
+   'alpha_account_type','deriv_affiliate'].forEach(k => localStorage.removeItem(k));
+  window.location.replace('/login');
+}
+
+// MENU MOBILE
+function toggleMenu(){
+  document.getElementById('navMobile').classList.toggle('open');
+}
+function fecharMenu(){
+  document.getElementById('navMobile').classList.remove('open');
+}
+document.addEventListener('click',function(e){
+  if(!e.target.closest('nav') && !e.target.closest('#navMobile')){
+    document.getElementById('navMobile').classList.remove('open');
+  }
+});
+
+// SISTEMA DE ACESSO CONTROLADO
+function gerarTokenSessao() {
+  const ts = Date.now();
+  const rand = Math.random().toString(36).substring(2, 10);
+  const domain = window.location.hostname;
+  const token = btoa(ts + '|' + rand + '|' + domain);
+  const expira = ts + (4 * 60 * 60 * 1000);
+  sessionStorage.setItem('alpha_access_token', token);
+  sessionStorage.setItem('alpha_access_expira', expira);
+  sessionStorage.setItem('alpha_access_origem', 'home');
+}
+function irParaDashboard(e) {
+  if(e) e.preventDefault();
+  gerarTokenSessao();
+  window.location.href = '/dashboard';
+}
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('a[href="/dashboard"]').forEach(function(el) {
+    el.href = '#';
+    el.addEventListener('click', irParaDashboard);
+  });
+  document.querySelectorAll('[onclick*="/dashboard"]').forEach(function(el) {
+    el.removeAttribute('onclick');
+    el.addEventListener('click', irParaDashboard);
+  });
+});
+</script>
+</body>
+</html>

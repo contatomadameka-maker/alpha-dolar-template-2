@@ -1,0 +1,162 @@
+<!-- ==================== MODAIS DO BOT IA ==================== -->
+
+<!-- MODAL: SELEÇÃO DE MERCADO -->
+<div class="modal-overlay" id="marketModal" onclick="closeMarketModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3>Selecionar Mercado</h3>
+            <button class="btn-modal-close" onclick="closeMarketModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <!-- ÍNDICES CONTÍNUOS -->
+            <div class="market-category">
+                <h4 class="category-title blue">ÍNDICES CONTÍNUOS</h4>
+                <div class="market-grid" id="continuousMarkets"></div>
+            </div>
+            
+            <!-- ÍNDICES DAILY RESET -->
+            <div class="market-category">
+                <h4 class="category-title blue">ÍNDICES DAILY RESET</h4>
+                <div class="market-grid" id="dailyResetMarkets"></div>
+            </div>
+            
+            <!-- ÍNDICES JUMP -->
+            <div class="market-category">
+                <h4 class="category-title blue">ÍNDICES JUMP</h4>
+                <div class="market-grid" id="jumpMarkets"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: SELEÇÃO DE ESTRATÉGIA -->
+<div class="modal-overlay" id="strategyModal" onclick="closeStrategyModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3>Selecionar Estratégia</h3>
+            <button class="btn-modal-close" onclick="closeStrategyModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <!-- ESTRATÉGIAS GRATUITAS -->
+            <div class="strategy-category">
+                <h4 class="category-title">ESTRATÉGIAS GRATUITAS</h4>
+                <div class="strategy-list" id="freeStrategies"></div>
+            </div>
+            
+            <!-- ESTRATÉGIAS VIP -->
+            <div class="strategy-category">
+                <h4 class="category-title">ESTRATÉGIAS VIP</h4>
+                <div class="strategy-list" id="vipStrategies"></div>
+            </div>
+            
+            <!-- ESTRATÉGIAS PREMIUM -->
+            <div class="strategy-category">
+                <h4 class="category-title">ESTRATÉGIAS PREMIUM</h4>
+                <div class="strategy-list" id="premiumStrategies"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: MODO DE NEGOCIAÇÃO -->
+<div class="modal-overlay" id="tradingModeModal" onclick="closeTradingModeModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3>Modo de negociação</h3>
+            <button class="btn-modal-close" onclick="closeTradingModeModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="trading-modes-list">
+                <!-- Baixo risco - PREMIUM -->
+                <div class="mode-option" data-mode="low_risk" onclick="selectTradingMode('low_risk', '🛡️', 'Baixo risco')">
+                    <div class="mode-icon-large">🛡️</div>
+                    <div class="mode-content">
+                        <div class="mode-title">Baixo risco</div>
+                        <div class="mode-desc">Máxima precisão, menos negociações</div>
+                    </div>
+                    <span class="badge-premium">Premium</span>
+                </div>
+                
+                <!-- Preciso -->
+                <div class="mode-option" data-mode="precise" onclick="selectTradingMode('precise', '🎯', 'Preciso')">
+                    <div class="mode-icon-large">🎯</div>
+                    <div class="mode-content">
+                        <div class="mode-title">Preciso</div>
+                        <div class="mode-desc">Menos negociações, mais precisão</div>
+                    </div>
+                </div>
+                
+                <!-- Balanceado -->
+                <div class="mode-option" data-mode="balanced" onclick="selectTradingMode('balanced', '📡', 'Balanceado')">
+                    <div class="mode-icon-large">📡</div>
+                    <div class="mode-content">
+                        <div class="mode-title">Balanceado</div>
+                        <div class="mode-desc">Negociações e precisão balanceada</div>
+                    </div>
+                </div>
+                
+                <!-- Veloz - SELECIONADO -->
+                <div class="mode-option active" data-mode="fast" onclick="selectTradingMode('fast', '⚡', 'Veloz')">
+                    <div class="mode-icon-large">⚡</div>
+                    <div class="mode-content">
+                        <div class="mode-title">Veloz</div>
+                        <div class="mode-desc">Mais negociações, menos precisão</div>
+                    </div>
+                    <i class="fas fa-check check-mark"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: GERENCIAMENTO DE RISCO -->
+<div class="modal-overlay" id="riskModal" onclick="closeRiskModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3>Gerenciamento de risco</h3>
+            <button class="btn-modal-close" onclick="closeRiskModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="risk-modes-list" id="riskModesList"></div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: OPÇÕES DE STOP LOSS -->
+<div class="modal-overlay" id="stopLossModal" onclick="closeStopLossModal()">
+    <div class="modal-box small" onclick="event.stopPropagation()">
+        <div class="modal-header blue-header">
+            <h3>Opções de stop loss</h3>
+            <button class="btn-modal-close white" onclick="closeStopLossModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p class="modal-description">
+                Você pode escolher usar o número de perdas em sequência ou o valor de stop loss
+            </p>
+            
+            <div class="stop-loss-options">
+                <div class="stop-loss-option" onclick="selectStopLossMode('sequence')">
+                    <input type="radio" name="stopLossMode" id="stopLossSequence" value="sequence">
+                    <label for="stopLossSequence">Usar número de perdas em sequência</label>
+                </div>
+                
+                <div class="stop-loss-option" onclick="selectStopLossMode('value')">
+                    <input type="radio" name="stopLossMode" id="stopLossValue" value="value" checked>
+                    <label for="stopLossValue">Usar valor de stop loss</label>
+                </div>
+            </div>
+            
+            <button class="btn-close-modal" onclick="closeStopLossModal()">FECHAR</button>
+        </div>
+    </div>
+</div>

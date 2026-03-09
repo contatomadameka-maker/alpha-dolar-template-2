@@ -1,0 +1,81 @@
+<div class="main-area">
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('grafico')">
+            <i class="fas fa-chart-line"></i> Gráfico
+        </button>
+        <button class="tab" onclick="switchTab('registros')">
+            <i class="fas fa-list"></i> Registros
+        </button>
+        <button class="tab" onclick="switchTab('historico')">
+            <i class="fas fa-history"></i> Histórico
+        </button>
+        <button class="tab" onclick="switchTab('analise')">
+            <i class="fas fa-chart-bar"></i> Análise
+        </button>
+    </div>
+
+    <div class="tab-content">
+        <!-- GRÁFICO -->
+        <div class="tab-panel active" id="panel-grafico">
+            <div id="tradingview_chart" style="width: 100%; height: 100%;"></div>
+        </div>
+
+        <!-- REGISTROS -->
+        <div class="tab-panel" id="panel-registros">
+            <div class="panel-header">
+                <h3>📋 Registros do Sistema</h3>
+                <button class="btn-clear" onclick="clearLogs()">
+                    <i class="fas fa-trash"></i> Limpar
+                </button>
+            </div>
+            <div class="log-container" id="logsContainer"></div>
+        </div>
+
+        <!-- HISTÓRICO -->
+        <div class="tab-panel" id="panel-historico">
+            <div class="panel-header">
+                <h3>📊 Histórico de Trades</h3>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="filterHistory('all')">Todos</button>
+                    <button class="filter-btn" onclick="filterHistory('won')">Ganhos</button>
+                    <button class="filter-btn" onclick="filterHistory('lost')">Perdas</button>
+                </div>
+            </div>
+            <div id="historyContainer"></div>
+        </div>
+
+        <!-- ANÁLISE -->
+        <div class="tab-panel" id="panel-analise">
+            <div class="panel-header">
+                <h3>📈 Análise de Performance</h3>
+            </div>
+            <div class="analysis-grid">
+                <div class="analysis-card">
+                    <div class="card-title">Win Rate</div>
+                    <div class="card-value" id="analysisWinRate">0%</div>
+                    <div class="card-subtitle">Taxa de vitória</div>
+                </div>
+                <div class="analysis-card">
+                    <div class="card-title">Lucro Total</div>
+                    <div class="card-value success" id="analysisProfit">$0.00</div>
+                    <div class="card-subtitle">Lucro líquido</div>
+                </div>
+                <div class="analysis-card">
+                    <div class="card-title">Trades Hoje</div>
+                    <div class="card-value" id="analysisTradesTotal">0</div>
+                    <div class="card-subtitle">Operações realizadas</div>
+                </div>
+                <div class="analysis-card">
+                    <div class="card-title">Melhor Trade</div>
+                    <div class="card-value success" id="analysisBestTrade">$0.00</div>
+                    <div class="card-subtitle">Maior ganho</div>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <h4>📊 Gráfico de Performance</h4>
+                <canvas id="performanceChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>

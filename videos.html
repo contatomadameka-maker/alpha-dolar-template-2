@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<!-- ══ ALPHA GUARD ══ -->
+<script>
+(function(){
+  try {
+    var raw = localStorage.getItem('deriv_accounts');
+    if (!raw) throw 'sem_token';
+    var contas = JSON.parse(raw);
+    if (!contas || contas.length === 0) throw 'sem_contas';
+    var temToken = contas.some(function(c){ return c.token && c.token.length > 5; });
+    if (!temToken) throw 'token_invalido';
+  } catch(e) {
+    window.location.replace('/login');
+  }
+})();
+</script>
+<!-- ══ FIM ALPHA GUARD ══ -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Vídeos & Tutoriais — Alpha Dolar 2.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080a0f;--panel:#0d1018;--border:#151a26;--blue:#0ea5e9;--cyan:#06b6d4;--gold:#f59e0b;--green:#22c55e;--pink:#ec4899;--text:#e2e8f0}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(14,165,233,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(14,165,233,.025) 1px,transparent 1px);background-size:44px 44px}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(8,10,15,.95);border-bottom:1px solid var(--border);backdrop-filter:blur(20px)}
+nav::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--pink),var(--blue),var(--cyan))}
+.nav-logo{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:2px;text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:2px}
+.nav-link{color:#94a3b8;font-size:13px;font-weight:500;padding:7px 13px;border-radius:8px;cursor:pointer;transition:all .18s;text-decoration:none;border:none;background:none;font-family:inherit}
+.nav-link:hover{color:#fff;background:rgba(255,255,255,.06)}
+.nav-link.ativo{color:var(--blue);font-weight:700}
+.nav-link.signals{background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.35);color:var(--blue)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.soc-row{display:flex;gap:5px}
+.soc-btn{width:30px;height:30px;border-radius:7px;background:rgba(255,255,255,.04);border:1px solid #1e2230;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;color:#64748b;text-decoration:none}
+.soc-btn:hover{background:rgba(255,255,255,.09);color:#fff}
+.btn-operar-nav{padding:8px 20px;border-radius:8px;background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;font-size:13px;font-weight:700;cursor:pointer;border:none;box-shadow:0 0 16px rgba(14,165,233,.3);transition:all .2s}
+.btn-operar-nav:hover{transform:translateY(-1px);box-shadow:0 0 26px rgba(14,165,233,.5)}
+
+/* LAYOUT PRINCIPAL */
+.page-wrap{position:relative;z-index:1;padding-top:58px;display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:220px;flex-shrink:0;background:rgba(10,12,18,.98);border-right:1px solid var(--border);padding:24px 0;position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto}
+.sidebar-title{font-size:11px;letter-spacing:2px;color:#334155;text-transform:uppercase;font-weight:700;padding:0 18px;margin-bottom:12px}
+.cat-item{display:flex;align-items:center;gap:10px;padding:10px 18px;cursor:pointer;transition:all .18s;border-left:3px solid transparent;font-size:13px;color:#64748b;font-weight:500}
+.cat-item:hover{color:#94a3b8;background:rgba(255,255,255,.03);border-left-color:rgba(14,165,233,.3)}
+.cat-item.ativo{color:var(--blue);background:rgba(14,165,233,.07);border-left-color:var(--blue);font-weight:700}
+.cat-item .cat-icon{font-size:15px;flex-shrink:0;width:20px;text-align:center}
+.cat-item .cat-badge{margin-left:auto;font-size:9px;padding:2px 7px;border-radius:8px;font-weight:700}
+.badge-novo{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3)}
+.badge-breve{background:rgba(71,85,105,.15);color:#475569;border:1px solid #1e2230}
+.badge-vip{background:rgba(245,158,11,.12);color:var(--gold);border:1px solid rgba(245,158,11,.3)}
+.sidebar-divider{height:1px;background:var(--border);margin:12px 18px}
+
+/* CONTEÚDO PRINCIPAL */
+.main-content{flex:1;padding:32px 32px 60px;max-width:1080px}
+
+/* HERO COMPACTO */
+.hero-compact{margin-bottom:32px}
+.hero-compact h1{font-family:'Orbitron',monospace;font-size:clamp(20px,3vw,32px);font-weight:900;margin-bottom:8px}
+.hero-compact h1 span{background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-compact p{color:#64748b;font-size:14px;line-height:1.6}
+
+/* SEÇÃO DE CONTEÚDO */
+.content-section{margin-bottom:40px}
+.section-label{font-size:11px;letter-spacing:2px;color:#475569;text-transform:uppercase;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* CARD EM DESTAQUE — GUIA DE DÍGITOS */
+.destaque-card{background:var(--panel);border:1px solid rgba(14,165,233,.25);border-radius:16px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;transition:all .22s;cursor:pointer}
+.destaque-card:hover{border-color:rgba(14,165,233,.5);box-shadow:0 8px 40px rgba(14,165,233,.12);transform:translateY(-2px)}
+.destaque-thumb{background:linear-gradient(135deg,#060a12,#0d1525);padding:28px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;min-height:180px}
+.destaque-thumb::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(14,165,233,.15) 0%,transparent 70%)}
+.destaque-thumb-inner{position:relative;z-index:1;text-align:center}
+.destaque-thumb-icon{font-size:52px;display:block;margin-bottom:8px}
+.destaque-thumb-tag{display:inline-block;background:rgba(14,165,233,.15);border:1px solid rgba(14,165,233,.35);color:var(--blue);font-size:9px;font-weight:700;letter-spacing:1.5px;padding:3px 10px;border-radius:8px}
+.destaque-body{padding:24px;display:flex;flex-direction:column;justify-content:center}
+.destaque-categoria{font-size:10px;letter-spacing:2px;color:var(--cyan);font-weight:700;text-transform:uppercase;margin-bottom:8px}
+.destaque-titulo{font-size:18px;font-weight:700;margin-bottom:10px;line-height:1.3}
+.destaque-desc{font-size:13px;color:#64748b;line-height:1.6;margin-bottom:18px}
+.destaque-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.dtag{font-size:10px;padding:3px 10px;border-radius:8px;font-weight:600}
+.dtag-blue{background:rgba(14,165,233,.1);color:var(--blue);border:1px solid rgba(14,165,233,.25)}
+.dtag-green{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.25)}
+.dtag-gold{background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.25)}
+.dtag-pink{background:rgba(236,72,153,.1);color:var(--pink);border:1px solid rgba(236,72,153,.25)}
+.btn-saibamais{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:9px;background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit;text-decoration:none;transition:all .2s;box-shadow:0 4px 16px rgba(14,165,233,.3);width:fit-content}
+.btn-saibamais:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(14,165,233,.5)}
+
+/* GRID DE CARDS MENORES */
+.cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:900px){.cards-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.cards-grid{grid-template-columns:1fr}}
+
+.mini-card{background:var(--panel);border:1px solid var(--border);border-radius:13px;overflow:hidden;transition:all .2s;cursor:pointer}
+.mini-card:hover{border-color:rgba(14,165,233,.25);transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.4)}
+.mini-thumb{width:100%;padding-top:56.25%;position:relative;overflow:hidden}
+.mini-thumb-inner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px}
+.mini-play{width:44px;height:44px;border-radius:50%;background:rgba(14,165,233,.15);border:2px solid rgba(14,165,233,.4);display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s}
+.mini-card:hover .mini-play{background:rgba(14,165,233,.3);transform:scale(1.1)}
+.mini-badge{font-size:9px;font-weight:700;letter-spacing:1px;padding:3px 9px;border-radius:6px;text-transform:uppercase}
+.mini-body{padding:14px}
+.mini-title{font-size:13px;font-weight:600;margin-bottom:5px;line-height:1.4}
+.mini-desc{font-size:11px;color:#475569;line-height:1.5;margin-bottom:10px}
+.mini-footer{display:flex;align-items:center;justify-content:space-between}
+.mini-nivel{font-size:9px;font-weight:700;letter-spacing:1px;padding:2px 8px;border-radius:6px}
+.mini-btn{font-size:10px;font-weight:700;color:var(--blue);cursor:pointer;border:none;background:none;font-family:inherit;display:flex;align-items:center;gap:3px}
+.mini-btn:hover{color:var(--cyan)}
+
+/* EM BREVE SECTION */
+.em-breve-section{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center;position:relative;overflow:hidden}
+.em-breve-section::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:400px;height:300px;background:radial-gradient(ellipse,rgba(14,165,233,.07) 0%,transparent 70%);pointer-events:none}
+.robot-grande{font-size:60px;margin-bottom:16px;display:block;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.em-breve-h{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;margin-bottom:8px}
+.em-breve-h span{background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.em-breve-p{color:#64748b;font-size:13px;max-width:380px;margin:0 auto 20px;line-height:1.6}
+.notif-form{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.notif-input{padding:10px 16px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid #1e2230;color:#e2e8f0;font-size:13px;width:240px;font-family:inherit;outline:none;transition:border-color .18s}
+.notif-input:focus{border-color:rgba(14,165,233,.4)}
+.notif-btn{padding:10px 20px;border-radius:8px;background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .2s}
+.notif-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(14,165,233,.35)}
+
+/* PRÓXIMOS TEMAS */
+.temas-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:800px){.temas-grid{grid-template-columns:1fr 1fr}}
+.tema-card{background:rgba(13,16,24,.8);border:1px solid var(--border);border-radius:10px;padding:13px;display:flex;align-items:center;gap:10px;transition:border-color .18s}
+.tema-card:hover{border-color:rgba(14,165,233,.2)}
+.tema-icon{width:34px;height:34px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px}
+.tema-txt{font-size:11px;font-weight:600;color:#94a3b8;line-height:1.35}
+.tema-badge{font-size:9px;color:var(--blue);font-weight:700;letter-spacing:1px;margin-top:2px}
+
+/* CANAIS */
+.canais-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:700px){.canais-grid{grid-template-columns:1fr}}
+.canal-card{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:20px;text-align:center;transition:all .2s;cursor:pointer}
+.canal-card:hover{border-color:rgba(14,165,233,.3);transform:translateY(-3px)}
+.canal-icon{font-size:32px;margin-bottom:10px}
+.canal-nome{font-size:14px;font-weight:700;margin-bottom:5px}
+.canal-desc{font-size:11px;color:#64748b;line-height:1.5;margin-bottom:14px}
+.canal-btn{padding:9px 18px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .2s;font-family:inherit;width:100%}
+
+footer{text-align:center;padding:26px;border-top:1px solid var(--border);color:#1e293b;font-size:11px;letter-spacing:2px;font-family:'Orbitron',monospace;position:relative;z-index:1}
+
+/* MOBILE */
+@media(max-width:768px){
+  .sidebar{display:none}
+  .main-content{padding:20px 16px 40px}
+  .destaque-card{grid-template-columns:1fr}
+  .destaque-thumb{min-height:140px}
+}
+</style>
+<!-- ══ ALPHA DOLAR FAVICON ══ -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'><rect width='256' height='256' rx='52' fill='%230d1018'/%3E<rect width='256' height='256' rx='52' fill='none' stroke='%2300d2ff' stroke-width='8' stroke-opacity='0.4'/%3E<text x='32' y='195' font-family='Arial Black,sans-serif' font-weight='900' font-size='185' fill='%2300d2ff'>A</text><text x='58' y='195' font-family='Arial Black,sans-serif' font-weight='900' font-size='185' fill='none' stroke='%2300d2ff' stroke-width='8' stroke-opacity='0.4'>%24</text></svg>">
+<!-- ══ FIM FAVICON ══ -->
+</head>
+<body>
+
+<nav>
+  <svg width="210" height="36" viewBox="0 0 210 36" xmlns="http://www.w3.org/2000/svg" style="display:block">
+  <defs>
+    <linearGradient id="logograd" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d2ff"/>
+      <stop offset="100%" style="stop-color:#0ea5e9"/>
+    </linearGradient>
+  </defs>
+  <text x="0" y="32" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-size="34" fill="url(#logograd)">A</text>
+  <text x="12" y="32" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-size="34" fill="none" stroke="url(#logograd)" stroke-width="1.5" opacity="0.45">$</text>
+  <line x1="38" y1="4" x2="38" y2="32" stroke="#1e2230" stroke-width="1.5"/>
+  <text x="46" y="20" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-size="13" fill="#e2e8f0" letter-spacing="2">ALPHA DOLAR</text>
+  <text x="48" y="32" font-family="Arial,sans-serif" font-size="9" fill="#475569" letter-spacing="3">TRADING BOT 2.0</text>
+</svg>
+  <div class="nav-links">
+    <a class="nav-link" href="/home">Início</a>
+    <a class="nav-link" href="/dashboard">Operar</a>
+    <button class="nav-link signals">✦ AI Signals 🔒</button>
+    <button class="nav-link" onclick="location.href='/home'">Loja</button>
+    <a class="nav-link ativo" href="/videos">Vídeos</a>
+    <button class="nav-link" onclick="window.open('https://wa.me/5547996214217','_blank')">Suporte</button>
+  </div>
+  <div class="nav-right">
+    <div class="soc-row">
+      <a href="https://instagram.com" target="_blank" class="soc-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+      </a>
+      <a href="https://t.me" target="_blank" class="soc-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.820 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.800-.994-.643-.35-1.022.228-1.596.148-.153 2.718-2.49 2.768-2.703.006-.025.012-.12-.045-.170s-.141-.033-.203-.019c-.088.016-1.485.944-4.192 2.772-.397.272-.757.404-1.082.397-.356-.008-1.041-.200-1.551-.367-.625-.204-1.122-.312-1.079-.659.023-.18.273-.367.75-.560 2.936-1.278 4.895-2.12 5.876-2.524 2.8-1.164 3.382-1.367 3.764-1.374z"/></svg>
+      </a>
+      <a href="https://youtube.com" target="_blank" class="soc-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+      </a>
+    </div>
+    <button class="btn-operar-nav" onclick="location.href='/dashboard'">▶ Operar</button>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar">
+    <div class="sidebar-title">Categorias</div>
+
+    <div class="cat-item ativo" onclick="filtrar('introducao')">
+      <span class="cat-icon">🚀</span>
+      Introdução
+      <span class="cat-badge badge-novo">NOVO</span>
+    </div>
+
+    <div class="cat-item" onclick="filtrar('deposito')">
+      <span class="cat-icon">💳</span>
+      Depósito e Saque
+      <span class="cat-badge badge-breve">BREVE</span>
+    </div>
+
+    <div class="cat-item" onclick="filtrar('gestao')">
+      <span class="cat-icon">📊</span>
+      Gestão e Banca
+      <span class="cat-badge badge-breve">BREVE</span>
+    </div>
+
+    <div class="cat-item" onclick="filtrar('digitos')">
+      <span class="cat-icon">🔢</span>
+      Painel de Dígitos
+      <span class="cat-badge badge-novo">NOVO</span>
+    </div>
+
+    <div class="cat-item" onclick="filtrar('estrategias')">
+      <span class="cat-icon">🎯</span>
+      Estratégias Rise/Fall
+      <span class="cat-badge badge-breve">BREVE</span>
+    </div>
+
+    <div class="cat-item" onclick="filtrar('ia')">
+      <span class="cat-icon">🤖</span>
+      Tutoriais IA (robôs)
+      <span class="cat-badge badge-breve">BREVE</span>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="cat-item" onclick="filtrar('ia-avancado')">
+      <span class="cat-icon">✨</span>
+      Modo IA Avançado
+      <span class="cat-badge badge-novo">NOVO</span>
+    </div>
+
+    <div class="cat-item" onclick="filtrar('sinais')">
+      <span class="cat-icon">📡</span>
+      AI Signals
+      <span class="cat-badge badge-vip">VIP</span>
+    </div>
+
+    <div class="cat-item" onclick="filtrar('vip')">
+      <span class="cat-icon">⭐</span>
+      Estratégias VIP
+      <span class="cat-badge badge-vip">VIP</span>
+    </div>
+
+    <div class="cat-item" onclick="filtrar('premium')">
+      <span class="cat-icon">👑</span>
+      Premium & Elite
+      <span class="cat-badge badge-vip">VIP</span>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="cat-item" onclick="filtrar('celular')">
+      <span class="cat-icon">📱</span>
+      Operando pelo Celular
+      <span class="cat-badge badge-breve">BREVE</span>
+    </div>
+
+    <div class="cat-item" onclick="filtrar('dicas')">
+      <span class="cat-icon">💡</span>
+      Dicas & Truques
+      <span class="cat-badge badge-breve">BREVE</span>
+    </div>
+  </aside>
+
+  <!-- ══ CONTEÚDO PRINCIPAL ══ -->
+  <main class="main-content">
+
+    <!-- HERO COMPACTO -->
+    <div class="hero-compact">
+      <h1>Vídeos & <span>Tutoriais</span></h1>
+      <p>Aprenda a usar a plataforma do zero, domine as estratégias e maximize seus resultados.</p>
+    </div>
+
+    <!-- GUIAS DISPONÍVEIS AGORA -->
+    <div class="content-section">
+      <div class="section-label">📚 Disponível Agora</div>
+
+      <!-- CARD DESTAQUE — GUIA DE DÍGITOS -->
+      <div class="destaque-card" onclick="abrirGuia()">
+        <div class="destaque-thumb" style="background:linear-gradient(135deg,#060e1a,#0a1628)">
+          <div class="destaque-thumb-inner">
+            <span class="destaque-thumb-icon">📊</span>
+            <span class="destaque-thumb-tag">GUIA INTERATIVO</span>
+          </div>
+        </div>
+        <div class="destaque-body">
+          <div class="destaque-categoria">📊 Painel de Dígitos</div>
+          <div class="destaque-titulo">Como Ler os Dígitos e Escolher o Bot Certo</div>
+          <div class="destaque-desc">Aprenda a interpretar a Tabela Multimercado, os Pills de frequência (0–9), o Oscilador de Dígitos e identifique o cenário ideal para cada estratégia — em um guia visual completo e interativo.</div>
+          <div class="destaque-tags">
+            <span class="dtag dtag-blue">Multimercado</span>
+            <span class="dtag dtag-green">Pills 0–9</span>
+            <span class="dtag dtag-gold">Oscilador</span>
+            <span class="dtag dtag-pink">✨ Modo IA</span>
+          </div>
+          <a class="btn-saibamais" href="/guia-digitos-alpha.html" onclick="event.stopPropagation()">
+            📖 Clique aqui para saber mais →
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD DESTAQUE — DEPÓSITO E SAQUE -->
+    <div class="content-section" style="margin-top:-10px">
+      <div class="destaque-card" onclick="window.location='/guia-deposito-saque.html'" style="border-color:rgba(76,175,80,.25)">
+        <div class="destaque-thumb" style="background:linear-gradient(135deg,#061209,#0a1a0d)">
+          <div class="destaque-thumb-inner">
+            <span class="destaque-thumb-icon">💳</span>
+            <span class="destaque-thumb-tag" style="background:rgba(76,175,80,.3);color:#4caf50">TUTORIAL FINANCEIRO</span>
+          </div>
+        </div>
+        <div class="destaque-body">
+          <div class="destaque-categoria">💳 Depósito e Saque</div>
+          <div class="destaque-titulo">Como Depositar e Sacar na Deriv</div>
+          <div class="destaque-desc">Guia visual completo com passo a passo de como fazer depósito via PIX, cartão ou cripto — e como solicitar saques de forma rápida e segura. Essencial antes de operar com dinheiro real.</div>
+          <div class="destaque-tags">
+            <span class="dtag dtag-green">PIX</span>
+            <span class="dtag dtag-blue">Cartão</span>
+            <span class="dtag dtag-gold">Saque</span>
+            <span class="dtag" style="background:rgba(216,27,96,.15);color:#d81b60;border:1px solid rgba(216,27,96,.3)">Verificação</span>
+          </div>
+          <a class="btn-saibamais" href="/guia-deposito-saque.html" onclick="event.stopPropagation()" style="background:linear-gradient(135deg,rgba(76,175,80,.2),rgba(0,210,255,.1));border-color:rgba(76,175,80,.4);color:#4caf50">
+            💳 Ver tutorial completo →
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- EM BREVE -->
+    <div class="content-section">
+      <div class="section-label">🎬 Vídeos Em Produção</div>
+
+      <div class="em-breve-section">
+        <span class="robot-grande">🤖</span>
+        <div class="em-breve-h">Conteúdo <span>Em Breve</span></div>
+        <p class="em-breve-p">Estamos gravando vídeos exclusivos sobre cada estratégia, como configurar os robôs e como maximizar seus resultados.</p>
+        <div class="notif-form">
+          <input class="notif-input" type="text" placeholder="Seu WhatsApp para ser notificado..." id="notifWpp">
+          <button class="notif-btn" onclick="salvarNotif()">🔔 Me avisar</button>
+        </div>
+        <p id="notifMsg" style="margin-top:12px;font-size:12px;color:var(--green);display:none">✓ Você será notificado quando os vídeos ficarem prontos!</p>
+      </div>
+    </div>
+
+    <!-- PRÓXIMOS TEMAS -->
+    <div class="content-section">
+      <div class="section-label">📋 Próximos Temas</div>
+      <div class="temas-grid">
+        <div class="tema-card"><div class="tema-icon" style="background:rgba(14,165,233,.1)">🚀</div><div><div class="tema-txt">Como começar do zero</div><div class="tema-badge">INICIANTE</div></div></div>
+        <div class="tema-card"><div class="tema-icon" style="background:rgba(34,197,94,.1)">💰</div><div><div class="tema-txt">Gestão de banca e stop loss</div><div class="tema-badge">ESSENCIAL</div></div></div>
+        <div class="tema-card"><div class="tema-icon" style="background:rgba(245,158,11,.1)">🎯</div><div><div class="tema-txt">Estratégias Rise/Fall na prática</div><div class="tema-badge">INTERMEDIÁRIO</div></div></div>
+        <div class="tema-card"><div class="tema-icon" style="background:rgba(14,165,233,.1)">🤖</div><div><div class="tema-txt">Configurando os robôs VIP</div><div class="tema-badge">VIP</div></div></div>
+        <div class="tema-card"><div class="tema-icon" style="background:rgba(236,72,153,.1)">✨</div><div><div class="tema-txt">Modo IA Avançado completo</div><div class="tema-badge">NOVO</div></div></div>
+        <div class="tema-card"><div class="tema-icon" style="background:rgba(245,158,11,.1)">⭐</div><div><div class="tema-txt">Estratégias Premium na prática</div><div class="tema-badge">PREMIUM</div></div></div>
+        <div class="tema-card"><div class="tema-icon" style="background:rgba(34,197,94,.1)">🔄</div><div><div class="tema-txt">Manual vs IA automática</div><div class="tema-badge">COMPARATIVO</div></div></div>
+        <div class="tema-card"><div class="tema-icon" style="background:rgba(14,165,233,.1)">📱</div><div><div class="tema-txt">Operando pelo celular</div><div class="tema-badge">DICA</div></div></div>
+      </div>
+    </div>
+
+    <!-- CANAIS -->
+    <div class="content-section">
+      <div class="section-label">📡 Nossos Canais</div>
+      <div class="canais-grid">
+        <div class="canal-card" onclick="window.open('https://youtube.com','_blank')">
+          <div class="canal-icon">▶️</div>
+          <div class="canal-nome">YouTube</div>
+          <div class="canal-desc">Vídeos completos, tutoriais passo a passo e análises toda semana.</div>
+          <button class="canal-btn" style="background:linear-gradient(135deg,#ff0000,#cc0000);color:#fff">Inscrever-se</button>
+        </div>
+        <div class="canal-card" onclick="window.open('https://t.me','_blank')">
+          <div class="canal-icon">✈️</div>
+          <div class="canal-nome">Grupo Telegram</div>
+          <div class="canal-desc">Sinais, atualizações e suporte da comunidade em tempo real.</div>
+          <button class="canal-btn" style="background:linear-gradient(135deg,#0088cc,#0066aa);color:#fff">Entrar no grupo</button>
+        </div>
+        <div class="canal-card" onclick="window.open('https://wa.me/5547996214217','_blank')">
+          <div class="canal-icon">💬</div>
+          <div class="canal-nome">Suporte WhatsApp</div>
+          <div class="canal-desc">Dúvidas, suporte técnico e atendimento personalizado.</div>
+          <button class="canal-btn" style="background:linear-gradient(135deg,#25d366,#128c7e);color:#fff">Falar agora</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<footer>ALPHA DOLAR 2.0 · VÍDEOS & TUTORIAIS · POWERED BY DERIV</footer>
+
+<script>
+function salvarNotif(){
+  const wpp = document.getElementById('notifWpp').value.trim();
+  if(!wpp) return;
+  localStorage.setItem('alpha_notif_wpp', wpp);
+  document.getElementById('notifMsg').style.display='block';
+  document.getElementById('notifWpp').value='';
+  document.getElementById('notifWpp').placeholder='Salvo! ✓';
+}
+
+function abrirGuia(){
+  window.location.href = '/guia-digitos-alpha.html';
+}
+
+function filtrar(cat){
+  // Atualiza sidebar ativo
+  document.querySelectorAll('.cat-item').forEach(el => el.classList.remove('ativo'));
+  event.currentTarget.classList.add('ativo');
+
+  // Categorias com conteúdo real
+  const comConteudo = ['introducao','digitos','ia-avancado'];
+
+  if(comConteudo.includes(cat)){
+    if(cat === 'digitos' || cat === 'ia-avancado'){
+      document.querySelector('.destaque-card').scrollIntoView({behavior:'smooth', block:'center'});
+    }
+  } else {
+    // Mostra tooltip "em breve"
+    document.querySelector('.em-breve-section').scrollIntoView({behavior:'smooth', block:'center'});
+  }
+}
+</script>
+</body>
+</html>

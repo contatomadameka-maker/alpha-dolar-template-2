@@ -1,0 +1,191 @@
+/**
+ * TRADING-BUTTON-FIX.JS - VERSÃO DEFINITIVA STANDALONE
+ * Não depende de nenhum outro arquivo!
+ * Alpha Dolar 2.0
+ */
+
+(function() {
+    console.log('🔧 [STANDALONE] Trading Button Fix carregando...');
+
+    // ✅ URL CORRETA - HARDCODED
+    const API_URL = 'https://alpha-dolar-backend.onrender.com/api';
+
+    // Aguarda página carregar completamente
+    function init() {
+        console.log('🔍 [STANDALONE] Procurando botão #startButton...');
+
+        const btn = document.getElementById('startButton');
+
+        if (!btn) {
+            console.error('❌ [STANDALONE] Botão #startButton não encontrado!');
+
+            // Tenta de novo em 1 segundo
+            setTimeout(init, 1000);
+            return;
+        }
+
+        console.log('✅ [STANDALONE] Botão encontrado!');
+
+        // Inicializa botRunning
+        if (typeof window.botRunning === 'undefined') {
+            window.botRunning = false;
+        }
+
+        // Remove listener antigo (se houver)
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+
+        // Adiciona evento
+        newBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            console.log('🎯 [STANDALONE] Botão clicado!');
+            console.log('   Estado atual:', window.botRunning ? 'RODANDO' : 'PARADO');
+
+            if (window.botRunning) {
+                // ==================== PARAR BOT ====================
+                console.log('🛑 [STANDALONE] Parando bot...');
+
+                try {
+                    newBtn.disabled = true;
+                    newBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Parando...';
+
+                    const response = await fetch(`${API_URL}/bot/stop`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            bot_type: 'ia'
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    const result = await response.json();
+
+                    console.log('✅ [STANDALONE] Bot parado!', result);
+
+                    // Atualiza UI
+                    newBtn.innerHTML = '<i class="fas fa-play"></i> Iniciar Robô';
+                    newBtn.classList.remove('running');
+                    newBtn.classList.remove('active');
+
+                    // Atualiza estado
+                    window.botRunning = false;
+
+                    // Fecha modal se existir
+                    const modal = document.getElementById('opModal');
+                    if (modal) {
+                        modal.classList.remove('active');
+                    }
+
+                    alert('✅ Bot parado com sucesso!');
+
+                } catch (error) {
+                    console.error('❌ [STANDALONE] Erro ao parar:', error);
+                    alert('❌ Erro ao parar: ' + error.message);
+
+                    newBtn.innerHTML = '<i class="fas fa-stop"></i> Parar Robô';
+
+                } finally {
+                    newBtn.disabled = false;
+                }
+
+            } else {
+                // ==================== INICIAR BOT ====================
+                console.log('🚀 [STANDALONE] Iniciando bot...');
+
+                // Pega configurações dos inputs (se existirem)
+                const config = {
+                    mode: 'simples',
+                    market: document.getElementById('iaMarket')?.value || 'R_100',
+                    strategy: 'alpha_bot_1',
+                    trading_mode: 'fast',
+                    risk_mode: 'conservative',
+                    initial_stake: parseFloat(document.getElementById('iaStake')?.value) || 0.35,
+                    target_profit: parseFloat(document.getElementById('iaTarget')?.value) || 2,
+                    stop_loss: parseFloat(document.getElementById('iaStop')?.value) || 5,
+                    multiplier: parseFloat(document.getElementById('iaMultiplier')?.value) || 1,
+                    duration: parseInt(document.getElementById('iaDuration')?.value) || 1
+                };
+
+                console.log('📋 [STANDALONE] Configuração:', config);
+
+                try {
+                    newBtn.disabled = true;
+                    newBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando...';
+
+                    const response = await fetch(`${API_URL}/bot/start`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            bot_type: 'ia',
+                            config: config
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    const result = await response.json();
+
+                    console.log('📦 [STANDALONE] Resposta:', result);
+
+                    if (result.success) {
+                        console.log('✅ [STANDALONE] Bot iniciado!');
+
+                        // Atualiza UI
+                        newBtn.innerHTML = '<i class="fas fa-stop"></i> Parar Robô';
+                        newBtn.classList.add('running');
+                        newBtn.classList.add('active');
+
+                        // Atualiza estado
+                        window.botRunning = true;
+
+                        // Abre modal se existir
+                        const modal = document.getElementById('opModal');
+                        if (modal) {
+                            modal.classList.add('active');
+                        }
+
+                        alert('✅ Bot iniciado com sucesso!');
+
+                    } else {
+                        throw new Error(result.message || 'Falha ao iniciar bot');
+                    }
+
+                } catch (error) {
+                    console.error('❌ [STANDALONE] Erro ao iniciar:', error);
+                    alert('❌ Erro ao iniciar: ' + error.message);
+
+                    newBtn.innerHTML = '<i class="fas fa-play"></i> Iniciar Robô';
+                    window.botRunning = false;
+
+                } finally {
+                    newBtn.disabled = false;
+                }
+            }
+        });
+
+        console.log('✅ [STANDALONE] Botão configurado com sucesso!');
+        console.log('   API URL:', API_URL);
+        console.log('   Clique no botão para testar!');
+    }
+
+    // Inicia quando DOM estiver pronto
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+})();
+
+console.log('📦 [STANDALONE] trading-button-fix.js carregado!');
