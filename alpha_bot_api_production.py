@@ -271,6 +271,8 @@ def start_bot():
                 step_atual = mart_info.get('step_atual', 0)
                 max_steps  = mart_info.get('max_steps', 3)
                 perda_acum = getattr(bot, 'perda_acumulada', 0)
+                bots_state[bot_type]['mart_step'] = step_atual
+                bots_state[bot_type]['mart_max']  = max_steps
 
                 if won:
                     bots_state[bot_type]['_perda_desde_ultimo_ganho'] = 0.0
@@ -458,9 +460,9 @@ def get_bot_stats(bot_type):
     if is_running and bot and BOTS_AVAILABLE and hasattr(bot, 'waiting_contract'):
         waiting_signal = not bot.waiting_contract
 
-    mart_step = 0
-    mart_max  = 3
-    if bot and BOTS_AVAILABLE and hasattr(bot, 'martingale') and bot.martingale:
+    mart_step = bots_state[bot_type].get('mart_step', 0)
+    mart_max  = bots_state[bot_type].get('mart_max', 3)
+    if mart_step == 0 and bot and BOTS_AVAILABLE and hasattr(bot, 'martingale') and bot.martingale:
         try:
             info = bot.martingale.get_info()
             mart_step = info.get('step_atual', 0)
