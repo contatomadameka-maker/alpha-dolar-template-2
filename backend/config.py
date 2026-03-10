@@ -52,7 +52,7 @@ class BotConfig:
     BASIS = "stake"           # stake ou payout
 
     # ===== LIMITES =====
-    MAX_TRADES_PER_DAY = 100
+    MAX_TRADES_PER_DAY = 1000
     MIN_BALANCE = 0.50        # Saldo mínimo para operar
 
     # ===== MODO DE STOP LOSS =====
