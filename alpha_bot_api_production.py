@@ -336,18 +336,18 @@ def start_bot():
                 status = contract_data.get('status')
                 if status in ['won', 'lost']:
                     profit     = float(contract_data.get('profit', 0))
-                    won        = status == 'won'
+                    won_       = status == 'won'
                     direction  = contract_data.get('contract_type', 'CALL/PUT')
                     stake_used = getattr(bot, '_ultimo_stake_usado', BotConfig.STAKE_INICIAL)
                     exit_tick  = contract_data.get('exit_tick_value') or contract_data.get('exit_tick')
-                    on_trade_completed(direction, won, profit, stake_used, BotConfig.DEFAULT_SYMBOL, exit_tick)
+                    on_trade_completed(direction, won_, profit, stake_used, BotConfig.DEFAULT_SYMBOL, exit_tick)
                     bot.waiting_contract    = False
                     bot.current_contract_id = None
                     bot._ultimo_trade_time  = time.time()
                 original_contract_update(contract_data)
 
+            # Patch no método do objeto — sobrevive ao bot.start() que chama set_contract_callback(self.on_contract_update)
             bot.on_contract_update = patched_contract_update
-            bot.api.set_contract_callback(patched_contract_update)
 
             def run_bot():
                 try:
