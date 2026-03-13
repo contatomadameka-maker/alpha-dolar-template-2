@@ -6769,13 +6769,28 @@ window.abrirPainelAssinantes = abrirPainelAssinantes;
 (function(){
   function checkAdmin(){
     try {
-      const accs = JSON.parse(localStorage.getItem('deriv_accounts')||'{}');
-      const ids = Object.values(accs).map(a=>a.loginid||a.account||'');
-      const isAdmin = ids.some(id=>id==='CR10027387') || 
-                      localStorage.getItem('deriv_loginid')==='CR10027387';
+      // Tenta todas as chaves possíveis onde o loginid pode estar
+      const raw = localStorage.getItem('deriv_accounts') || '{}';
+      const accs = JSON.parse(raw);
+      const allIds = [];
+      Object.values(accs).forEach(a => {
+        if(a.loginid) allIds.push(a.loginid);
+        if(a.account) allIds.push(a.account);
+        if(a.token) allIds.push(a.token);
+      });
+      // Checa também outras chaves do localStorage
+      const ativo = localStorage.getItem('deriv_conta_ativa') || '';
+      const loginid = localStorage.getItem('deriv_loginid') || '';
+      const contaAtiva = localStorage.getItem('alpha_conta_ativa') || '';
+      allIds.push(ativo, loginid, contaAtiva);
+      
+      const isAdmin = allIds.some(id => id && id.toString().includes('CR10027387'));
       const el = document.getElementById('admin-btns');
-      if(el && isAdmin) el.style.display='flex';
-    } catch(e){}
+      if(el) {
+        el.style.display = isAdmin ? 'flex' : 'none';
+        console.log('Admin check:', isAdmin, 'IDs encontrados:', allIds.filter(Boolean));
+      }
+    } catch(e){ console.log('checkAdmin erro:', e); }
   }
   // Tenta imediatamente e após carregar a conta
   setTimeout(checkAdmin, 1000);
