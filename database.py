@@ -112,3 +112,34 @@ def atualizar_bot(nome, data):
     headers = {'apikey': SUPABASE_KEY, 'Authorization': f'Bearer {SUPABASE_KEY}', 'Content-Type': 'application/json'}
     r = req.patch(f"{SUPABASE_URL}/rest/v1/bots?nome=eq.{nome}", json=data, headers=headers)
     return r.status_code in [200, 204]
+
+def salvar_estado_bot(bot_type, estado):
+    """Salva estado do bot no Supabase para auto-restart"""
+    import requests as req, json, os
+    url = os.environ.get('SUPABASE_URL', '')
+    key = os.environ.get('SUPABASE_KEY', '')
+    headers = {'apikey': key, 'Authorization': f'Bearer {key}', 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates'}
+    payload = {'bot_type': bot_type, 'estado': json.dumps(estado)}
+    r = req.post(f"{url}/rest/v1/bot_estado", json=payload, headers=headers)
+    return r.status_code in [200, 201]
+
+def recuperar_estado_bot(bot_type):
+    """Recupera estado do bot do Supabase"""
+    import requests as req, json, os
+    url = os.environ.get('SUPABASE_URL', '')
+    key = os.environ.get('SUPABASE_KEY', '')
+    headers = {'apikey': key, 'Authorization': f'Bearer {key}'}
+    r = req.get(f"{url}/rest/v1/bot_estado?bot_type=eq.{bot_type}&limit=1", headers=headers)
+    if r.status_code == 200 and r.json():
+        try: return json.loads(r.json()[0]['estado'])
+        except: return None
+    return None
+
+def limpar_estado_bot(bot_type):
+    """Remove estado do bot (quando parado manualmente)"""
+    import requests as req, os
+    url = os.environ.get('SUPABASE_URL', '')
+    key = os.environ.get('SUPABASE_KEY', '')
+    headers = {'apikey': key, 'Authorization': f'Bearer {key}'}
+    r = req.delete(f"{url}/rest/v1/bot_estado?bot_type=eq.{bot_type}", headers=headers)
+    return r.status_code in [200, 204]

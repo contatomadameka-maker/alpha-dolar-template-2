@@ -355,6 +355,19 @@ def start_bot():
                 except Exception as e:
                     print(f"Erro ao salvar operação: {e}")
 
+            # Salvar estado no Supabase para auto-restart
+            try:
+                _salvar_estado(bot_type, {
+                    'bot_type': bot_type,
+                    'account_type': account_type,
+                    'deriv_id': deriv_id,
+                    'bot_name': bot_nome if 'bot_nome' in dir() else bot_type,
+                    'config': config,
+                    'token': token
+                })
+            except Exception as e:
+                print(f"Aviso: não salvou estado: {e}")
+
             bot._on_trade_completed = on_trade_completed
 
             original_contract_update = bot.on_contract_update
@@ -468,6 +481,9 @@ def stop_bot():
 
             bots_state[bot_type]['running']     = False
             bots_state[bot_type]['stop_reason'] = bots_state[bot_type].get('stop_reason') or 'manual'
+            # Limpar estado salvo — parada manual não deve auto-reiniciar
+            try: _limpar_estado(bot_type)
+            except: pass
             return jsonify({'success': True, 'message': 'Bot parado!', 'stats': stats})
 
         return jsonify({'success': False, 'error': 'Instância não encontrada'}), 500
@@ -715,6 +731,53 @@ def api_clock_scores():
     except Exception as e:
         return jsonify({'ok': False, 'erro': str(e)}), 500
 
+
+# ═══════════════════════════════════════════
+# AUTO-RESTART — Recupera bots após deploy/sleep
+# ═══════════════════════════════════════════
+def auto_restart_bots():
+    import time, threading
+    time.sleep(5)  # Aguarda servidor subir
+    print("🔄 Verificando bots para auto-restart...")
+    for bot_type in ['ia', 'manual']:
+        try:
+            estado = _recuperar_estado(bot_type)
+            if not estado:
+                continue
+            print(f"🔄 Auto-restart: {bot_type} — {estado.get('deriv_id','?')}")
+            with app.test_request_context():
+                import json
+                from flask import Request
+                from io import BytesIO
+                payload = json.dumps({
+                    'bot_type': bot_type,
+                    'account_type': estado.get('account_type', 'real'),
+                    'token': estado.get('token', ''),
+                    'deriv_id': estado.get('deriv_id', ''),
+                    'bot_name': estado.get('bot_name', bot_type),
+                    'config': estado.get('config', {})
+                }).encode()
+                environ = {
+                    'REQUEST_METHOD': 'POST',
+                    'CONTENT_TYPE': 'application/json',
+                    'CONTENT_LENGTH': str(len(payload)),
+                    'wsgi.input': BytesIO(payload),
+                }
+                with app.test_request_context(
+                    '/api/bot/start',
+                    method='POST',
+                    data=payload,
+                    content_type='application/json'
+                ):
+                    from flask import request as req_ctx
+                    resp = start_bot()
+                    print(f"✅ Auto-restart {bot_type}: {resp}")
+        except Exception as e:
+            print(f"⚠️ Auto-restart {bot_type} falhou: {e}")
+
+# Iniciar auto-restart em thread separada
+threading.Thread(target=auto_restart_bots, daemon=True).start()
+
 if __name__ == '__main__':
     print("\n" + "="*70)
     print("🚀 ALPHA DOLAR 2.0 - API PRODUCTION v5")
@@ -729,7 +792,7 @@ if __name__ == '__main__':
 # ─────────────────────────────────────────────
 # BANCO DE DADOS — CLIENTES (Supabase)
 # ─────────────────────────────────────────────
-from database import init_db, salvar_cliente as _salvar, listar_clientes as _listar, salvar_operacao as _salvar_op, listar_operacoes as _listar_ops, listar_bots as _listar_bots, salvar_bot as _salvar_bot, atualizar_bot as _atualizar_bot, salvar_operacao as _salvar_op
+from database import init_db, salvar_cliente as _salvar, listar_clientes as _listar, salvar_operacao as _salvar_op, listar_operacoes as _listar_ops, listar_bots as _listar_bots, salvar_bot as _salvar_bot, atualizar_bot as _atualizar_bot, salvar_operacao as _salvar_op, salvar_estado_bot as _salvar_estado, recuperar_estado_bot as _recuperar_estado, limpar_estado_bot as _limpar_estado
 init_db()
 
 @app.route('/api/salvar-cliente', methods=['POST'])
