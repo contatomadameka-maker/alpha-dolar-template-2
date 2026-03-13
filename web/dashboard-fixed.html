@@ -2650,7 +2650,7 @@ body { overflow-x: hidden !important; }
                 const contaAtiva = accountType === 'real' 
                     ? contas2.find(c => c.isDemo === false)
                     : contas2.find(c => c.isDemo === true) || contas2[0];
-                derivId = contaAtiva?.loginid || contaAtiva?.account || '';
+                derivId = contaAtiva?.acct || contaAtiva?.loginid || contaAtiva?.account || '';
             } catch(e) {}
 
             const payload = {
