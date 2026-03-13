@@ -924,9 +924,10 @@
         <a href="/home" class="nav2-btn">🏠 Início</a>
         <a href="/dashboard-fixed.html" class="nav2-btn nav2-active">⚡ Operar</a>
         <a href="/ai-signals.html" class="nav2-btn">✦ Alpha Signals</a>
+        <span id="admin-debug" style="font-size:10px;color:#f59e0b;padding:4px 8px;"></span>
         <span id="admin-btns" style="display:none;gap:6px;">
         <button onclick="abrirPainelSignals()" class="nav2-btn" style="background:linear-gradient(135deg,rgba(0,210,255,0.15),rgba(14,165,233,0.1));border-color:rgba(0,210,255,0.4);color:#00d2ff;cursor:pointer;font-family:inherit;">📡 Enviar Sinal</button>
-        <button onclick="abrirPainelAssinantes()" class="nav2-btn" style="background:linear-gradient(135deg,rgba(34,197,94,0.15),rgba(22,163,74,0.1));border-color:rgba(34,197,94,0.4);color:#22c55e;cursor:pointer;font-family:inherit;">👥 Assinantes</button>
+        <button onclick="abrirModalCanal()" class="nav2-btn" style="background:linear-gradient(135deg,rgba(34,197,94,0.15),rgba(22,163,74,0.1));border-color:rgba(34,197,94,0.4);color:#22c55e;cursor:pointer;font-family:inherit;">📡 Entrar no Canal</button>
         </span>
         <a href="/loja.html" class="nav2-btn">🛒 Loja</a>
         <a href="/videos.html" class="nav2-btn">📺 Tutoriais/Vídeos</a>
@@ -6769,34 +6770,67 @@ window.abrirPainelAssinantes = abrirPainelAssinantes;
 (function(){
   function checkAdmin(){
     try {
-      // Tenta todas as chaves possíveis onde o loginid pode estar
-      const raw = localStorage.getItem('deriv_accounts') || '{}';
-      const accs = JSON.parse(raw);
-      const allIds = [];
-      Object.values(accs).forEach(a => {
-        if(a.loginid) allIds.push(a.loginid);
-        if(a.account) allIds.push(a.account);
-        if(a.token) allIds.push(a.token);
-      });
-      // Checa também outras chaves do localStorage
-      const ativo = localStorage.getItem('deriv_conta_ativa') || '';
-      const loginid = localStorage.getItem('deriv_loginid') || '';
-      const contaAtiva = localStorage.getItem('alpha_conta_ativa') || '';
-      allIds.push(ativo, loginid, contaAtiva);
-      
-      const isAdmin = allIds.some(id => id && id.toString().includes('CR10027387'));
       const el = document.getElementById('admin-btns');
-      if(el) {
-        el.style.display = isAdmin ? 'flex' : 'none';
-        console.log('Admin check:', isAdmin, 'IDs encontrados:', allIds.filter(Boolean));
+      if(!el) return;
+      // Varre TODO o localStorage procurando CR10027387
+      let found = false;
+      for(let i=0; i<localStorage.length; i++){
+        const key = localStorage.key(i);
+        const val = localStorage.getItem(key) || '';
+        if(val.includes('CR10027387')){
+          found = true;
+          break;
+        }
       }
-    } catch(e){ console.log('checkAdmin erro:', e); }
+      el.style.display = found ? 'flex' : 'none';
+    } catch(e){}
   }
   // Tenta imediatamente e após carregar a conta
   setTimeout(checkAdmin, 1000);
   setTimeout(checkAdmin, 3000);
   window.addEventListener('storage', checkAdmin);
 })();
+</script>
+
+
+<!-- MODAL ENTRAR NO CANAL -->
+<div id="modal-canal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#0d1117;border:1px solid rgba(34,197,94,0.3);border-radius:20px;padding:36px;width:min(480px,92vw);text-align:center;">
+    
+    <div style="font-size:48px;margin-bottom:16px;">📡</div>
+    <div style="font-size:11px;letter-spacing:2px;color:#22c55e;font-weight:700;text-transform:uppercase;margin-bottom:8px;">Alpha Signals</div>
+    <div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:12px;">Canal de Sinais Exclusivo</div>
+    <div style="font-size:13px;color:#64748b;line-height:1.7;margin-bottom:24px;">
+      Receba sinais automáticos e manuais diretamente no seu Telegram.<br>
+      Dígitos PAR/ÍMPAR, Rise/Fall, alertas de volatilidade e muito mais.
+    </div>
+
+    <!-- Benefícios -->
+    <div style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.15);border-radius:12px;padding:16px;margin-bottom:24px;text-align:left;">
+      <div style="font-size:13px;color:#e2e8f0;line-height:2;">
+        ✅ Sinais automáticos 24h via robô Alpha IA<br>
+        ✅ Alertas de melhor horário (Alpha Clock)<br>
+        ✅ Avisos de volatilidade (Alpha Shield)<br>
+        ✅ Padrões de dígitos (Alpha Pattern)<br>
+        ✅ Resultados WIN/LOSS em tempo real
+      </div>
+    </div>
+
+    <!-- Botão principal -->
+    <a href="https://t.me/+YHItYk9rqLAxZjRh" target="_blank" style="display:block;width:100%;padding:14px;background:linear-gradient(135deg,#16a34a,#22c55e);border:none;border-radius:12px;color:#fff;font-weight:900;font-size:15px;cursor:pointer;text-decoration:none;margin-bottom:10px;">
+      📲 Entrar no Canal Agora
+    </a>
+    <div style="font-size:11px;color:#475569;margin-bottom:20px;">Acesso gratuito por tempo limitado</div>
+
+    <button onclick="document.getElementById('modal-canal').style.display='none'" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#64748b;border-radius:8px;padding:8px 20px;cursor:pointer;font-size:13px;font-family:inherit;">Fechar</button>
+  </div>
+</div>
+
+<script>
+function abrirModalCanal() {
+  document.getElementById('modal-canal').style.display = 'flex';
+}
+window.abrirModalCanal = abrirModalCanal;
 </script>
 
 </body> no dashboard-fixed  ║
