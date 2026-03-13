@@ -603,14 +603,17 @@ def atualizar_bot_route(nome):
 # ═══════════════════════════════════════════
 # ROTAS TELEGRAM SIGNALS
 # ═══════════════════════════════════════════
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 try:
     from backend.telegram_signals import (
         sinal_manual, sinal_digitos, sinal_rise_fall,
         sinal_horario, sinal_volatilidade, sinal_resultado, enviar_telegram
     )
     TELEGRAM_OK = True
+    print("✅ Telegram signals carregado!")
 except Exception as e:
-    print(f"Telegram signals não carregado: {e}")
+    print(f"❌ Telegram signals erro: {e}")
     TELEGRAM_OK = False
 
 @app.route('/api/sinal/manual', methods=['POST'])
@@ -694,8 +697,9 @@ try:
         revogar_assinante, gerar_link_convite, verificar_expiracao
     )
     SIGNALS_OK = True
+    print("✅ Signals access carregado!")
 except Exception as e:
-    print(f"Signals access não carregado: {e}")
+    print(f"❌ Signals access erro: {e}")
     SIGNALS_OK = False
 
 @app.route('/api/signals/assinantes', methods=['GET'])
