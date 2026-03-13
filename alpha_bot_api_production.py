@@ -541,6 +541,60 @@ def emergency_reset():
     } for k in ['manual', 'ia', 'ia_simples', 'ia_avancado']}
     return jsonify({'success': True, 'message': 'Estado resetado!'})
 
+
+# ═══════════════════════════════════════════
+# ROBÔ MESTRE DE SINAIS — RODA NO SERVIDOR
+# ═══════════════════════════════════════════
+import threading, time, random
+
+robo_master_ativo = False
+robo_master_thread = None
+robo_master_intervalo = 600  # 10 minutos default
+
+MERCADOS_ROBO = ['R_100', 'R_75', 'R_50']
+TIPOS_ROBO = ['PAR', 'ÍMPAR', 'CALL', 'PUT']
+
+def robo_master_loop():
+    global robo_master_ativo
+    print("🤖 Robô Mestre iniciado!")
+    while robo_master_ativo:
+        try:
+            mercado = random.choice(MERCADOS_ROBO)
+            tipo = random.choice(TIPOS_ROBO)
+            prob = str(random.randint(70, 89)) + '%'
+            texto = f"⚡ SINAL AUTOMÁTICO — ALPHA BOT\nMercado: {mercado}\nTipo: {tipo}\nProbabilidade: {prob}\n🤖 Alpha Dolar Signals"
+            if TELEGRAM_OK:
+                sinal_manual(texto)
+                print(f"✅ Sinal auto enviado: {tipo} {mercado} {prob}")
+        except Exception as e:
+            print(f"❌ Erro robô: {e}")
+        time.sleep(robo_master_intervalo)
+    print("⏹ Robô Mestre parado!")
+
+@app.route('/api/robo/status', methods=['GET'])
+def api_robo_status():
+    return jsonify({
+        'ativo': robo_master_ativo,
+        'intervalo': robo_master_intervalo
+    })
+
+@app.route('/api/robo/start', methods=['POST'])
+def api_robo_start():
+    global robo_master_ativo, robo_master_thread, robo_master_intervalo
+    data = request.get_json() or {}
+    robo_master_intervalo = int(data.get('intervalo', 600))
+    if not robo_master_ativo:
+        robo_master_ativo = True
+        robo_master_thread = threading.Thread(target=robo_master_loop, daemon=True)
+        robo_master_thread.start()
+    return jsonify({'ok': True, 'ativo': True, 'intervalo': robo_master_intervalo})
+
+@app.route('/api/robo/stop', methods=['POST'])
+def api_robo_stop():
+    global robo_master_ativo
+    robo_master_ativo = False
+    return jsonify({'ok': True, 'ativo': False})
+
 if __name__ == '__main__':
     print("\n" + "="*70)
     print("🚀 ALPHA DOLAR 2.0 - API PRODUCTION v5")

@@ -594,36 +594,39 @@ async function sinalRapido(tipo) {
   } catch(e) { addLog('sinal-log','❌ '+e.message,'#ff4757'); }
 }
 
-function controlarRobo(acao) {
-  if(acao === 'start') {
-    const intervalo = parseInt(document.getElementById('robo-intervalo').value);
-    document.getElementById('robo-dot').style.background = '#2ecc71';
-    document.getElementById('robo-label').textContent = 'Robô Ativo';
-    addLog('robo-log','✅ Robô iniciado! Intervalo: '+intervalo/60+'min','#2ecc71');
-    if(roboTimer) clearInterval(roboTimer);
-    roboTimer = setInterval(() => enviarSinalAutoRobo(), intervalo * 1000);
-    enviarSinalAutoRobo();
-  } else {
-    if(roboTimer) { clearInterval(roboTimer); roboTimer = null; }
-    document.getElementById('robo-dot').style.background = '#475569';
-    document.getElementById('robo-label').textContent = 'Robô Parado';
-    addLog('robo-log','⏹ Robô parado.','#ff4757');
-  }
+async function controlarRobo(acao) {
+  const intervalo = parseInt(document.getElementById('robo-intervalo').value);
+  addLog('robo-log', acao==='start' ? '⏳ Iniciando robô no servidor...' : '⏳ Parando robô...','#f0b429');
+  try {
+    const r = await fetch(API+'/robo/'+acao, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({intervalo})
+    });
+    const d = await r.json();
+    if(d.ok) {
+      atualizarStatusRobo(d.ativo);
+      addLog('robo-log', d.ativo ? '✅ Robô ativo no servidor! Persiste mesmo recarregando.' : '⏹ Robô parado.', d.ativo?'#2ecc71':'#ff4757');
+    }
+  } catch(e) { addLog('robo-log','❌ '+e.message,'#ff4757'); }
 }
 
-const MERCADOS = ['R_100','R_75','R_50'];
-const TIPOS = ['PAR','ÍMPAR','CALL','PUT'];
-function enviarSinalAutoRobo() {
-  const mercado = MERCADOS[Math.floor(Math.random()*MERCADOS.length)];
-  const tipo = TIPOS[Math.floor(Math.random()*TIPOS.length)];
-  const prob = (70 + Math.floor(Math.random()*20)) + '%';
-  const texto = `⚡ SINAL AUTOMÁTICO — ALPHA BOT\nMercado: ${mercado}\nTipo: ${tipo}\nProbabilidade: ${prob}\n🤖 Alpha Dolar Signals`;
-  fetch(API+'/sinal/manual', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({texto})})
-    .then(r=>r.json()).then(d=>{
-      if(d.ok) addLog('robo-log',`✅ Sinal auto: ${tipo} ${mercado} ${prob}`,'#2ecc71');
-      else addLog('robo-log','❌ Erro envio auto','#ff4757');
-    }).catch(e=>addLog('robo-log','❌ '+e.message,'#ff4757'));
+function atualizarStatusRobo(ativo) {
+  document.getElementById('robo-dot').style.background = ativo ? '#2ecc71' : '#475569';
+  document.getElementById('robo-label').textContent = ativo ? '🟢 Robô Ativo (servidor)' : 'Robô Parado';
 }
+
+async function verificarStatusRobo() {
+  try {
+    const r = await fetch(API+'/robo/status');
+    const d = await r.json();
+    atualizarStatusRobo(d.ativo);
+    if(d.ativo) addLog('robo-log', `✅ Robô rodando! Intervalo: ${d.intervalo/60}min`, '#2ecc71');
+  } catch(e) {}
+}
+
+// Verifica status ao carregar
+setTimeout(verificarStatusRobo, 1000);
 
 async function carregarAssinantes() {
   document.getElementById('as-lista').innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px">⏳ Carregando...</div>';
