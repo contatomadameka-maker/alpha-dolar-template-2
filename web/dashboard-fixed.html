@@ -773,6 +773,14 @@
 .pro-mult-btn{flex:1;padding:8px;background:#0a0614;border:1px solid rgba(168,85,247,0.2);border-radius:8px;color:#94a3b8;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;}
 .pro-mult-btn.active{background:rgba(168,85,247,0.2);border-color:#a855f7;color:#d4a8ff;}
 </style>
+<style>
+/* Esconder scrollbar horizontal do TradingView */
+.tradingview-widget-container, .tradingview-widget-container iframe {
+  overflow: hidden !important;
+}
+body { overflow-x: hidden !important; }
+::-webkit-scrollbar:horizontal { display: none !important; height: 0 !important; }
+</style>
 </head>
 <body>
 
