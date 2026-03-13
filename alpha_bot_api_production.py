@@ -599,3 +599,88 @@ def atualizar_bot_route(nome):
     data = request.json
     ok = _atualizar_bot(nome, data)
     return jsonify({'ok': ok})
+
+# ═══════════════════════════════════════════
+# ROTAS TELEGRAM SIGNALS
+# ═══════════════════════════════════════════
+try:
+    from backend.telegram_signals import (
+        sinal_manual, sinal_digitos, sinal_rise_fall,
+        sinal_horario, sinal_volatilidade, sinal_resultado, enviar_telegram
+    )
+    TELEGRAM_OK = True
+except Exception as e:
+    print(f"Telegram signals não carregado: {e}")
+    TELEGRAM_OK = False
+
+@app.route('/api/sinal/manual', methods=['POST'])
+def api_sinal_manual():
+    """Envia sinal manual pelo admin"""
+    try:
+        data = request.get_json()
+        texto = data.get('texto', '')
+        if not texto:
+            return jsonify({'erro': 'texto obrigatório'}), 400
+        ok = sinal_manual(texto)
+        return jsonify({'ok': ok})
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 500
+
+@app.route('/api/sinal/padrao', methods=['POST'])
+def api_sinal_padrao():
+    """Envia sinal de padrão de dígitos"""
+    try:
+        data = request.get_json()
+        ok = sinal_digitos(
+            data.get('mercado', 'R_100'),
+            data.get('tipo', 'DIGITEVEN'),
+            data.get('probabilidade', 75),
+            data.get('digitos', [])
+        )
+        return jsonify({'ok': ok})
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 500
+
+@app.route('/api/sinal/resultado', methods=['POST'])
+def api_sinal_resultado():
+    """Envia resultado de operação"""
+    try:
+        data = request.get_json()
+        ok = sinal_resultado(
+            data.get('tipo', ''),
+            data.get('mercado', ''),
+            data.get('resultado', ''),
+            float(data.get('lucro', 0)),
+            data.get('win_rate', 0)
+        )
+        return jsonify({'ok': ok})
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 500
+
+@app.route('/api/sinal/volatilidade', methods=['POST'])
+def api_sinal_volatilidade():
+    """Envia alerta de volatilidade"""
+    try:
+        data = request.get_json()
+        ok = sinal_volatilidade(
+            data.get('mercado', ''),
+            data.get('nivel', 'ATENÇÃO'),
+            float(data.get('ratio', 1.5))
+        )
+        return jsonify({'ok': ok})
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 500
+
+@app.route('/api/sinal/horario', methods=['POST'])
+def api_sinal_horario():
+    """Envia alerta de horário"""
+    try:
+        data = request.get_json()
+        ok = sinal_horario(
+            data.get('faixa', ''),
+            int(data.get('score', 0)),
+            data.get('recomendacao', '')
+        )
+        return jsonify({'ok': ok})
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 500
