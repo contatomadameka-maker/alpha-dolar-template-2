@@ -6880,6 +6880,46 @@ function abrirModalCanal() {
   document.getElementById('modal-canal').style.display = 'flex';
 }
 window.abrirModalCanal = abrirModalCanal;
+
+// ── MODAL ANALYTICS ──
+function abrirModalAnalytics() {
+  document.getElementById("modal-analytics").style.display = "flex";
+  carregarAnalytics();
+}
+window.abrirModalAnalytics = abrirModalAnalytics;
+
+async function carregarAnalytics() {
+  const el = document.getElementById("analytics-content");
+  el.innerHTML = '<div style="text-align:center;padding:20px;color:#fbbf24;">⏳ Carregando analytics...</div>';
+  try {
+    const res = await fetch("https://alpha-dolar-backend.onrender.com/api/ia/analytics");
+    const data = await res.json();
+    if (!data || !data.por_tipo) throw new Error("sem dados");
+    const tipos = Object.entries(data.por_tipo).sort((a,b) => b[1].win_rate - a[1].win_rate);
+    const melhor = tipos[0];
+    let html = '<div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:10px;padding:12px;margin-bottom:16px;text-align:center;">';
+    html += '<div style="color:#fbbf24;font-size:13px;margin-bottom:4px;">🏆 Melhor tipo agora</div>';
+    html += '<div style="color:#fff;font-size:22px;font-weight:700;">' + melhor[0] + '</div>';
+    html += '<div style="color:#22c55e;font-size:14px;">Win Rate: ' + melhor[1].win_rate.toFixed(1) + '%</div></div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
+    tipos.forEach(([tipo, info]) => {
+      const cor = info.win_rate >= 60 ? "#22c55e" : info.win_rate >= 50 ? "#fbbf24" : "#ef4444";
+      html += '<div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:10px;text-align:center;">';
+      html += '<div style="color:#e2e8f0;font-weight:700;">' + tipo + '</div>';
+      html += '<div style="color:' + cor + ';font-size:13px;">Win Rate: ' + info.win_rate.toFixed(1) + '%</div>';
+      html += '<div style="color:#94a3b8;font-size:11px;">' + info.total + ' operações</div></div>';
+    });
+    html += '</div>';
+    if (data.melhor_hora) {
+      html += '<div style="margin-top:12px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);border-radius:8px;padding:10px;text-align:center;">';
+      html += '<div style="color:#818cf8;font-size:12px;">⏰ Melhor horário</div>';
+      html += '<div style="color:#fff;font-weight:700;">' + data.melhor_hora + 'h</div></div>';
+    }
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:#ef4444;">❌ Erro ao carregar analytics.<br><small>Verifique se o backend está online.</small></div>';
+  }
+}
 </script>
 
 
