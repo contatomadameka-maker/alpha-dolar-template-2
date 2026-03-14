@@ -6895,7 +6895,7 @@ async function carregarAnalytics() {
     const res = await fetch("https://alpha-dolar-backend.onrender.com/api/ia/analytics");
     const data = await res.json();
     if (!data || !data.por_tipo) throw new Error("sem dados");
-    const tipos = Object.entries(data.por_tipo).sort((a,b) => b[1].win_rate - a[1].win_rate);
+    const tipos = data.por_tipo.map(t => [t.tipo, t]).sort((a,b) => b[1].win_rate - a[1].win_rate);
     const melhor = tipos[0];
     let html = '<div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:10px;padding:12px;margin-bottom:16px;text-align:center;">';
     html += '<div style="color:#fbbf24;font-size:13px;margin-bottom:4px;">🏆 Melhor tipo agora</div>';
