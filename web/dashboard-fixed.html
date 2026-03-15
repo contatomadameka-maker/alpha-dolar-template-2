@@ -4864,7 +4864,7 @@ window._MKT_DATA = {
       </div>
       <div><label class="pro-label" style="display:flex;justify-content:space-between;align-items:center;">
           Mercado
-          <button id="proSugerirMercado" onclick="proSugerirMelhorMercado()" style="font-size:9px;padding:2px 7px;border-radius:6px;border:1px solid rgba(168,85,247,0.4);background:rgba(168,85,247,0.1);color:#a855f7;cursor:pointer;font-weight:700;display:none;">🔍 Sugerir</button>
+          <button id="proSugerirMercado" onclick="proSugerirMelhorMercado()" style="font-size:9px;padding:2px 7px;border-radius:6px;border:1px solid rgba(168,85,247,0.4);background:rgba(168,85,247,0.1);color:#a855f7;cursor:pointer;font-weight:700;display:inline-block;">🔍 Sugerir</button>
         </label>
         <select id="proSymbol" class="pro-input">
           <optgroup label="── VOLATILITY ──">
@@ -5239,12 +5239,7 @@ function proOnContract(c){const s=window._proState;if(!c||!['won','lost'].includ
   if(s.ws){s.ws.send(JSON.stringify({balance:1}));}
 }
 window.proToggle=function(){const s=window._proState;if(s.running){proParar('manual');return;}s.running=true;s.stake=parseFloat(document.getElementById('proStake').value)||0.35;s.mult=parseFloat(document.getElementById('proMultiplier').value)||2.2;s.lucro=0;s.perda=0;s.wins=0;s.losses=0;s.perdaAcum=0;s.martStep=0;s.digits=[];s.cooldownAte=0;if('speechSynthesis' in window){const _u=new SpeechSynthesisUtterance(' ');_u.volume=0;window.speechSynthesis.speak(_u);};document.getElementById('proStartBtn').textContent='⏹ Parar Alpha IA Pro';document.getElementById('proStartBtn').style.background='linear-gradient(135deg,#7f1d1d,#dc2626)';proAddFeed('🚀 Alpha IA Pro iniciado!','#a855f7');proFalar('Alpha I A Pro iniciado. Analisando mercado.');
-  if(window._proModo==='auto'){
-    const _tok=proGetToken();
-    if(_tok){
-      proEscolherMercado(_tok).then(()=>proConectar());
-    } else { proConectar(); }
-  } else { proConectar(); }};
+proConectar();};
 function proParar(motivo){const s=window._proState;
   const tipo=window.currentAccountType||"demo";
   if(s.wins+s.losses>0){try{window.registrarSessaoComparativo&&window.registrarSessaoComparativo("ia_pro",tipo,{trades:s.wins+s.losses,wins:s.wins,losses:s.losses,lucro:s.lucro-s.perda,maior_seq:s.martStep});}catch(e){}}
