@@ -4958,102 +4958,78 @@ window.proVozChange=function(cb){window._proState.vozAtiva=cb.checked;const thum
 function proFalar(t){if(!window._proState.vozAtiva)return;if(!('speechSynthesis' in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='pt-BR';u.rate=1.05;u.pitch=1.0;u.volume=0.9;const vozes=window.speechSynthesis.getVoices();const voz=vozes.find(v=>v.lang==='pt-BR'&&v.name.toLowerCase().includes('female'))||vozes.find(v=>v.lang==='pt-BR')||vozes.find(v=>v.lang.startsWith('pt'));if(voz)u.voice=voz;window.speechSynthesis.speak(u);}
 function proAddFeed(msg,cor){const feed=document.getElementById('proFeed');if(!feed)return;const ts=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});const div=document.createElement('div');div.style.cssText='color:'+(cor||'#94a3b8')+';padding:2px 0;border-bottom:1px solid rgba(168,85,247,0.08);';div.textContent='['+ts+'] '+msg;const ph=feed.querySelector('div[style*="text-align:center"]');if(ph)ph.remove();feed.appendChild(div);feed.scrollTop=feed.scrollHeight;}
 function proAnalisarTipo(ct, d) {
-  const u20=d.slice(-20);const u10=d.slice(-10);const u30=d.slice(-30);
+  if(!d||d.length<20)return{score:0,barrier:null,desc:'...'};
+  const u20=d.slice(-20);
+  const u10=d.slice(-10);
+  const u30=d.length>=30?d.slice(-30):d.slice();
   const pares=u20.filter(x=>x%2===0).length;
   const rp=pares/20;
-  const mediaU10=u10.reduce((a,b)=>a+b,0)/u10.length;
+  const mediaU10=u10.reduce((a,b)=>a+b,0)/10;
   const last=d[d.length-1];
-  let streak=1;
   const lastPar=last%2;
+  let streak=1;
   for(let i=d.length-2;i>=0&&i>=d.length-8;i--){if(d[i]%2===lastPar)streak++;else break;}
-
-  let score=0; let barrier=null; let desc='';
+  let score=0;let barrier=null;let desc='';
 
   if(ct==='DIGITEVEN'){
-    let s1=rp>=0.60?rp:rp>=0.55?rp*0.85:rp*0.5;
-    let s2=0;
-    if(streak>=4&&lastPar===1)s2=Math.min(0.55+streak*0.05,0.80);
-    else if(streak<=2&&lastPar===0)s2=0.58;
-    else s2=0.45;
-    let s3=rp>=0.55?0.65:0.40;
+    const s1=rp>=0.60?rp:rp>=0.55?rp*0.85:rp*0.5;
+    const s2=streak>=4&&lastPar===1?Math.min(0.55+streak*0.05,0.80):streak<=2&&lastPar===0?0.58:0.45;
+    const s3=rp>=0.55?0.65:0.40;
     score=(s1*0.45)+(s2*0.35)+(s3*0.20);
     desc='Par:'+Math.round(rp*100)+'% Str:'+streak;
-  }
-  else if(ct==='DIGITODD'){
+  } else if(ct==='DIGITODD'){
     const ri=1-rp;
-    let s1=ri>=0.60?ri:ri>=0.55?ri*0.85:ri*0.5;
-    let s2=0;
-    if(streak>=4&&lastPar===0)s2=Math.min(0.55+streak*0.05,0.80);
-    else if(streak<=2&&lastPar===1)s2=0.58;
-    else s2=0.45;
-    let s3=ri>=0.55?0.65:0.40;
+    const s1=ri>=0.60?ri:ri>=0.55?ri*0.85:ri*0.5;
+    const s2=streak>=4&&lastPar===0?Math.min(0.55+streak*0.05,0.80):streak<=2&&lastPar===1?0.58:0.45;
+    const s3=ri>=0.55?0.65:0.40;
     score=(s1*0.45)+(s2*0.35)+(s3*0.20);
     desc='Ímpar:'+Math.round(ri*100)+'% Str:'+streak;
-  }
-  else if(ct==='DIGITOVER'){
-    // Analisa se maioria dos dígitos está abaixo de 5
+  } else if(ct==='DIGITOVER'){
     const baixos=u10.filter(x=>x<5).length;
     const s1=baixos>=7?0.75:baixos>=6?0.65:baixos>=5?0.55:0.30;
-    // Tendência de sequência de baixos
-    let seqBaixos=0;
-    for(let i=d.length-1;i>=0&&i>=d.length-5;i--){if(d[i]<5)seqBaixos++;else break;}
-    const s2=seqBaixos>=3?0.70:seqBaixos>=2?0.60:0.40;
-    // Média geral
+    let seqB=0;for(let i=d.length-1;i>=0&&i>=d.length-5;i--){if(d[i]<5)seqB++;else break;}
+    const s2=seqB>=3?0.70:seqB>=2?0.60:0.40;
     const s3=mediaU10<4?0.70:mediaU10<4.5?0.60:0.35;
     score=(s1*0.40)+(s2*0.35)+(s3*0.25);
-    desc='Baixos:'+baixos+'/10 Seq:'+seqBaixos;
-  }
-  else if(ct==='DIGITUNDER'){
-    // Analisa se maioria dos dígitos está acima de 4
+    desc='Baixos:'+baixos+'/10';
+  } else if(ct==='DIGITUNDER'){
     const altos=u10.filter(x=>x>=5).length;
     const s1=altos>=7?0.75:altos>=6?0.65:altos>=5?0.55:0.30;
-    let seqAltos=0;
-    for(let i=d.length-1;i>=0&&i>=d.length-5;i--){if(d[i]>=5)seqAltos++;else break;}
-    const s2=seqAltos>=3?0.70:seqAltos>=2?0.60:0.40;
+    let seqA=0;for(let i=d.length-1;i>=0&&i>=d.length-5;i--){if(d[i]>=5)seqA++;else break;}
+    const s2=seqA>=3?0.70:seqA>=2?0.60:0.40;
     const s3=mediaU10>5.5?0.70:mediaU10>5?0.60:0.35;
     score=(s1*0.40)+(s2*0.35)+(s3*0.25);
-    desc='Altos:'+altos+'/10 Seq:'+seqAltos;
-  }
-  else if(ct==='DIGITMATCH'){
-    // Encontra o dígito mais frequente nos últimos 30 ticks
+    desc='Altos:'+altos+'/10';
+  } else if(ct==='DIGITMATCH'){
     const freq=Array(10).fill(0);
     u30.forEach(x=>freq[x]++);
     const maxFreq=Math.max(...freq);
-    const digMaisFreq=freq.indexOf(maxFreq);
-    const pctFreq=maxFreq/u30.length;
-    // Score baseado na dominância do dígito
-    const s1=pctFreq>=0.20?0.75:pctFreq>=0.15?0.65:pctFreq>=0.12?0.55:0.35;
-    // Verificar se apareceu recentemente (último 5 ticks)
-    const u5=d.slice(-5);
-    const recente=u5.filter(x=>x===digMaisFreq).length;
+    const digFreq=freq.indexOf(maxFreq);
+    const pct=maxFreq/u30.length;
+    const s1=pct>=0.20?0.75:pct>=0.15?0.65:pct>=0.12?0.55:0.35;
+    const recente=d.slice(-5).filter(x=>x===digFreq).length;
     const s2=recente>=2?0.70:recente>=1?0.55:0.35;
-    // Consistência: apareceu em pelo menos 2 dos últimos 3 blocos de 10
-    const b1=d.slice(-10).filter(x=>x===digMaisFreq).length;
-    const b2=d.slice(-20,-10).filter(x=>x===digMaisFreq).length;
+    const b1=u10.filter(x=>x===digFreq).length;
+    const b2=u20.slice(0,10).filter(x=>x===digFreq).length;
     const s3=(b1>=2&&b2>=2)?0.70:(b1>=2||b2>=2)?0.55:0.35;
     score=(s1*0.40)+(s2*0.35)+(s3*0.25);
-    barrier=digMaisFreq;
-    desc='Dígito:'+digMaisFreq+' Freq:'+Math.round(pctFreq*100)+'%';
-  }
-  else if(ct==='DIGITDIFF'){
-    // Score baseado em quão aleatório está o mercado (sem dígito dominante)
+    barrier=digFreq;
+    desc='Dígito:'+digFreq+' Freq:'+Math.round(pct*100)+'%';
+  } else if(ct==='DIGITDIFF'){
     const freq=Array(10).fill(0);
     u20.forEach(x=>freq[x]++);
     const maxFreq=Math.max(...freq);
     const entropia=maxFreq/u20.length;
-    // Quanto mais distribuído, melhor para DIFF
     const s1=entropia<=0.15?0.75:entropia<=0.20?0.65:entropia<=0.25?0.55:0.35;
-    // Último dígito não repetido recentemente
     const lastDig=d[d.length-1];
-    const repetiuRecente=d.slice(-5,-1).filter(x=>x===lastDig).length;
-    const s2=repetiuRecente===0?0.70:repetiuRecente===1?0.50:0.30;
-    const s3=0.50;
-    score=(s1*0.45)+(s2*0.35)+(s3*0.20);
-    barrier=lastDig; // aposta que o próximo é diferente do último
-    desc='Entropia:'+Math.round(entropia*100)+'% LastDig:'+lastDig;
+    const rep=d.slice(-5,-1).filter(x=>x===lastDig).length;
+    const s2=rep===0?0.70:rep===1?0.50:0.30;
+    score=(s1*0.45)+(s2*0.35)+(0.50*0.20);
+    barrier=lastDig;
+    desc='Entr:'+Math.round(entropia*100)+'%';
   }
 
-  return {score: Math.round(score*100), barrier, desc, entrar: false};
+  return{score:Math.round(score*100),barrier,desc};
 }
 
 function proAnalisar(ct){
