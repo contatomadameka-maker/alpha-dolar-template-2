@@ -4864,7 +4864,7 @@ window._MKT_DATA = {
       </div>
       <div><label class="pro-label" style="display:flex;justify-content:space-between;align-items:center;">
           Mercado
-          <button id="proSugerirMercado" onclick="proSugerirMelhorMercado()" style="font-size:9px;padding:2px 7px;border-radius:6px;border:1px solid rgba(168,85,247,0.4);background:rgba(168,85,247,0.1);color:#a855f7;cursor:pointer;font-weight:700;">🔍 Sugerir</button>
+          <button id="proSugerirMercado" onclick="proSugerirMelhorMercado()" style="font-size:9px;padding:2px 7px;border-radius:6px;border:1px solid rgba(168,85,247,0.4);background:rgba(168,85,247,0.1);color:#a855f7;cursor:pointer;font-weight:700;display:none;">🔍 Sugerir</button>
         </label>
         <select id="proSymbol" class="pro-input">
           <optgroup label="── VOLATILITY ──">
@@ -5139,10 +5139,7 @@ async function proEscolherMercado(token) {
   const mercados = [
     {sym:'R_100', label:'Volatility 100'},
     {sym:'R_50',  label:'Volatility 50'},
-    {sym:'R_25',  label:'Volatility 25'},
     {sym:'R_10',  label:'Volatility 10'},
-    {sym:'1HZ100V', label:'Volatility 100 (1s)'},
-    {sym:'JD100', label:'Jump 100'},
   ];
   proAddFeed('🔍 AUTO: Analisando melhor mercado...', '#a855f7');
   const resultados = [];
@@ -5152,7 +5149,7 @@ async function proEscolherMercado(token) {
       const ws = new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=128988');
       const digits = [];
       let autorizado = false;
-      const timeout = setTimeout(() => { ws.close(); resolve(); }, 8000);
+      const timeout = setTimeout(() => { ws.close(); resolve(); }, 5000);
 
       ws.onopen = () => ws.send(JSON.stringify({authorize: token}));
       ws.onmessage = (e) => {
@@ -5164,7 +5161,7 @@ async function proEscolherMercado(token) {
           const q = parseFloat(msg.tick.quote);
           const ds = q.toFixed(5).replace('.','');
           digits.push(parseInt(ds[ds.length-1]));
-          if(digits.length >= 20) {
+          if(digits.length >= 10) {
             // Calcular score médio para esse mercado
             const tipos = ['DIGITEVEN','DIGITODD','DIGITOVER','DIGITUNDER'];
             const scores = tipos.map(t => proAnalisarTipo(t, digits).score);
@@ -7198,10 +7195,11 @@ function proGetModoConfig(){
     if(digits.length>=20){
       const tipos=['DIGITEVEN','DIGITODD','DIGITOVER','DIGITUNDER'];
       const scores=tipos.map(t=>proAnalisarTipo(t,digits).score);
-      const media=scores.reduce((a,b)=>a+b,0)/scores.length;
+      const melhorScore=Math.max(...scores);
       let cfg, label;
-      if(media>=70){cfg=_proModoNegConfig.baixo_risco;label='🛡 Baixo Risco (score alto)';}
-      else if(media>=55){cfg=_proModoNegConfig.balanceado;label='⚖ Balanceado';}
+      if(melhorScore>=72){cfg=_proModoNegConfig.baixo_risco;label='🛡 Baixo Risco (score alto)';}
+      else if(melhorScore>=60){cfg=_proModoNegConfig.preciso;label='🎯 Preciso';}
+      else if(melhorScore>=50){cfg=_proModoNegConfig.balanceado;label='⚖ Balanceado';}
       else{cfg=_proModoNegConfig.veloz;label='⚡ Veloz (score baixo)';}
       const el=document.getElementById('proModoNegAtual');
       if(el)el.textContent=label;
