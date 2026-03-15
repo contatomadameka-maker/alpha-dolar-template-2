@@ -4921,7 +4921,7 @@ window._MKT_DATA = {
           ⚡ Veloz<br><span style="font-size:9px;font-weight:400;">Score 45%+ · Cooldown 5s</span>
         </button>
       </div>
-      <div id="proModoNegAuto" style="display:none;margin-top:6px;font-size:10px;color:#a855f7;text-align:center;">🤖 AUTO: IA escolhe o modo conforme o mercado</div>
+      <div id="proModoNegAuto" style="display:none;margin-top:6px;font-size:10px;color:#a855f7;text-align:center;">🤖 AUTO: IA escolhe o modo conforme o mercado<br><span id="proModoNegAtual" style="color:#fbbf24;font-weight:700;">Aguardando análise...</span></div>
     </div>
 
     <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.2);border-radius:10px;padding:12px 14px;margin-bottom:16px;gap:12px;">
@@ -7123,15 +7123,18 @@ window.proSetModoNeg=function(modo, el){
 function proGetModoConfig(){
   const modoAuto = window._proModo==='auto';
   if(modoAuto){
-    // IA escolhe baseado no score médio
     const digits=window._proState.digits;
     if(digits.length>=20){
       const tipos=['DIGITEVEN','DIGITODD','DIGITOVER','DIGITUNDER'];
       const scores=tipos.map(t=>proAnalisarTipo(t,digits).score);
       const media=scores.reduce((a,b)=>a+b,0)/scores.length;
-      if(media>=70) return _proModoNegConfig.baixo_risco;
-      if(media>=55) return _proModoNegConfig.balanceado;
-      return _proModoNegConfig.veloz;
+      let cfg, label;
+      if(media>=70){cfg=_proModoNegConfig.baixo_risco;label='🛡 Baixo Risco (score alto)';}
+      else if(media>=55){cfg=_proModoNegConfig.balanceado;label='⚖ Balanceado';}
+      else{cfg=_proModoNegConfig.veloz;label='⚡ Veloz (score baixo)';}
+      const el=document.getElementById('proModoNegAtual');
+      if(el)el.textContent=label;
+      return cfg;
     }
   }
   return _proModoNegConfig[window._proModoNeg]||_proModoNegConfig.balanceado;
