@@ -4949,16 +4949,141 @@ window.proSetMult=function(val,el){document.querySelectorAll('.pro-mult-btn').fo
 window.proVozChange=function(cb){window._proState.vozAtiva=cb.checked;const thumb=document.getElementById('proVozThumb');const slider=document.getElementById('proVozSlider');if(cb.checked){thumb.style.left='22px';slider.style.background='#a855f7';}else{thumb.style.left='2px';slider.style.background='#374151';}};
 function proFalar(t){if(!window._proState.vozAtiva)return;if(!('speechSynthesis' in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='pt-BR';u.rate=1.05;u.pitch=1.0;u.volume=0.9;const vozes=window.speechSynthesis.getVoices();const voz=vozes.find(v=>v.lang==='pt-BR'&&v.name.toLowerCase().includes('female'))||vozes.find(v=>v.lang==='pt-BR')||vozes.find(v=>v.lang.startsWith('pt'));if(voz)u.voice=voz;window.speechSynthesis.speak(u);}
 function proAddFeed(msg,cor){const feed=document.getElementById('proFeed');if(!feed)return;const ts=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});const div=document.createElement('div');div.style.cssText='color:'+(cor||'#94a3b8')+';padding:2px 0;border-bottom:1px solid rgba(168,85,247,0.08);';div.textContent='['+ts+'] '+msg;const ph=feed.querySelector('div[style*="text-align:center"]');if(ph)ph.remove();feed.appendChild(div);feed.scrollTop=feed.scrollHeight;}
-function proAnalisar(ct){const s=window._proState;const d=s.digits;if(d.length<20)return{entrar:false,score:0,desc:'Coletando dados...'};const u20=d.slice(-20);const u10=d.slice(-10);const pares=u20.filter(x=>x%2===0).length;const rp=pares/20;let s1=0;if(ct==='DIGITEVEN')s1=rp>=0.60?rp:rp>=0.55?rp*0.8:0;else if(ct==='DIGITODD')s1=(1-rp)>=0.60?(1-rp):(1-rp)>=0.55?(1-rp)*0.8:0;else if(ct==='DIGITOVER')s1=rp<0.40?0.65:0;else if(ct==='DIGITUNDER')s1=rp>0.60?0.65:0;let streak=1;const last=d[d.length-1]%2;for(let i=d.length-2;i>=0&&i>=d.length-8;i--){if(d[i]%2===last)streak++;else break;}let s2=0;if(streak>=4){const ep=last===0;if(ct==='DIGITODD'&&ep)s2=Math.min(0.55+streak*0.05,0.80);else if(ct==='DIGITEVEN'&&!ep)s2=Math.min(0.55+streak*0.05,0.80);}else if(streak<=2){if(ct==='DIGITEVEN'&&last===0)s2=0.58;else if(ct==='DIGITODD'&&last===1)s2=0.58;}const altos=u10.filter(x=>x>=5).length;let s3=0;if(ct==='DIGITOVER')s3=altos<=3?0.70:altos<=4?0.60:0;else if(ct==='DIGITUNDER')s3=altos>=7?0.70:altos>=6?0.60:0;else s3=0.50;const sf=(s1*0.45)+(s2*0.35)+(s3*0.20);return{entrar:sf>=0.52,score:Math.round(sf*100),desc:'M1:'+Math.round(s1*100)+'% M2:'+Math.round(s2*100)+'% M3:'+Math.round(s3*100)+'%',ratioPar:Math.round(rp*100),streak,altos};}
+function proAnalisarTipo(ct, d) {
+  const u20=d.slice(-20);const u10=d.slice(-10);const u30=d.slice(-30);
+  const pares=u20.filter(x=>x%2===0).length;
+  const rp=pares/20;
+  const mediaU10=u10.reduce((a,b)=>a+b,0)/u10.length;
+  const last=d[d.length-1];
+  let streak=1;
+  const lastPar=last%2;
+  for(let i=d.length-2;i>=0&&i>=d.length-8;i--){if(d[i]%2===lastPar)streak++;else break;}
+
+  let score=0; let barrier=null; let desc='';
+
+  if(ct==='DIGITEVEN'){
+    let s1=rp>=0.60?rp:rp>=0.55?rp*0.85:rp*0.5;
+    let s2=0;
+    if(streak>=4&&lastPar===1)s2=Math.min(0.55+streak*0.05,0.80);
+    else if(streak<=2&&lastPar===0)s2=0.58;
+    else s2=0.45;
+    let s3=rp>=0.55?0.65:0.40;
+    score=(s1*0.45)+(s2*0.35)+(s3*0.20);
+    desc='Par:'+Math.round(rp*100)+'% Str:'+streak;
+  }
+  else if(ct==='DIGITODD'){
+    const ri=1-rp;
+    let s1=ri>=0.60?ri:ri>=0.55?ri*0.85:ri*0.5;
+    let s2=0;
+    if(streak>=4&&lastPar===0)s2=Math.min(0.55+streak*0.05,0.80);
+    else if(streak<=2&&lastPar===1)s2=0.58;
+    else s2=0.45;
+    let s3=ri>=0.55?0.65:0.40;
+    score=(s1*0.45)+(s2*0.35)+(s3*0.20);
+    desc='Ímpar:'+Math.round(ri*100)+'% Str:'+streak;
+  }
+  else if(ct==='DIGITOVER'){
+    // Analisa se maioria dos dígitos está abaixo de 5
+    const baixos=u10.filter(x=>x<5).length;
+    const s1=baixos>=7?0.75:baixos>=6?0.65:baixos>=5?0.55:0.30;
+    // Tendência de sequência de baixos
+    let seqBaixos=0;
+    for(let i=d.length-1;i>=0&&i>=d.length-5;i--){if(d[i]<5)seqBaixos++;else break;}
+    const s2=seqBaixos>=3?0.70:seqBaixos>=2?0.60:0.40;
+    // Média geral
+    const s3=mediaU10<4?0.70:mediaU10<4.5?0.60:0.35;
+    score=(s1*0.40)+(s2*0.35)+(s3*0.25);
+    desc='Baixos:'+baixos+'/10 Seq:'+seqBaixos;
+  }
+  else if(ct==='DIGITUNDER'){
+    // Analisa se maioria dos dígitos está acima de 4
+    const altos=u10.filter(x=>x>=5).length;
+    const s1=altos>=7?0.75:altos>=6?0.65:altos>=5?0.55:0.30;
+    let seqAltos=0;
+    for(let i=d.length-1;i>=0&&i>=d.length-5;i--){if(d[i]>=5)seqAltos++;else break;}
+    const s2=seqAltos>=3?0.70:seqAltos>=2?0.60:0.40;
+    const s3=mediaU10>5.5?0.70:mediaU10>5?0.60:0.35;
+    score=(s1*0.40)+(s2*0.35)+(s3*0.25);
+    desc='Altos:'+altos+'/10 Seq:'+seqAltos;
+  }
+  else if(ct==='DIGITMATCH'){
+    // Encontra o dígito mais frequente nos últimos 30 ticks
+    const freq=Array(10).fill(0);
+    u30.forEach(x=>freq[x]++);
+    const maxFreq=Math.max(...freq);
+    const digMaisFreq=freq.indexOf(maxFreq);
+    const pctFreq=maxFreq/u30.length;
+    // Score baseado na dominância do dígito
+    const s1=pctFreq>=0.20?0.75:pctFreq>=0.15?0.65:pctFreq>=0.12?0.55:0.35;
+    // Verificar se apareceu recentemente (último 5 ticks)
+    const u5=d.slice(-5);
+    const recente=u5.filter(x=>x===digMaisFreq).length;
+    const s2=recente>=2?0.70:recente>=1?0.55:0.35;
+    // Consistência: apareceu em pelo menos 2 dos últimos 3 blocos de 10
+    const b1=d.slice(-10).filter(x=>x===digMaisFreq).length;
+    const b2=d.slice(-20,-10).filter(x=>x===digMaisFreq).length;
+    const s3=(b1>=2&&b2>=2)?0.70:(b1>=2||b2>=2)?0.55:0.35;
+    score=(s1*0.40)+(s2*0.35)+(s3*0.25);
+    barrier=digMaisFreq;
+    desc='Dígito:'+digMaisFreq+' Freq:'+Math.round(pctFreq*100)+'%';
+  }
+  else if(ct==='DIGITDIFF'){
+    // Score baseado em quão aleatório está o mercado (sem dígito dominante)
+    const freq=Array(10).fill(0);
+    u20.forEach(x=>freq[x]++);
+    const maxFreq=Math.max(...freq);
+    const entropia=maxFreq/u20.length;
+    // Quanto mais distribuído, melhor para DIFF
+    const s1=entropia<=0.15?0.75:entropia<=0.20?0.65:entropia<=0.25?0.55:0.35;
+    // Último dígito não repetido recentemente
+    const lastDig=d[d.length-1];
+    const repetiuRecente=d.slice(-5,-1).filter(x=>x===lastDig).length;
+    const s2=repetiuRecente===0?0.70:repetiuRecente===1?0.50:0.30;
+    const s3=0.50;
+    score=(s1*0.45)+(s2*0.35)+(s3*0.20);
+    barrier=lastDig; // aposta que o próximo é diferente do último
+    desc='Entropia:'+Math.round(entropia*100)+'% LastDig:'+lastDig;
+  }
+
+  return {score, barrier, desc, entrar: false};
+}
+
+function proAnalisar(ct){
+  const s=window._proState;
+  const d=s.digits;
+  if(d.length<20)return{entrar:false,score:0,desc:'Coletando dados...',barrier:null};
+  const modoAuto=window._proModo==='auto';
+
+  if(modoAuto){
+    // Analisa TODOS os tipos e escolhe o melhor
+    const tipos=['DIGITEVEN','DIGITODD','DIGITOVER','DIGITUNDER','DIGITMATCH','DIGITDIFF'];
+    let melhor={score:0,ct:'DIGITEVEN',barrier:null,desc:''};
+    tipos.forEach(t=>{
+      const r=proAnalisarTipo(t,d);
+      if(r.score>melhor.score){melhor={score:r.score,ct:t,barrier:r.barrier,desc:r.desc};}
+    });
+    // No AUTO, limiar mais baixo (45%) pois compara relativamente
+    const entrar=melhor.score>=45;
+    // Atualiza o display do tipo escolhido
+    document.getElementById('proTipo').textContent=melhor.ct.replace('DIGIT','');
+    window._proAutoEscolha={ct:melhor.ct,barrier:melhor.barrier};
+    return{entrar,score:melhor.score,desc:'AUTO→'+melhor.ct+' '+melhor.desc,barrier:melhor.barrier,ctEscolhido:melhor.ct};
+  } else {
+    // FIXO: usa fórmula específica do tipo escolhido, limiar 52%
+    const r=proAnalisarTipo(ct,d);
+    const entrar=r.score>=52;
+    return{entrar,score:r.score,desc:r.desc,barrier:r.barrier,ctEscolhido:ct};
+  }
+}
 function proGetToken(){try{const c=JSON.parse(localStorage.getItem('deriv_accounts')||'[]');const t=window._proState.contaTipo||localStorage.getItem('deriv_conta_ativa')||'demo';const cc=c.find(x=>Boolean(x.isDemo)===(t==='demo'))||c[0];return cc?cc.token:null;}catch{return null;}}
 function proConectar(){const s=window._proState;const token=proGetToken();if(!token){proAddFeed('❌ Token não encontrado. Faça login.','#ef4444');return;}s.ws=new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=128988');s.ws.onopen=()=>{s.ws.send(JSON.stringify({authorize:token}));};s.ws.onmessage=(e)=>{const msg=JSON.parse(e.data);if(msg.msg_type==='authorize'){proAddFeed('✅ Conectado! Coletando dados...','#22c55e');proFalar('Alpha I A Pro conectado. Coletando dados do mercado.');const sym=document.getElementById('proSymbol').value;s.ws.send(JSON.stringify({ticks:sym,subscribe:1}));}else if(msg.msg_type==='tick'){proOnTick(msg.tick);}else if(msg.msg_type==='buy'){if(msg.error){proAddFeed('❌ Erro: '+msg.error.message,'#ef4444');s.waiting=false;return;}const id=msg.buy.contract_id;s.pendingContracts[id]=true;s.ws.send(JSON.stringify({proposal_open_contract:1,contract_id:id,subscribe:1}));}else if(msg.msg_type==='proposal_open_contract'){proOnContract(msg.proposal_open_contract);}else if(msg.msg_type==='balance'){const sb=document.getElementById('proSaldoBox');const t=window._proState.contaTipo||'demo';if(sb)sb.textContent=t.toUpperCase()+': $'+parseFloat(msg.balance.balance||0).toFixed(2)+' '+(msg.balance.currency||'USD');}};s.ws.onclose=()=>{if(s.running){proAddFeed('⚠️ Reconectando...','#eab308');setTimeout(proConectar,3000);}};}
-function proOnTick(tick){const s=window._proState;if(!s.running||s.waiting)return;const q=parseFloat(tick.quote);const ds=q.toFixed(5).replace('.','');const dg=parseInt(ds[ds.length-1]);s.digits.push(dg);if(s.digits.length>500)s.digits.shift();const ct=document.getElementById('proContractType').value;const a=proAnalisar(ct);document.getElementById('proScore').textContent=a.score>0?a.score+'%':'—';document.getElementById('proTipo').textContent=ct.replace('DIGIT','');document.getElementById('proMlFase').textContent=s.digits.length<20?'Coletando ('+s.digits.length+'/20)':'ML Ativo · '+a.desc;const _liq=s.lucro-s.perda;if(_liq>=parseFloat(document.getElementById('proTarget').value)){proParar('take_profit');return;}if(s.perdaAcum>=parseFloat(document.getElementById('proStop').value)){proParar('stop_loss');return;}if(a.entrar&&a.score>=52&&Date.now()>=s.cooldownAte){const rt=ct==='DIGITEVEN'?'Ratio par em '+a.ratioPar+'%':ct==='DIGITODD'?'Ratio ímpar em '+(100-a.ratioPar)+'%':'Altos: '+a.altos+' de 10';proFalar('Sinal detectado. '+rt+'. Score '+a.score+'%. Entrando.');proExecutar(ct);}}
+function proOnTick(tick){const s=window._proState;if(!s.running||s.waiting)return;const q=parseFloat(tick.quote);const ds=q.toFixed(5).replace('.','');const dg=parseInt(ds[ds.length-1]);s.digits.push(dg);if(s.digits.length>500)s.digits.shift();const ct=document.getElementById('proContractType').value;const a=proAnalisar(ct);document.getElementById('proScore').textContent=a.score>0?a.score+'%':'—';document.getElementById('proTipo').textContent=ct.replace('DIGIT','');document.getElementById('proMlFase').textContent=s.digits.length<20?'Coletando ('+s.digits.length+'/20)':'ML Ativo · '+a.desc;const _liq=s.lucro-s.perda;if(_liq>=parseFloat(document.getElementById('proTarget').value)){proParar('take_profit');return;}if(s.perdaAcum>=parseFloat(document.getElementById('proStop').value)){proParar('stop_loss');return;}if(a.entrar&&Date.now()>=s.cooldownAte){const ctFinal=a.ctEscolhido||ct;const rt='Score '+a.score+'% → '+ctFinal.replace('DIGIT','');proFalar('Sinal detectado. '+rt+'. Entrando.');proExecutar(ctFinal,a.barrier);}}
 function proGetPayout(ct){
   // Payout aproximado por tipo de contrato
   const payouts={'DIGITEVEN':0.87,'DIGITODD':0.87,'DIGITOVER':0.95,'DIGITUNDER':0.95,'DIGITMATCH':8.0,'DIGITDIFF':0.05};
   return payouts[ct]||0.87;
 }
-function proExecutar(ct){const s=window._proState;if(s.waiting||!s.ws)return;s.waiting=true;
+function proExecutar(ct,barrier){const s=window._proState;if(s.waiting||!s.ws)return;s.waiting=true;
   let stake=s.stake;
   if(s.perdaAcum>0){
     // Calcula stake necessário para cobrir perdas + lucro mínimo
@@ -4968,7 +5093,9 @@ function proExecutar(ct){const s=window._proState;if(s.waiting||!s.ws)return;s.w
     stake=Math.max(stakeNecessario,stakeMult,s.stake);
     stake=Math.round(stake*100)/100;
   }
-  s.stakeAtual=stake;proAddFeed('📤 Entrada: '+ct+' | $'+stake.toFixed(2),'#a855f7');s.ws.send(JSON.stringify({buy:1,price:stake,parameters:{contract_type:ct,symbol:document.getElementById('proSymbol').value,duration:1,duration_unit:'t',basis:'stake',amount:stake,currency:'USD'}}));}
+  s.stakeAtual=stake;proAddFeed('📤 Entrada: '+ct+' | $'+stake.toFixed(2),'#a855f7');const params={contract_type:ct,symbol:document.getElementById('proSymbol').value,duration:1,duration_unit:'t',basis:'stake',amount:stake,currency:'USD'};
+  if((ct==='DIGITMATCH'||ct==='DIGITDIFF')&&barrier!==null&&barrier!==undefined){params.barrier=barrier;}
+  s.ws.send(JSON.stringify({buy:1,price:stake,parameters:params}));}
 function proOnContract(c){const s=window._proState;if(!c||!['won','lost'].includes(c.status))return;s.waiting=false;s.cooldownAte=Date.now()+10000;const won=c.status==='won';const profit=parseFloat(c.sell_price||0)-parseFloat(c.buy_price||0);if(won){s.wins++;s.lucro+=Math.abs(profit);s.perdaAcum=0;s.martStep=0;const _sl=document.getElementById("proStopAtual");if(_sl){_sl.textContent="$0.00";_sl.style.color="#22c55e";}const _sb=document.getElementById("proStopBarra");if(_sb){_sb.style.width="0%";_sb.style.background="#22c55e";}const _sm=document.getElementById("proStopMsg");if(_sm)_sm.textContent="✅ WIN! Sequência resetada.";proAddFeed('✅ WIN +$'+Math.abs(profit).toFixed(2),'#22c55e');proFalar('Ganhou! Lucro de '+Math.abs(profit).toFixed(2)+' dólares.');}else{s.losses++;s.perda+=Math.abs(profit);s.perdaAcum+=Math.abs(profit);s.martStep=Math.min(s.martStep+1,5);const _lim=parseFloat(document.getElementById("proStop").value)||10;const _pct=Math.min((s.perdaAcum/_lim)*100,100);const _sl=document.getElementById("proStopAtual");if(_sl){_sl.textContent="$"+s.perdaAcum.toFixed(2);_sl.style.color=_pct>70?"#ef4444":_pct>40?"#f97316":"#fbbf24";}const _slm=document.getElementById("proStopLimite");if(_slm)_slm.textContent="$"+_lim.toFixed(2);const _sb=document.getElementById("proStopBarra");if(_sb){_sb.style.width=_pct+"%";_sb.style.background=_pct>70?"#ef4444":_pct>40?"#f97316":"#22c55e";}const _sm=document.getElementById("proStopMsg");if(_sm)_sm.textContent="⚠️ Sequência: "+s.martStep+" loss(es) | Reseta no próximo WIN";proAddFeed('❌ LOSS -$'+Math.abs(profit).toFixed(2),'#ef4444');if(s.martStep>=3)proFalar('Atenção. Sequência de '+s.martStep+' perdas. Ajustando stake.');}const total=s.wins+s.losses;const wr=total>0?Math.round(s.wins/total*100):0;document.getElementById('proLucro').textContent='$'+(s.lucro-s.perda).toFixed(2);document.getElementById('proLucro').style.color=(s.lucro-s.perda)>=0?'#22c55e':'#ef4444';document.getElementById('proWinRate').textContent=wr+'%';
   // Atualiza saldo em tempo real
   if(s.ws){s.ws.send(JSON.stringify({balance:1}));}
