@@ -353,6 +353,9 @@ async function processarCallback() {
     const params = new URLSearchParams(window.location.search);
     if (!params.has('acct1')) return false;
 
+    // Limpa dados antigos — evita conflito entre usuários
+    ['deriv_accounts','deriv_conta_ativa','deriv_token_demo','deriv_token_real','deriv_balance_demo','deriv_balance_real','alpha_plano','alpha_usuario_ativo'].forEach(k => localStorage.removeItem(k));
+
     setLoading(true, 'VERIFICANDO CONTAS...');
     const raw = [];
     let i = 1;
