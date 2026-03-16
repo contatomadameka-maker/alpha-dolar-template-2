@@ -141,3 +141,83 @@ def limpar_estado_bot(bot_type):
     import requests as req
     r = req.delete(f"{SUPABASE_URL}/rest/v1/bot_estado?bot_type=eq.{bot_type}", headers=_headers())
     return r.status_code in [200, 204]
+
+
+# ==================== USUÁRIOS / PLANOS ====================
+
+def verificar_usuario(deriv_id):
+    """Verifica se usuário tem acesso ativo na plataforma"""
+    import requests as req
+    SUPABASE_URL_L = os.environ.get('SUPABASE_URL', '')
+    SUPABASE_KEY_L = os.environ.get('SUPABASE_KEY', '')
+    headers = {'apikey': SUPABASE_KEY_L, 'Authorization': f'Bearer {SUPABASE_KEY_L}'}
+    try:
+        r = req.get(f"{SUPABASE_URL_L}/rest/v1/usuarios?deriv_id=eq.{deriv_id}&limit=1", headers=headers)
+        if r.status_code == 200 and r.json():
+            u = r.json()[0]
+            return {
+                'existe': True,
+                'plano': u.get('plano', 'free'),
+                'status': u.get('status', 'inativo'),
+                'ativo': u.get('status') == 'ativo',
+                'nome': u.get('nome', ''),
+            }
+    except: pass
+    return {'existe': False, 'ativo': False, 'plano': 'free'}
+
+def registrar_ou_atualizar_usuario(deriv_id, nome='', email=''):
+    """Registra novo usuário ou atualiza último acesso"""
+    import requests as req
+    from datetime import datetime
+    SUPABASE_URL_L = os.environ.get('SUPABASE_URL', '')
+    SUPABASE_KEY_L = os.environ.get('SUPABASE_KEY', '')
+    headers = {
+        'apikey': SUPABASE_KEY_L,
+        'Authorization': f'Bearer {SUPABASE_KEY_L}',
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates,return=representation'
+    }
+    payload = {
+        'deriv_id': deriv_id,
+        'nome': nome,
+        'email': email,
+        'ultimo_acesso': datetime.utcnow().isoformat()
+    }
+    try:
+        r = req.post(f"{SUPABASE_URL_L}/rest/v1/usuarios", json=payload, headers=headers)
+        return r.status_code in [200, 201]
+    except: return False
+
+def listar_usuarios():
+    """Lista todos os usuários para o admin"""
+    import requests as req
+    SUPABASE_URL_L = os.environ.get('SUPABASE_URL', '')
+    SUPABASE_KEY_L = os.environ.get('SUPABASE_KEY', '')
+    headers = {'apikey': SUPABASE_KEY_L, 'Authorization': f'Bearer {SUPABASE_KEY_L}'}
+    try:
+        r = req.get(f"{SUPABASE_URL_L}/rest/v1/usuarios?order=ultimo_acesso.desc", headers=headers)
+        if r.status_code == 200:
+            return r.json()
+    except: pass
+    return []
+
+def atualizar_plano_usuario(deriv_id, plano, status='ativo', dias=30):
+    """Atualiza plano do usuário (chamado após pagamento)"""
+    import requests as req
+    from datetime import datetime, timedelta
+    SUPABASE_URL_L = os.environ.get('SUPABASE_URL', '')
+    SUPABASE_KEY_L = os.environ.get('SUPABASE_KEY', '')
+    headers = {
+        'apikey': SUPABASE_KEY_L,
+        'Authorization': f'Bearer {SUPABASE_KEY_L}',
+        'Content-Type': 'application/json'
+    }
+    expiracao = (datetime.utcnow() + timedelta(days=dias)).isoformat()
+    payload = {'plano': plano, 'status': status, 'data_expiracao': expiracao}
+    try:
+        r = req.patch(
+            f"{SUPABASE_URL_L}/rest/v1/usuarios?deriv_id=eq.{deriv_id}",
+            json=payload, headers=headers
+        )
+        return r.status_code in [200, 204]
+    except: return False

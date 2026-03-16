@@ -431,9 +431,51 @@ function mostrarAutenticado(contas) {
     });
 }
 
-window.entrar = () => {
-    setLoading(true, 'CARREGANDO PLATAFORMA...');
-    setTimeout(() => { window.location.href = '/home'; }, 700);
+window.entrar = async () => {
+    setLoading(true, 'VERIFICANDO ACESSO...');
+    try {
+        const contas = JSON.parse(localStorage.getItem('deriv_accounts') || '[]');
+        const conta = contas.find(c => !c.isDemo) || contas[0];
+        if (!conta) { window.location.href = '/home'; return; }
+        const deriv_id = conta.acct || conta.loginid || '';
+        const nome = conta.fullname || '';
+        const email = conta.email || '';
+        const BACKEND = 'https://alpha-dolar-backend.onrender.com';
+        const res = await fetch(`${BACKEND}/api/usuario/verificar`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({deriv_id, nome, email})
+        });
+        const data = await res.json();
+        if (!data.success) {
+            // Se backend offline, deixa entrar (fallback)
+            window.location.href = '/home';
+            return;
+        }
+        if (!data.ativo) {
+            // Usuário sem plano ativo
+            setLoading(false);
+            document.getElementById('loginState').innerHTML = `
+                <div style="text-align:center;padding:32px 20px;">
+                    <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+                    <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:8px;">Acesso Bloqueado</div>
+                    <div style="font-size:14px;color:#94a3b8;margin-bottom:24px;">Você ainda não tem um plano ativo.<br>Entre em contato para assinar.</div>
+                    <a href="https://wa.me/5547996214217?text=Quero+assinar+o+Alpha+Dolar" 
+                       style="display:inline-block;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;padding:12px 28px;border-radius:10px;font-weight:700;text-decoration:none;">
+                        📱 Assinar via WhatsApp
+                    </a>
+                </div>`;
+            return;
+        }
+        // Salva plano no localStorage
+        localStorage.setItem('alpha_plano', data.plano || 'free');
+        localStorage.setItem('alpha_usuario_ativo', 'true');
+        setLoading(true, 'CARREGANDO PLATAFORMA...');
+        setTimeout(() => { window.location.href = '/home'; }, 700);
+    } catch(e) {
+        // Fallback — se erro, deixa entrar
+        window.location.href = '/home';
+    }
 };
 
 try {

@@ -173,6 +173,57 @@ def serve_static(path):
 def health():
     return jsonify({'status': 'ok', 'message': 'Alpha Dolar API Running', 'bots_available': BOTS_AVAILABLE})
 
+
+# ==================== USUÁRIOS / PLANOS ====================
+
+@app.route('/api/usuario/verificar', methods=['POST'])
+def verificar_acesso():
+    """Verifica se usuário tem acesso ativo — chamado no login"""
+    try:
+        data = request.get_json()
+        deriv_id = data.get('deriv_id', '')
+        nome = data.get('nome', '')
+        email = data.get('email', '')
+        if not deriv_id:
+            return jsonify({'success': False, 'error': 'deriv_id obrigatório'}), 400
+        # Registra ou atualiza último acesso
+        registrar_ou_atualizar_usuario(deriv_id, nome, email)
+        # Verifica plano
+        usuario = verificar_usuario(deriv_id)
+        return jsonify({
+            'success': True,
+            'existe': usuario['existe'],
+            'ativo': usuario['ativo'],
+            'plano': usuario['plano'],
+            'nome': usuario.get('nome', ''),
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/usuario/ativar', methods=['POST'])
+def ativar_usuario():
+    """Admin ativa plano do usuário"""
+    try:
+        data = request.get_json()
+        deriv_id = data.get('deriv_id', '')
+        plano = data.get('plano', 'starter')
+        dias = int(data.get('dias', 30))
+        if not deriv_id:
+            return jsonify({'success': False, 'error': 'deriv_id obrigatório'}), 400
+        ok = atualizar_plano_usuario(deriv_id, plano, 'ativo', dias)
+        return jsonify({'success': ok, 'message': f'Plano {plano} ativado por {dias} dias!'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/usuario/listar', methods=['GET'])
+def listar_usuarios_route():
+    """Lista todos os usuários — admin"""
+    try:
+        usuarios = listar_usuarios()
+        return jsonify({'success': True, 'usuarios': usuarios})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 # ==================== START BOT ====================
 @app.route('/api/bot/start', methods=['POST'])
 def start_bot():
