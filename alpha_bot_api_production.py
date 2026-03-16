@@ -215,11 +215,8 @@ def start_bot():
                     return jsonify({'success': False, 'error': '🚫 Bot suspenso pelo administrador. Entre em contato.'}), 403
         except: pass
 
-        if bot_type not in bots_state:
-            get_user_state(deriv_id, bot_type) = {
-                'running': False, 'instance': None, 'thread': None,
-                'trades': [], 'stop_reason': None, 'stop_message': None
-            }
+        # Garante que o estado do usuário existe
+        get_user_state(deriv_id, bot_type)
 
         if get_user_state(deriv_id, bot_type).get('running', False):
             return jsonify({'success': False, 'error': f'Bot {bot_type} já está rodando'}), 400
