@@ -28,11 +28,11 @@ except ImportError:
 class AlphaDolar:
     """Motor principal do bot Alpha Dolar 2.0"""
 
-    def __init__(self, strategy=None, use_martingale=True, bot_number=None):
+    def __init__(self, strategy=None, use_martingale=True, bot_number=None, api_token=None):
         self.bot_name = "ALPHA DOLAR 2.0"
         self.version = "2.0.0"
-
-        self.api = DerivAPI()
+        self._api_token = api_token or BotConfig.API_TOKEN
+        self.api = DerivAPI(api_token=self._api_token)
 
         if strategy is None:
             raise ValueError("Estratégia não pode ser None!")

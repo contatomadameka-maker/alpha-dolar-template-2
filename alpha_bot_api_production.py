@@ -321,7 +321,7 @@ def start_bot():
                 return jsonify({'success': False, 'error': f'Erro estratégia: {str(e)}'}), 500
 
             try:
-                bot = AlphaDolar(strategy=strategy, use_martingale=getattr(strategy, "usar_martingale", True))
+                bot = AlphaDolar(strategy=strategy, use_martingale=getattr(strategy, "usar_martingale", True), api_token=token)
             except Exception as e:
                 return jsonify({'success': False, 'error': f'Erro bot: {str(e)}'}), 500
 
