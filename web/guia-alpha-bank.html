@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Alpha Bank — Guia Completo | Alpha Dolar</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--green:#22c55e;--green2:#16a34a;--dark:#060f06;--panel:#0d1f0d;--border:rgba(34,197,94,0.15);--text:#e8f5e8;--muted:rgba(232,245,232,0.5)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;line-height:1.6;overflow-x:hidden}
+.hero{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 20px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(34,197,94,0.12),transparent)}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 18px;border-radius:100px;border:1px solid var(--border);background:rgba(34,197,94,0.08);font-size:12px;font-weight:600;color:var(--green);letter-spacing:2px;text-transform:uppercase;margin-bottom:28px}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(42px,8vw,88px);font-weight:900;line-height:1;margin-bottom:20px;background:linear-gradient(135deg,#86efac,#22c55e,#16a34a);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:clamp(16px,2.5vw,20px);color:var(--muted);max-width:600px;margin:0 auto 40px}
+.hero-icon{font-size:80px;margin-bottom:20px;filter:drop-shadow(0 0 30px rgba(34,197,94,0.4))}
+.btn-primary{display:inline-flex;align-items:center;gap:10px;padding:14px 32px;border-radius:12px;background:linear-gradient(135deg,var(--green2),var(--green));color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;text-decoration:none;box-shadow:0 4px 24px rgba(34,197,94,0.3);transition:all 0.2s}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(34,197,94,0.4)}
+.btn-back{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;background:rgba(34,197,94,0.08);border:1px solid var(--border);color:var(--green);font-size:13px;text-decoration:none;transition:all 0.2s;margin-bottom:40px}
+.btn-back:hover{background:rgba(34,197,94,0.15)}
+.container{max-width:900px;margin:0 auto;padding:0 24px}
+.section{padding:60px 0}
+.section-tag{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--green);margin-bottom:12px}
+.section h2{font-family:'Syne',sans-serif;font-size:clamp(26px,4vw,38px);font-weight:800;margin-bottom:16px;color:#fff}
+.section p{color:var(--muted);font-size:16px;max-width:680px;margin-bottom:16px}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:24px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:24px;transition:all 0.2s}
+.card:hover{border-color:rgba(34,197,94,0.4);transform:translateY(-2px)}
+.card-icon{font-size:32px;margin-bottom:12px}
+.card h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:#fff;margin-bottom:8px}
+.card p{font-size:13px;color:var(--muted);line-height:1.5}
+.perfis-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+.perfil-card{border-radius:16px;padding:24px;text-align:center;border:2px solid}
+.perfil-card.conservador{background:rgba(59,130,246,0.05);border-color:rgba(59,130,246,0.3)}
+.perfil-card.moderado{background:rgba(34,197,94,0.05);border-color:rgba(34,197,94,0.4)}
+.perfil-card.agressivo{background:rgba(239,68,68,0.05);border-color:rgba(239,68,68,0.3)}
+.perfil-icon{font-size:36px;margin-bottom:10px}
+.perfil-nome{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;margin-bottom:12px}
+.perfil-card.conservador .perfil-nome{color:#93c5fd}
+.perfil-card.moderado .perfil-nome{color:#86efac}
+.perfil-card.agressivo .perfil-nome{color:#fca5a5}
+.perfil-item{font-size:12px;color:var(--muted);padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+.perfil-item:last-child{border-bottom:none}
+.perfil-item strong{color:#fff}
+.steps{display:flex;flex-direction:column;gap:12px;margin-top:24px}
+.step{display:flex;gap:16px;align-items:flex-start;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px}
+.step-num{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--green2),var(--green));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:900;font-size:14px;color:#fff;flex-shrink:0}
+.step h4{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#fff;margin-bottom:4px}
+.step p{font-size:13px;color:var(--muted)}
+.formula-box{background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(34,197,94,0.04));border:1px solid rgba(34,197,94,0.25);border-radius:16px;padding:32px;margin-top:24px;text-align:center}
+.formula{font-family:'Syne',sans-serif;font-size:clamp(14px,2.5vw,22px);font-weight:800;color:var(--green);margin:16px 0}
+.cta-section{padding:60px 0}
+.cta-box{background:linear-gradient(135deg,rgba(34,197,94,0.1),rgba(34,197,94,0.05));border:1px solid rgba(34,197,94,0.3);border-radius:24px;padding:48px 32px;text-align:center}
+.cta-box h2{font-family:'Syne',sans-serif;font-size:clamp(22px,4vw,34px);font-weight:900;color:#fff;margin-bottom:12px}
+.cta-box p{color:var(--muted);margin-bottom:28px}
+footer{padding:32px 24px;text-align:center;border-top:1px solid var(--border);color:var(--muted);font-size:13px}
+@media(max-width:600px){.perfis-grid{grid-template-columns:1fr}.cards-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="container">
+    <a href="/videos.html" class="btn-back">← Voltar para Vídeos</a>
+    <div class="hero-badge">🏦 Gestão de Banca</div>
+    <div class="hero-icon">🏦</div>
+    <h1>Alpha Bank</h1>
+    <p class="hero-sub">Gestão inteligente de banca para traders que querem sobreviver e prosperar no mercado de forma consistente</p>
+    <a href="/dashboard-fixed.html" class="btn-primary">Abrir no Dashboard →</a>
+  </div>
+</div>
+<div class="container">
+  <div class="section">
+    <div class="section-tag">O Problema</div>
+    <h2>Por que 90% dos traders perdem dinheiro?</h2>
+    <p>A resposta é simples: gestão de banca errada. Apostar demais em uma operação, não ter stop loss definido, ou perseguir prejuízo após perdas são os maiores erros. O Alpha Bank resolve isso automaticamente.</p>
+    <div class="formula-box">
+      <p style="color:var(--muted);font-size:14px;">A fórmula que os profissionais usam:</p>
+      <div class="formula">Stake Ideal = Saldo × % de Risco do Perfil</div>
+      <p style="color:var(--muted);font-size:13px;">Exemplo: Saldo $200 com perfil Moderado (2%) → Stake ideal = $4,00 por operação</p>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-tag">Funcionalidades</div>
+    <h2>O que o Alpha Bank faz por você</h2>
+    <div class="cards-grid">
+      <div class="card"><div class="card-icon">📊</div><h3>Stake Automático</h3><p>Calcula exatamente quanto apostar em cada operação baseado no saldo atual, sem risco de exagerar.</p></div>
+      <div class="card"><div class="card-icon">🛑</div><h3>Stop Loss Diário</h3><p>Define o limite máximo de perda para o dia. Quando atingido, é hora de parar e proteger o restante.</p></div>
+      <div class="card"><div class="card-icon">🎯</div><h3>Meta de Lucro</h3><p>Estabelece uma meta realista de ganho diário. Atingiu? Encerre o dia com lucro garantido.</p></div>
+      <div class="card"><div class="card-icon">🎲</div><h3>Martingale Seguro</h3><p>Limita os níveis de martingale para não destruir a banca em sequências de perdas.</p></div>
+      <div class="card"><div class="card-icon">⚡</div><h3>Aplicação 1 Clique</h3><p>Clique em "Aplicar no Robô" e os campos do dashboard são preenchidos automaticamente.</p></div>
+      <div class="card"><div class="card-icon">📱</div><h3>Tempo Real</h3><p>Lê o saldo da conta automaticamente. Mude de DEMO para REAL e os valores se ajustam.</p></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-tag">Perfis de Risco</div>
+    <h2>Escolha seu estilo de operação</h2>
+    <div class="perfis-grid">
+      <div class="perfil-card conservador">
+        <div class="perfil-icon">🛡️</div>
+        <div class="perfil-nome">Conservador</div>
+        <div class="perfil-item">Stake: <strong>1% do saldo</strong></div>
+        <div class="perfil-item">Stop diário: <strong>5%</strong></div>
+        <div class="perfil-item">Meta: <strong>3%</strong></div>
+        <div class="perfil-item">Martingale: <strong>2 níveis</strong></div>
+        <p style="font-size:11px;color:#93c5fd;margin-top:10px;">Ideal para iniciantes ou bancas pequenas</p>
+      </div>
+      <div class="perfil-card moderado">
+        <div class="perfil-icon">⚖️</div>
+        <div class="perfil-nome">Moderado</div>
+        <div class="perfil-item">Stake: <strong>2% do saldo</strong></div>
+        <div class="perfil-item">Stop diário: <strong>10%</strong></div>
+        <div class="perfil-item">Meta: <strong>5%</strong></div>
+        <div class="perfil-item">Martingale: <strong>3 níveis</strong></div>
+        <p style="font-size:11px;color:#86efac;margin-top:10px;">Equilíbrio entre crescimento e proteção</p>
+      </div>
+      <div class="perfil-card agressivo">
+        <div class="perfil-icon">🚀</div>
+        <div class="perfil-nome">Agressivo</div>
+        <div class="perfil-item">Stake: <strong>5% do saldo</strong></div>
+        <div class="perfil-item">Stop diário: <strong>20%</strong></div>
+        <div class="perfil-item">Meta: <strong>10%</strong></div>
+        <div class="perfil-item">Martingale: <strong>5 níveis</strong></div>
+        <p style="font-size:11px;color:#fca5a5;margin-top:10px;">Para traders experientes com banca sólida</p>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-tag">Como Usar</div>
+    <h2>Passo a passo em 4 etapas</h2>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div><h4>Abra o Alpha Bank</h4><p>No dashboard, clique no botão verde "🏦 Alpha Bank" no painel esquerdo, abaixo do Alpha IA Pro.</p></div></div>
+      <div class="step"><div class="step-num">2</div><div><h4>Verifique seu saldo</h4><p>O sistema lê automaticamente seu saldo (DEMO ou REAL) e calcula todos os valores com base nele.</p></div></div>
+      <div class="step"><div class="step-num">3</div><div><h4>Escolha seu perfil</h4><p>Selecione Conservador, Moderado ou Agressivo conforme sua experiência e tamanho da banca.</p></div></div>
+      <div class="step"><div class="step-num">4</div><div><h4>Clique em "Aplicar no Robô"</h4><p>Os campos de stake, stop loss e meta são preenchidos automaticamente. Inicie o robô!</p></div></div>
+    </div>
+  </div>
+</div>
+<div class="cta-section"><div class="container"><div class="cta-box">
+  <h2>Pronto para operar com disciplina?</h2>
+  <p>Configure sua gestão de banca em menos de 1 minuto.</p>
+  <a href="/dashboard-fixed.html" class="btn-primary">🏦 Abrir Alpha Bank →</a>
+</div></div></div>
+<footer>© 2026 Alpha Dolar — Trading Bot 2.0</footer>
+</body>
+</html>

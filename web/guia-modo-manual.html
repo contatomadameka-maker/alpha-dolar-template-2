@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guia do Modo Manual — Alpha Dolar 2.0</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1e2430; --border: #2a2d3a;
+    --cyan: #00d2ff; --cyan2: #0ea5e9; --green: #22c55e; --red: #ef4444;
+    --yellow: #eab308; --purple: #a855f7; --text: #e2e8f0; --muted: #64748b; --muted2: #94a3b8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.6; }
+
+  .topbar { background: #0a0e16; border-bottom: 1px solid var(--border); padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .topbar a { color: var(--cyan); text-decoration: none; font-size: 13px; }
+
+  .hero { background: linear-gradient(135deg, #0a0e16 0%, #111827 50%, #0d1117 100%); border-bottom: 1px solid var(--border); padding: 64px 32px 48px; text-align: center; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(0,210,255,0.08) 0%, transparent 70%); }
+  .badge { display: inline-block; background: rgba(0,210,255,0.1); border: 1px solid rgba(0,210,255,0.3); color: var(--cyan); font-size: 11px; font-weight: 700; letter-spacing: 2px; padding: 4px 14px; border-radius: 20px; margin-bottom: 20px; }
+  .hero h1 { font-size: clamp(28px, 5vw, 48px); font-weight: 900; background: linear-gradient(135deg, #fff 0%, var(--cyan) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 16px; }
+  .hero p { color: var(--muted2); font-size: 17px; max-width: 600px; margin: 0 auto; }
+
+  .container { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+  .section { padding: 56px 0; border-bottom: 1px solid var(--border); }
+  .section:last-child { border-bottom: none; }
+
+  .section-label { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+  .step-num { width: 36px; height: 36px; background: linear-gradient(135deg, var(--cyan), var(--cyan2)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 15px; color: #000; flex-shrink: 0; }
+  .step-tag { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--cyan); text-transform: uppercase; }
+  .section h2 { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: border-color .2s; }
+  .card:hover { border-color: var(--cyan); }
+  .card-icon { font-size: 28px; margin-bottom: 12px; }
+  .card h4 { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .card p { font-size: 13px; color: var(--muted2); }
+
+  .panel-mock { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin: 28px 0; }
+  .panel-mock-header { background: #0a0e16; padding: 12px 20px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; color: var(--cyan); display: flex; align-items: center; gap: 8px; }
+  .panel-body { padding: 24px; }
+
+  .btn-mock-rise { background: linear-gradient(135deg, #16a34a, #22c55e); border-radius: 10px; padding: 16px 20px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .btn-mock-fall { background: linear-gradient(135deg, #b91c1c, #ef4444); border-radius: 10px; padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
+  .btn-mock-label { font-weight: 700; font-size: 15px; }
+  .btn-mock-pct { font-size: 22px; font-weight: 900; }
+  .btn-mock-usd { font-size: 12px; opacity: .8; }
+
+  .type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 20px; }
+  .type-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .type-card.rec { border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.05); }
+  .type-card.adv { border-color: rgba(234,179,8,0.4); background: rgba(234,179,8,0.05); }
+  .type-card h5 { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .type-card p { font-size: 12px; color: var(--muted2); }
+  .type-tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 2px 8px; border-radius: 20px; margin-bottom: 8px; }
+  .tag-green { background: rgba(34,197,94,0.2); color: var(--green); }
+  .tag-yellow { background: rgba(234,179,8,0.2); color: var(--yellow); }
+  .tag-purple { background: rgba(168,85,247,0.2); color: var(--purple); }
+  .tag-blue { background: rgba(0,210,255,0.2); color: var(--cyan); }
+
+  .market-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  .market-table th { background: #0a0e16; padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+  .market-table td { padding: 12px 14px; font-size: 13px; border-bottom: 1px solid rgba(42,45,58,0.5); }
+  .market-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .signal-strong { color: var(--cyan); font-weight: 700; }
+  .signal-mid { color: var(--yellow); }
+  .signal-neutral { color: var(--muted); }
+
+  .tip { background: rgba(0,210,255,0.06); border: 1px solid rgba(0,210,255,0.2); border-left: 3px solid var(--cyan); border-radius: 8px; padding: 14px 18px; margin: 20px 0; font-size: 13px; color: var(--muted2); }
+  .tip strong { color: var(--cyan); }
+  .warn { background: rgba(234,179,8,0.06); border: 1px solid rgba(234,179,8,0.2); border-left: 3px solid var(--yellow); border-radius: 8px; padding: 14px 18px; margin: 20px 0; font-size: 13px; color: var(--muted2); }
+  .warn strong { color: var(--yellow); }
+  .tip-green { background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.2); border-left: 3px solid var(--green); border-radius: 8px; padding: 14px 18px; margin: 20px 0; font-size: 13px; color: var(--muted2); }
+  .tip-green strong { color: var(--green); }
+
+  .flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 24px 0; }
+  .flow-step { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; text-align: center; font-size: 13px; }
+  .flow-step strong { display: block; font-size: 11px; color: var(--cyan); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+  .flow-arrow { color: var(--muted); font-size: 20px; }
+
+  .banca-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  .banca-table th { background: #0a0e16; padding: 10px 14px; font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--muted); text-align: left; border-bottom: 1px solid var(--border); }
+  .banca-table td { padding: 14px; font-size: 13px; border-bottom: 1px solid rgba(42,45,58,0.5); }
+
+  .strat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 20px; }
+  .strat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+  .strat-card h4 { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+  .strat-card p { font-size: 13px; color: var(--muted2); margin-bottom: 12px; }
+  .strat-card ul { list-style: none; }
+  .strat-card ul li { font-size: 12px; color: var(--muted2); padding: 4px 0; border-bottom: 1px solid rgba(42,45,58,0.3); }
+  .strat-card ul li:last-child { border: none; }
+  .strat-card ul li::before { content: '→ '; color: var(--cyan); }
+
+  /* NOVO: Sinais mock */
+  .sinais-mock { background: #0a0d14; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 8px 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-radius: 8px 8px 0 0; }
+  .sinal-tag { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .sinal-verde { background: rgba(34,197,94,0.2); border: 1px solid rgba(34,197,94,0.5); color: var(--green); }
+  .sinal-cinza { background: rgba(100,116,139,0.1); border: 1px solid rgba(100,116,139,0.2); color: var(--muted); }
+  .sinal-rise { background: rgba(34,197,94,0.2); border: 1px solid rgba(34,197,94,0.5); color: var(--green); font-weight: 900; }
+
+  /* NOVO: Mult mock */
+  .mult-mock { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin: 20px 0; }
+
+  .footer { background: #0a0e16; border-top: 1px solid var(--border); padding: 28px 32px; text-align: center; font-size: 12px; color: var(--muted); letter-spacing: 1px; }
+
+  @media (max-width: 600px) {
+    .hero { padding: 40px 20px 32px; }
+    .flow { flex-direction: column; align-items: stretch; }
+    .flow-arrow { transform: rotate(90deg); text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <svg width="160" height="28" viewBox="0 0 210 36" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#00d2ff"/><stop offset="100%" style="stop-color:#0ea5e9"/></linearGradient></defs>
+    <text x="0" y="32" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-size="34" fill="url(#lg)">A</text>
+    <text x="12" y="32" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-size="34" fill="none" stroke="url(#lg)" stroke-width="1.5" opacity="0.45">$</text>
+    <line x1="38" y1="4" x2="38" y2="32" stroke="#1e2230" stroke-width="1.5"/>
+    <text x="46" y="20" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-size="13" fill="#e2e8f0" letter-spacing="2">ALPHA DOLAR</text>
+    <text x="48" y="32" font-family="Arial,sans-serif" font-size="9" fill="#475569" letter-spacing="3">TRADING BOT 2.0</text>
+  </svg>
+  <a href="https://alphadolar.online/videos">← Vídeos</a>
+</div>
+
+<div class="hero">
+  <div class="badge">🖐 GUIA INTERATIVO · MODO MANUAL</div>
+  <h1>Como Operar no Modo Manual</h1>
+  <p>Aprenda a usar os sinais automáticos, o multiplicador de entrada, escolher o mercado certo e aplicar as melhores estratégias sem o robô</p>
+</div>
+
+<!-- O QUE É -->
+<div class="section">
+  <div class="container">
+    <div class="section-label">
+      <div class="step-num">👁</div>
+      <div><div class="step-tag">Visão Geral</div><h2>O que é o Modo Manual?</h2></div>
+    </div>
+    <p>O Modo Manual aparece no painel direito do dashboard. Com ele, você opera diretamente na Deriv — com o apoio dos <strong style="color:var(--cyan);">sinais automáticos em tempo real</strong> e o <strong style="color:var(--cyan);">multiplicador de entrada</strong>.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h4>Controle Total</h4>
+        <p>Você decide quando entrar e sair. Os sinais automáticos ajudam a identificar o melhor momento.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h4>Sinais em Tempo Real</h4>
+        <p>EVEN, ODD, OVER, UNDER e MATCH com scores atualizados a cada 3 segundos no topo do gráfico.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📈</div>
+        <h4>Multiplicador de Entrada</h4>
+        <p>Após uma perda, o stake aumenta automaticamente para recuperar. Funciona igual ao martingale do robô.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔄</div>
+        <h4>Paralelo ao Robô</h4>
+        <p>Você pode operar manualmente enquanto o robô IA está rodando no painel esquerdo ao mesmo tempo.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SINAIS AUTOMÁTICOS -->
+<div class="section">
+  <div class="container">
+    <div class="section-label">
+      <div class="step-num">1</div>
+      <div><div class="step-tag">Sinais</div><h2>Como Usar os Sinais Automáticos</h2></div>
+    </div>
+    <p>Os sinais ficam na barra acima do gráfico e atualizam automaticamente a cada 3 segundos:</p>
+
+    <!-- MOCK SINAIS -->
+    <div style="margin:24px 0;border-radius:10px;overflow:hidden;border:1px solid var(--border);">
+      <div class="sinais-mock">
+        <span style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;">⚡ SINAIS</span>
+        <span class="sinal-tag sinal-verde">🟢 EVEN 74%</span>
+        <span class="sinal-tag sinal-cinza">ODD 36%</span>
+        <span class="sinal-tag sinal-verde">🟢 OVER 72%</span>
+        <span class="sinal-tag sinal-cinza">UNDER 35%</span>
+        <span class="sinal-tag sinal-verde">🟢 MATCH 72%</span>
+        <span class="sinal-tag sinal-rise" style="margin-left:auto;">⬆️ RISE 74%</span>
+        <span style="font-size:10px;color:var(--muted);">19:46:57</span>
+      </div>
+      <div style="background:#0d1117;height:60px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;">📊 Gráfico Bitcoin/TetherUS</div>
+    </div>
+
+    <div class="cards" style="margin-top:16px;">
+      <div class="card" style="border-color:rgba(34,197,94,0.3);">
+        <div class="card-icon">🟢</div>
+        <h4 style="color:var(--green);">Verde (score ≥ 70%)</h4>
+        <p>Sinal forte. Boa hora para entrar nesse tipo de contrato. Quanto mais verdes, melhor o momento.</p>
+      </div>
+      <div class="card" style="border-color:rgba(245,158,11,0.3);">
+        <div class="card-icon">🟡</div>
+        <h4 style="color:var(--yellow);">Amarelo (55–69%)</h4>
+        <p>Sinal médio. Pode entrar com cautela. Prefira aguardar um sinal verde para mais segurança.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⬜</div>
+        <h4 style="color:var(--muted);">Cinza (abaixo de 55%)</h4>
+        <p>Sinal fraco. Evite entrar. O mercado não tem padrão claro nesse tipo de contrato agora.</p>
+      </div>
+      <div class="card" style="border-color:rgba(34,197,94,0.3);">
+        <div class="card-icon">⬆️⬇️</div>
+        <h4 style="color:var(--green);">Sugestão de Direção</h4>
+        <p>O botão no canto direito indica ⬆️ RISE ou ⬇️ FALL baseado nos sinais mais fortes do momento.</p>
+      </div>
+    </div>
+
+    <div class="tip" style="margin-top:20px;">
+      <strong>💡 Estratégia com sinais:</strong> Aguarde pelo menos 2 sinais verdes ao mesmo tempo. Quando EVEN 🟢 e OVER 🟢 estão altos simultaneamente, é um sinal forte de <strong>RISE</strong>. Quando UNDER 🟢 está alto, é sinal de <strong>FALL</strong>.
+    </div>
+
+    <div class="warn">
+      <strong>⚠️ Importante:</strong> Os sinais são baseados nos dígitos do mercado selecionado na aba Dígitos. Certifique-se de que o mercado do modo manual é o mesmo. Os sinais atualizam automaticamente assim que a conexão com o mercado é estabelecida.
+    </div>
+  </div>
+</div>
+
+<!-- MULTIPLICADOR -->
+<div class="section">
+  <div class="container">
+    <div class="section-label">
+      <div class="step-num">2</div>
+      <div><div class="step-tag">Multiplicador</div><h2>Como Usar o Multiplicador de Entrada</h2></div>
+    </div>
+    <p>O Multiplicador de Entrada fica logo abaixo do campo "Quantia inicial" no painel direito. Funciona como o martingale do robô — aumenta o stake automaticamente após uma perda:</p>
+
+    <!-- MOCK MULT -->
+    <div class="mult-mock">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <span style="font-size:13px;font-weight:600;color:#e2e8f0;">Multiplicador de entrada</span>
+        <span style="background:rgba(0,210,255,0.15);border:1px solid rgba(0,210,255,0.4);color:var(--cyan);font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;">ON</span>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <span style="flex:1;padding:5px;border-radius:6px;border:1px solid rgba(100,116,139,0.3);color:var(--muted);font-size:11px;font-weight:700;text-align:center;">1.5×</span>
+        <span style="flex:1;padding:5px;border-radius:6px;border:1px solid rgba(100,116,139,0.3);color:var(--muted);font-size:11px;font-weight:700;text-align:center;">2.0×</span>
+        <span style="flex:1;padding:5px;border-radius:6px;border:1px solid rgba(0,210,255,0.4);background:rgba(0,210,255,0.15);color:var(--cyan);font-size:11px;font-weight:700;text-align:center;">2.2×</span>
+        <span style="flex:1;padding:5px;border-radius:6px;border:1px solid rgba(100,116,139,0.3);color:var(--muted);font-size:11px;font-weight:700;text-align:center;">2.5×</span>
+        <span style="flex:1;padding:5px;border-radius:6px;border:1px solid rgba(100,116,139,0.3);color:var(--muted);font-size:11px;font-weight:700;text-align:center;">3.0×</span>
+      </div>
+      <div style="font-size:11px;color:var(--muted);">Próxima entrada: <span style="color:var(--cyan);font-weight:700;">$1.00</span></div>
+    </div>
+
+    <div class="cards">
+      <div class="card" style="border-color:rgba(0,210,255,0.3);">
+        <div class="card-icon">🔧</div>
+        <h4>Como ativar</h4>
+        <p>Clique no toggle ON/OFF ao lado de "Multiplicador de entrada". Escolha o multiplicador desejado (1.5×, 2.0×, 2.2×, 2.5× ou 3.0×).</p>
+      </div>
+      <div class="card" style="border-color:rgba(34,197,94,0.3);">
+        <div class="card-icon">✅</div>
+        <h4>Após WIN</h4>
+        <p>O stake volta automaticamente ao valor inicial. O contador de perdas é resetado e a "Próxima entrada" volta ao valor base.</p>
+      </div>
+      <div class="card" style="border-color:rgba(239,68,68,0.3);">
+        <div class="card-icon">❌</div>
+        <h4>Após LOSS</h4>
+        <p>O stake da próxima entrada aumenta pelo multiplicador escolhido. Exemplo: $1 com 2.2× → próxima é $2.20 → depois $4.84.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h4>Próxima entrada</h4>
+        <p>O campo "Próxima entrada: $X.XX" mostra exatamente quanto será apostado no próximo clique. Sempre verifique antes de entrar.</p>
+      </div>
+    </div>
+
+    <div class="warn">
+      <strong>⚠️ Atenção ao risco:</strong> Com 3 perdas seguidas usando 2.2×: $1 → $2.20 → $4.84 → $10.65. Defina um limite mental de perdas antes de ativar. O multiplicador 1.5× é mais conservador para iniciantes.
+    </div>
+  </div>
+</div>
+
+<!-- FLUXO -->
+<div class="section">
+  <div class="container">
+    <div class="section-label">
+      <div class="step-num">3</div>
+      <div><div class="step-tag">Passo a Passo</div><h2>Fluxo para Operar com Sinais</h2></div>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step"><strong>① Mercado</strong>Escolha o índice</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><strong>② Aguardar</strong>Sinais carregam</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><strong>③ Verificar</strong>2+ sinais verdes</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><strong>④ Direção</strong>Ver ⬆️ RISE / ⬇️ FALL</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><strong>⑤ Valor</strong>Definir stake</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><strong>⑥ Entrar</strong>▲ Rise ou ▼ Fall</div>
+    </div>
+
+    <div class="tip-green">
+      <strong>✅ Regra de ouro:</strong> Só entre quando o botão de sugestão mostrar ⬆️ RISE ou ⬇️ FALL com score ≥ 70%. Se mostrar "⏳ Aguardando sinal...", espere — o mercado não está favorável agora.
+    </div>
+  </div>
+</div>
+
+<!-- MERCADOS -->
+<div class="section">
+  <div class="container">
+    <div class="section-label">
+      <div class="step-num">4</div>
+      <div><div class="step-tag">Mercado</div><h2>Qual Mercado Escolher?</h2></div>
+    </div>
+
+    <table class="market-table">
+      <thead>
+        <tr><th>Mercado</th><th>Volatilidade</th><th>Velocidade</th><th>Melhor para</th><th>Sinal</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Volatility 100 Index</strong></td>
+          <td>Alta</td>
+          <td>1 tique / 2s</td>
+          <td>Rise/Fall, Dígitos</td>
+          <td class="signal-strong">⚡ PREFERIDO</td>
+        </tr>
+        <tr>
+          <td><strong>Volatility 75 Index</strong></td>
+          <td>Muito Alta</td>
+          <td>1 tique / 2s</td>
+          <td>Rise/Fall rápido</td>
+          <td class="signal-strong">⚡ PREFERIDO</td>
+        </tr>
+        <tr>
+          <td><strong>Volatility 50 Index</strong></td>
+          <td>Média</td>
+          <td>1 tique / 2s</td>
+          <td>Iniciantes</td>
+          <td class="signal-mid">⚠ LEVE</td>
+        </tr>
+        <tr>
+          <td><strong>Volatility 25 Index</strong></td>
+          <td>Baixa</td>
+          <td>1 tique / 2s</td>
+          <td>Contratos longos</td>
+          <td class="signal-neutral">– NEUTRO</td>
+        </tr>
+        <tr>
+          <td><strong>Volatility 10 Index</strong></td>
+          <td>Mínima</td>
+          <td>1 tique / 2s</td>
+          <td>Dígitos Par/Ímpar</td>
+          <td class="signal-mid">⚠ ESPECÍFICO</td>
+        </tr>
+        <tr>
+          <td><strong>Volatility 100 (1s)</strong></td>
+          <td>Alta</td>
+          <td>1 tique / 1s</td>
+          <td>Scalping rápido</td>
+          <td class="signal-strong">⚡ AVANÇADO</td>
+        </tr>
+        <tr>
+          <td><strong>Jump 100 Index</strong></td>
+          <td>Extrema</td>
+          <td>Variável</td>
+          <td>Over/Under</td>
+          <td class="signal-mid">⚠ EXPERIENTE</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="tip">
+      <strong>💡 Regra simples:</strong> Use sempre <strong>Volatility 100 Index</strong> para começar. Os sinais automáticos foram calibrados principalmente para este mercado.
+    </div>
+  </div>
+</div>
+
+<!-- TIPO DE NEGOCIAÇÃO -->
+<div class="section">
+  <div class="container">
+    <div class="section-label">
+      <div class="step-num">5</div>
+      <div><div class="step-tag">Tipo de Negociação</div><h2>Entendendo Cada Tipo</h2></div>
+    </div>
+
+    <div style="margin-bottom: 16px; margin-top: 8px;">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: 1px; color: var(--cyan); text-transform: uppercase; margin-bottom: 12px;">📈 Subindo ou Descendo</div>
+      <div class="type-grid">
+        <div class="type-card rec">
+          <div class="type-tag tag-green">INICIANTE</div>
+          <h5>Rise/Fall Equals</h5>
+          <p>O preço final deve ser maior (Rise) ou menor (Fall) ou igual. Maior chance de acerto. Use com sinal ⬆️ ou ⬇️.</p>
+        </div>
+        <div class="type-card rec">
+          <div class="type-tag tag-green">POPULAR</div>
+          <h5>Rise/Fall</h5>
+          <p>O preço final deve ser estritamente maior (Rise) ou menor (Fall). Ligeiramente mais difícil que Equals.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 16px;">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: 1px; color: var(--purple); text-transform: uppercase; margin-bottom: 12px;">🔢 Dígitos — Use com sinais EVEN/ODD/OVER/UNDER</div>
+      <div class="type-grid">
+        <div class="type-card">
+          <div class="type-tag tag-purple">DÍGITO</div>
+          <h5>Par/Ímpar (Even/Odd)</h5>
+          <p>Use quando sinal EVEN 🟢 ou ODD 🟢 estiver alto. Não precisa de barreira.</p>
+        </div>
+        <div class="type-card">
+          <div class="type-tag tag-purple">DÍGITO</div>
+          <h5>Superior/Inferior (Over/Under)</h5>
+          <p>Use quando sinal OVER 🟢 (Rise) ou UNDER 🟢 (Fall). Barrier automática: 4 para Over, 5 para Under.</p>
+        </div>
+        <div class="type-card">
+          <div class="type-tag tag-purple">DÍGITO</div>
+          <h5>Combina/Difere (Matches/Differs)</h5>
+          <p>Use quando sinal MATCH 🟢. A IA escolhe automaticamente o dígito mais frequente como barreira.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip">
+      <strong>💡 Como combinar sinais com tipos:</strong> Sinal EVEN alto → use Par/Ímpar → clique Rise. Sinal OVER alto → use Over/Under → clique Rise. Sinal UNDER alto → use Over/Under → clique Fall.
+    </div>
+  </div>
+</div>
+
+<!-- BOTÕES -->
+<div class="section">
+  <div class="container">
+    <div class="section-label">
+      <div class="step-num">6</div>
+      <div><div class="step-tag">Botões de Entrada</div><h2>Rise, Fall e o Multiplicador</h2></div>
+    </div>
+
+    <div class="panel-mock">
+      <div class="panel-mock-header">🖐 Modo Manual · Painel de Entrada</div>
+      <div class="panel-body">
+        <div style="background:rgba(0,210,255,0.05);border:1px solid rgba(0,210,255,0.2);border-radius:8px;padding:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:12px;font-weight:600;">Multiplicador de entrada</span>
+          <span style="color:var(--cyan);font-size:11px;font-weight:700;">ON · 2.2× · Próxima: $2.20</span>
+        </div>
+        <div class="btn-mock-rise">
+          <span style="font-size:24px;">▲</span>
+          <div>
+            <div class="btn-mock-label">Rise Equal</div>
+            <div class="btn-mock-pct">85.00%</div>
+            <div class="btn-mock-usd">1.85 USD retorno</div>
+          </div>
+        </div>
+        <div style="height: 10px;"></div>
+        <div class="btn-mock-fall">
+          <span style="font-size:24px;">▼</span>
+          <div>
+            <div class="btn-mock-label">Fall Equal</div>
+            <div class="btn-mock-pct">95.00%</div>
+            <div class="btn-mock-usd">1.95 USD retorno</div>
+          </div>
+        </div>
+        <div style="margin-top: 16px; display: flex; gap: 24px;">
+          <div style="font-size: 13px; color: var(--muted2);"><span style="color: var(--muted);">Win Rate:</span> <strong style="color: #fff;">60%</strong></div>
+          <div style="font-size: 13px; color: var(--muted2);"><span style="color: var(--muted);">Total Trades:</span> <strong style="color: #fff;">10</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card" style="border-color: rgba(34,197,94,0.3);">
+        <div class="card-icon">▲</div>
+        <h4 style="color: var(--green);">Botão Verde (Rise)</h4>
+        <p>Aposta que o preço vai subir. Use com sinais EVEN 🟢, OVER 🟢 ou sugestão ⬆️ RISE.</p>
+      </div>
+      <div class="card" style="border-color: rgba(239,68,68,0.3);">
+        <div class="card-icon">▼</div>
+        <h4 style="color: var(--red);">Botão Vermelho (Fall)</h4>
+        <p>Aposta que o preço vai cair. Use com sinais UNDER 🟢, ODD 🟢 ou sugestão ⬇️ FALL.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h4>Win Rate e Trades</h4>
+        <p>Mostra seu desempenho na sessão atual. Acima de 50% com multiplicador 2.2× = lucrativo.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ESTRATÉGIAS -->
+<div class="section">
+  <div class="container">
+    <div class="section-label">
+      <div class="step-num">7</div>
+      <div><div class="step-tag">Estratégias</div><h2>Melhores Estratégias com Sinais</h2></div>
+    </div>
+
+    <div class="strat-grid">
+      <div class="strat-card" style="border-color: rgba(34,197,94,0.3);">
+        <div style="font-size: 28px; margin-bottom: 10px;">🟢🟢</div>
+        <h4 style="color: var(--green);">Dois Sinais Verdes</h4>
+        <p>EVEN 🟢 + OVER 🟢 ao mesmo tempo — sinal forte de Rise.</p>
+        <ul>
+          <li>Tipo: Rise/Fall Equals</li>
+          <li>Direção: ⬆️ RISE</li>
+          <li>Duração: 3–5 tiques</li>
+          <li>Multiplicador: 2.2× ativado</li>
+        </ul>
+      </div>
+      <div class="strat-card" style="border-color: rgba(168,85,247,0.3);">
+        <div style="font-size: 28px; margin-bottom: 10px;">🔢</div>
+        <h4 style="color: var(--purple);">Sinal de Dígito Alto</h4>
+        <p>Quando EVEN ou ODD ≥ 70% sozinho — use Par/Ímpar direto.</p>
+        <ul>
+          <li>Tipo: Par/Ímpar (Even/Odd)</li>
+          <li>Direção: conforme sinal</li>
+          <li>Duração: 1–5 tiques</li>
+          <li>Aguarde score ≥ 70%</li>
+        </ul>
+      </div>
+      <div class="strat-card" style="border-color: rgba(234,179,8,0.3);">
+        <div style="font-size: 28px; margin-bottom: 10px;">⏳</div>
+        <h4 style="color: var(--yellow);">Aguardando Sinal</h4>
+        <p>Quando todos os sinais estão cinza — não entre. Espere um verde aparecer.</p>
+        <ul>
+          <li>Não force entrada sem sinal</li>
+          <li>Observe por 1–2 minutos</li>
+          <li>Se não aparecer sinal, use o robô IA</li>
+          <li>Paciência é mais rentável</li>
+        </ul>
+      </div>
+      <div class="strat-card" style="border-color: rgba(0,210,255,0.3);">
+        <div style="font-size: 28px; margin-bottom: 10px;">🔁</div>
+        <h4 style="color: var(--cyan);">Recuperação com Mult</h4>
+        <p>Após perda com multiplicador ativo — aguarde um novo sinal verde antes de entrar.</p>
+        <ul>
+          <li>Não entre imediatamente após perda</li>
+          <li>Aguarde novo sinal 🟢</li>
+          <li>O mult já calculou o valor</li>
+          <li>Máximo 3 perdas seguidas</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tip-green" style="margin-top:24px;">
+      <strong>🏆 Estratégia combinada:</strong> Ligue o Robô IA no painel esquerdo para operar no automático enquanto você usa o Modo Manual no painel direito para aproveitar sinais fortes (🟢🟢 duplo). Os dois funcionam em paralelo!
+    </div>
+  </div>
+</div>
+
+<!-- GESTÃO DE BANCA -->
+<div class="section">
+  <div class="container">
+    <div class="section-label">
+      <div class="step-num">8</div>
+      <div><div class="step-tag">Gestão de Banca</div><h2>Quanto Usar por Operação</h2></div>
+    </div>
+
+    <table class="banca-table">
+      <thead>
+        <tr><th>Nível</th><th>Banca</th><th>Valor por Trade</th><th>Mult</th><th>Meta Diária</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>🔵 <strong>Iniciante</strong></td>
+          <td>$50 – $100</td>
+          <td>$0.35 – $1</td>
+          <td>1.5×</td>
+          <td>$3 – $8</td>
+        </tr>
+        <tr>
+          <td>🟢 <strong>Intermediário</strong></td>
+          <td>$100 – $500</td>
+          <td>$1 – $5</td>
+          <td>2.2×</td>
+          <td>$10 – $30</td>
+        </tr>
+        <tr>
+          <td>🟡 <strong>Avançado</strong></td>
+          <td>$500+</td>
+          <td>$5 – $20</td>
+          <td>2.5×</td>
+          <td>5–10% da banca</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="warn" style="margin-top: 20px;">
+      <strong>⚠️ Regra dos 5%:</strong> Nunca arrisque mais de 5% da sua banca em um único trade. Se sua banca é $100, o máximo por operação é $5. Com o multiplicador ativo, considere o pior cenário (3 perdas seguidas) antes de definir o stake inicial.
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  ALPHA DOLAR 2.0 · GUIA DO MODO MANUAL · SINAIS AUTOMÁTICOS · MULTIPLICADOR · OPERE COM CONSCIÊNCIA
+</div>
+
+</body>
+</html>

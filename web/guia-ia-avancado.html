@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guia do Modo IA Avançado — Alpha Dolar 2.0</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1e2430;
+    --border: #2a2d3a;
+    --cyan: #00d2ff;
+    --cyan2: #0ea5e9;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #eab308;
+    --orange: #f97316;
+    --purple: #a855f7;
+    --pink: #ec4899;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --muted2: #94a3b8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.6; }
+
+  .topbar {
+    background: #0a0e16;
+    border-bottom: 1px solid var(--border);
+    padding: 14px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .topbar a { color: var(--cyan); text-decoration: none; font-size: 13px; }
+
+  .hero {
+    background: linear-gradient(135deg, #0a0e16 0%, #120a1a 50%, #0d1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 64px 32px 48px;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(168,85,247,0.1) 0%, transparent 70%);
+  }
+  .badge {
+    display: inline-block;
+    background: rgba(168,85,247,0.1);
+    border: 1px solid rgba(168,85,247,0.3);
+    color: var(--purple);
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    padding: 4px 14px; border-radius: 20px; margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 48px); font-weight: 900;
+    background: linear-gradient(135deg, #fff 0%, var(--purple) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 16px;
+  }
+  .hero p { color: var(--muted2); font-size: 17px; max-width: 640px; margin: 0 auto; }
+
+  .container { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+  .section { padding: 56px 0; border-bottom: 1px solid var(--border); }
+  .section:last-child { border-bottom: none; }
+
+  .section-label { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+  .step-num {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 15px; color: #fff; flex-shrink: 0;
+  }
+  .step-tag { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--purple); text-transform: uppercase; }
+  .section h2 { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+  .section > .container > p { color: var(--muted2); margin-bottom: 28px; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; transition: border-color .2s;
+  }
+  .card:hover { border-color: var(--purple); }
+  .card-icon { font-size: 28px; margin-bottom: 12px; }
+  .card h4 { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .card p { font-size: 13px; color: var(--muted2); }
+
+  .tip {
+    background: rgba(168,85,247,0.06); border: 1px solid rgba(168,85,247,0.2);
+    border-left: 3px solid var(--purple); border-radius: 8px;
+    padding: 14px 18px; margin: 20px 0; font-size: 13px; color: var(--muted2);
+  }
+  .tip strong { color: var(--purple); }
+
+  .tip-cyan {
+    background: rgba(0,210,255,0.06); border: 1px solid rgba(0,210,255,0.2);
+    border-left: 3px solid var(--cyan); border-radius: 8px;
+    padding: 14px 18px; margin: 20px 0; font-size: 13px; color: var(--muted2);
+  }
+  .tip-cyan strong { color: var(--cyan); }
+
+  .warn {
+    background: rgba(234,179,8,0.06); border: 1px solid rgba(234,179,8,0.2);
+    border-left: 3px solid var(--yellow); border-radius: 8px;
+    padding: 14px 18px; margin: 20px 0; font-size: 13px; color: var(--muted2);
+  }
+  .warn strong { color: var(--yellow); }
+
+  /* MODAL MOCKUP */
+  .modal-mock {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden; margin: 28px 0;
+    max-width: 480px;
+  }
+  .modal-header {
+    background: #0a0e16; padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-header span { font-size: 13px; font-weight: 700; color: var(--purple); }
+  .modal-body { padding: 20px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .field-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .field {
+    background: #0d1117; border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px;
+  }
+  .field label { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 4px; }
+  .field value { font-size: 15px; font-weight: 700; color: #fff; }
+  .field small { font-size: 11px; color: var(--cyan); display: block; margin-top: 2px; }
+
+  /* MULT BUTTONS */
+  .mult-btns { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+  .mult-btn {
+    padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700;
+    border: 1px solid var(--border); background: var(--surface2); color: var(--muted2);
+    cursor: pointer;
+  }
+  .mult-btn.active { background: rgba(168,85,247,0.2); border-color: var(--purple); color: var(--purple); }
+
+  /* SCORE STRIP */
+  .score-strip {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+    background: #0a0e16; border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; margin: 16px 0;
+  }
+  .score-item { text-align: center; }
+  .score-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+  .score-val { font-size: 22px; font-weight: 900; }
+  .score-val.purple { color: var(--purple); }
+  .score-val.cyan { color: var(--cyan); }
+  .score-val.green { color: var(--green); }
+  .score-val.orange { color: var(--orange); }
+
+  /* VIRT DOTS */
+  .virt-dots { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
+  .vdot {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+  }
+  .vdot.loss { background: rgba(239,68,68,0.2); border: 1px solid var(--red); color: var(--red); }
+  .vdot.real { background: rgba(34,197,94,0.2); border: 1px solid var(--green); color: var(--green); }
+  .vdot.pending { background: rgba(100,116,139,0.2); border: 1px solid var(--muted); color: var(--muted); }
+
+  /* TABELA */
+  .table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  .table th {
+    background: #0a0e16; padding: 10px 14px;
+    text-align: left; font-size: 11px; font-weight: 700;
+    letter-spacing: 1px; color: var(--muted); text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  .table td { padding: 12px 14px; font-size: 13px; border-bottom: 1px solid rgba(42,45,58,0.5); }
+  .table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* CONTRATOS */
+  .contract-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 20px; }
+  .contract-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px;
+  }
+  .contract-card h5 { font-size: 14px; font-weight: 800; margin-bottom: 6px; }
+  .contract-card p { font-size: 12px; color: var(--muted2); margin-bottom: 10px; }
+  .contract-card .when { font-size: 11px; font-weight: 700; color: var(--cyan); }
+
+  .tag {
+    display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    padding: 2px 8px; border-radius: 20px; margin-bottom: 8px;
+  }
+  .tag-purple { background: rgba(168,85,247,0.2); color: var(--purple); }
+  .tag-green { background: rgba(34,197,94,0.2); color: var(--green); }
+  .tag-yellow { background: rgba(234,179,8,0.2); color: var(--yellow); }
+  .tag-cyan { background: rgba(0,210,255,0.2); color: var(--cyan); }
+  .tag-red { background: rgba(239,68,68,0.2); color: var(--red); }
+
+  /* ML PHASES */
+  .phase-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+  .phase-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px;
+  }
+  .phase-num {
+    font-size: 32px; font-weight: 900; margin-bottom: 8px;
+  }
+
+  /* BANCA */
+  .banca-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 20px; }
+  .banca-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 22px;
+  }
+  .banca-card h4 { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+  .banca-card .valor { font-size: 28px; font-weight: 900; margin: 8px 0; }
+  .banca-card ul { list-style: none; }
+  .banca-card ul li { font-size: 12px; color: var(--muted2); padding: 4px 0; border-bottom: 1px solid rgba(42,45,58,0.3); }
+  .banca-card ul li:last-child { border: none; }
+  .banca-card ul li::before { content: '→ '; color: var(--purple); }
+
+  .footer {
+    background: #0a0e16; border-top: 1px solid var(--border);
+    padding: 28px 32px; text-align: center;
+    font-size: 12px; color: var(--muted); letter-spacing: 1px;
+  }
+
+  @media (max-width: 600px) {
+    .phase-grid { grid-template-columns: 1fr; }
+    .field-row { grid-template-columns: 1fr; }
+    .score-strip { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <svg width="160" height="28" viewBox="0 0 210 36" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#00d2ff"/><stop offset="100%" style="stop-color:#0ea5e9"/></linearGradient></defs>
+    <text x="0" y="32" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-size="34" fill="url(#lg)">A</text>
+    <text x="12" y="32" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-size="34" fill="none" stroke="url(#lg)" stroke-width="1.5" opacity="0.45">$</text>
+    <line x1="38" y1="4" x2="38" y2="32" stroke="#1e2230" stroke-width="1.5"/>
+    <text x="46" y="20" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-size="13" fill="#e2e8f0" letter-spacing="2">ALPHA DOLAR</text>
+    <text x="48" y="32" font-family="Arial,sans-serif" font-size="9" fill="#475569" letter-spacing="3">TRADING BOT 2.0</text>
+  </svg>
+  <a href="https://alphadolar.online/videos">← Vídeos</a>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="badge">✨ GUIA INTERATIVO · MODO IA AVANÇADO</div>
+  <h1>Como Dominar o Modo IA Avançado</h1>
+  <p>Entenda cada campo do painel, como o Motor IA Alpha aprende em tempo real, e como configurar para extrair o máximo de acertividade em cada sessão</p>
+</div>
+
+<!-- O QUE É -->
+<div class="section">
+  <div class="container">
+    <div class="section-label">
+      <div class="step-num">🧠</div>
+      <div>
+        <div class="step-tag">Visão Geral</div>
+        <h2>O que é o Modo IA Avançado?</h2>
+      </div>
+    </div>
+    <p>O Modo IA Avançado é o cérebro do Alpha Dolar 2.0. Ele usa Machine Learning em tempo real para analisar os tiques do mercado e só liberar entradas quando o score de confiança é favorável.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">📐</div>
+        <h4>Análise de Frequência</h4>
+        <p>Analisa quais dígitos (0–9) aparecem mais nos últimos 50 tiques. Identifica desvios estatísticos antes de qualquer entrada.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚖️</div>
+        <h4>Ratio Par/Ímpar</h4>
+        <p>Calcula proporção entre dígitos pares e ímpares em tempo real. Desequilíbrio acima do esperado gera sinal de entrada.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔗</div>
+        <h4>Sequência Atual</h4>
+        <p>Detecta sequências de 3+ resultados iguais. Longa sequência ativa estratégia de reversão automaticamente.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎮</div>
+        <h4>Perdas Virtuais</h4>
+        <p>Simula N perdas antes de usar capital real. O bot só entra com dinheiro após confirmar o padrão virtualmente.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔢</div>
+        <h4>Score de Entrada</h4>
+        <p>Score mínimo de 58% exigido para liberar qualquer entrada. Sem sinal forte, o bot simplesmente aguarda.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h4>WebSocket em Tempo Real</h4>
+        <p>Conectado diretamente à API Deriv. Cada tique é analisado em milissegundos — nunca perde um movimento.</p>
+      </div>
+    </div>
+
+    <div class="tip">
+      <strong>✨ Como ativar:</strong> No dashboard, ative o toggle <strong>"Avançado"</strong> no canto superior do painel esquerdo. O painel muda para o modo IA com todos os campos avançados disponíveis. Depois configure e clique em <strong>Iniciar Robô IA</strong>.
+    </div>
+  </div>
+</div>
+
+<!-- FASES DO ML -->
+<div class="section">
+  <div class="container">
+    <div class="section-label">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-tag">Machine Learning</div>
+        <h2>Como o Motor IA Aprende</h2>
+      </div>
+    </div>
+    <p>O Motor IA Alpha opera em duas fases distintas. Entender isso é essencial para saber o que esperar nos primeiros minutos:</p>
+
+    <div class="phase-grid">
+      <div class="phase-card" style="border-color: rgba(234,179,8,0.3);">
+        <div class="phase-num" style="color: var(--yellow);">Fase 1</div>
+        <div class="tag tag-yellow">COLETA · Primeiros ~5 min</div>
+        <h4 style="margin-bottom: 8px;">Coletando Dados</h4>
+        <p style="font-size: 13px; color: var(--muted2); margin-bottom: 12px;">O bot precisa de pelo menos <strong style="color:#fff;">150 amostras</strong> para treinar o modelo. Durante esse período, ele usa análise estatística básica (fallback) com score mínimo de 60%.</p>
+        <p style="font-size: 12px; color: var(--muted);">Você verá no painel: <span style="color: var(--yellow);">Coletando (X/150)</span></p>
+      </div>
+      <div class="phase-card" style="border-color: rgba(168,85,247,0.3);">
+        <div class="phase-num" style="color: var(--purple);">Fase 2</div>
+        <div class="tag tag-purple">ML ATIVO · Após 150 amostras</div>
+        <h4 style="margin-bottom: 8px;">RandomForest Treinado</h4>
+        <p style="font-size: 13px; color: var(--muted2); margin-bottom: 12px;">O modelo RandomForest entra em ação com <strong style="color:#fff;">80 árvores de decisão</strong>. Retreina automaticamente a cada 50 novos tiques, ficando cada vez mais preciso.</p>
+        <p style="font-size: 12px; color: var(--muted);">Você verá no painel: <span style="color: var(--purple);">ML ativo · acurácia: XX%</span></p>
+      </div>
+    </div>
+
+    <div class="tip-cyan" style="margin-top: 20px;">
+      <strong>💡 Dica:</strong> Deixe o bot rodar por pelo menos <strong>10 minutos</strong> antes de avaliar o desempenho. Os primeiros trades usam análise estatística básica — o ML fica mais preciso conforme aprende o comportamento do mercado atual.
+    </div>
+  </div>
+</div>
+
+<!-- CAMPOS DO PAINEL -->
+<div class="section">
+  <div class="container">
+    <div class="section-label">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-tag">Configuração</div>
+        <h2>Cada Campo Explicado</h2>
+      </div>
+    </div>
+    <p>Veja o que cada campo do painel IA Avançado significa e como configurar:</p>
+
+    <!-- MOCK DO PAINEL -->
+    <div class="modal-mock">
+      <div class="modal-header">
+        <span>🧠 Configurações da IA · Modo Avançado</span>
+        <span style="color: var(--yellow); font-size: 11px;">● AVANÇADO</span>
+      </div>
+      <div class="modal-body">
+        <div class="field-row">
+          <div class="field">
+            <label>Duração</label>
+            <value>1</value>
+            <small>tiques</small>
+          </div>
+          <div class="field">
+            <label>Unidade</label>
+            <value>Tique</value>
+          </div>
+          <div class="field" style="border-color: rgba(168,85,247,0.4);">
+            <label>Multiplicador</label>
+            <value style="color: var(--purple);">2.2×</value>
+          </div>
+        </div>
+        <div class="mult-btns">
+          <div class="mult-btn">1.5×</div>
+          <div class="mult-btn">2.0×</div>
+          <div class="mult-btn active">2.2×</div>
+          <div class="mult-btn">2.5×</div>
+          <div class="mult-btn">3.0×</div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Perdas Virtuais</label>
+            <value>3</value>
+            <small>simuladas</small>
+          </div>
+          <div class="field">
+            <label>Neg. Virtuais</label>
+            <value style="font-size:13px;">Na perda</value>
+          </div>
+          <div class="field">
+            <label>Iniciar c/ Virtuais</label>
+            <value style="font-size:13px;">Sim</value>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Quantia Inicial</label>
+            <value>$0.35</value>
+            <small>0.00% do saldo</small>
+          </div>
+          <div class="field">
+            <label>Lucro Alvo</label>
+            <value>$2.00</value>
+            <small>0.02% do saldo</small>
+          </div>
+          <div class="field">
+            <label>Limite de Perda</label>
+            <value>$1000</value>
+            <small style="color:var(--muted);">10.32% do saldo</small>
+          </div>
+        </div>
+        <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:12px;margin-top:8px;">
+          <div style="font-size:12px;color:var(--purple);font-weight:700;margin-bottom:6px;">🧠 Motor IA Alpha</div>
+          <div style="font-size:11px;color:var(--muted2);">Janela de <span style="color:var(--cyan);">50 ticks</span> · <span style="color:var(--orange);">1 tick(s)</span> · Score combinado: frequência + sequência + par/ímpar · Perdas virtuais: <span style="color:var(--purple);">3</span> antes de entrar real · Multiplicador: <span style="color:var(--purple);">2.2×</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPLICAÇÃO DE CADA CAMPO -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 24px;">
+
+      <div class="card" style="border-color: rgba(0,210,255,0.3);">
+        <div class="tag tag-cyan">MERCADO</div>
+        <h4>Mercado + Tipo de Negociação</h4>
+        <p>Escolha o índice sintético e o tipo de contrato (DIGITEVEN, DIGITODD, DIGITOVER, DIGITUNDER). O Motor IA se calibra especificamente para o tipo escolhido.</p>
+      </div>
+
+      <div class="card" style="border-color: rgba(0,210,255,0.3);">
+        <div class="tag tag-cyan">DURAÇÃO</div>
+        <h4>Duração e Unidade</h4>
+        <p>Para dígitos use sempre <strong>1 Tique</strong>. Isso garante execução máxima de trades e mais dados para o ML aprender. Durações maiores reduzem a frequência.</p>
+      </div>
+
+      <div class="card" style="border-color: rgba(168,85,247,0.3);">
+        <div class="tag tag-purple">MULTIPLICADOR</div>
+        <h4>Multiplicador de Martingale</h4>
+        <p>Define quanto o stake aumenta após uma perda. <strong>2.2×</strong> é o equilíbrio ideal — recupera a perda anterior + dá lucro. Nunca use acima de 3.0× sem banca alta.</p>
+      </div>
+
+      <div class="card" style="border-color: rgba(168,85,247,0.3);">
+        <div class="tag tag-purple">VIRTUAIS</div>
+        <h4>Perdas Virtuais</h4>
+        <p>O bot simula N perdas antes de entrar com dinheiro real. Garante que só entre quando o padrão está confirmado. <strong>3 perdas virtuais</strong> é o padrão recomendado.</p>
+      </div>
+
+      <div class="card" style="border-color: rgba(234,179,8,0.3);">
+        <div class="tag tag-yellow">NEG. VIRTUAIS</div>
+        <h4>Quando Usar Virtuais</h4>
+        <p><strong>Na perda:</strong> só simula quando há perda acumulada (recomendado). <strong>Sempre:</strong> simula antes de toda entrada. <strong>Nunca:</strong> entra direto sem simulação.</p>
+      </div>
+
+      <div class="card" style="border-color: rgba(34,197,94,0.3);">
+        <div class="tag tag-green">FINANCEIRO</div>
+        <h4>Quantia · Lucro Alvo · Stop Loss</h4>
+        <p>Stake inicial por trade. Lucro alvo encerra o bot ao atingir. Limite de perda para o bot antes de perder mais. Defina com base na sua banca.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- TIPOS DE CONTRATO -->
+<div class="section">
+  <div class="container">
+    <div class="section-label">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-tag">Estratégias</div>
+        <h2>Qual Tipo de Contrato Usar?</h2>
+      </div>
+    </div>
+    <p>O Motor IA se adapta ao tipo de contrato escolhido. Cada um tem uma estratégia de análise diferente:</p>
+
+    <div class="contract-grid">
+      <div class="contract-card" style="border-color: rgba(168,85,247,0.3);">
+        <div class="tag tag-purple">DIGITEVEN</div>
+        <h5 style="color: var(--purple);">Par (Even)</h5>
+        <p>O último dígito do preço deve ser par (0, 2, 4, 6, 8). O ML calcula P(par) e entra quando ≥ 58%.</p>
+        <div class="when">✅ Ideal quando: Pills pares dominando (>55%)</div>
+      </div>
+      <div class="contract-card" style="border-color: rgba(236,72,153,0.3);">
+        <div class="tag" style="background:rgba(236,72,153,0.2);color:var(--pink);">DIGITODD</div>
+        <h5 style="color: var(--pink);">Ímpar (Odd)</h5>
+        <p>O último dígito deve ser ímpar (1, 3, 5, 7, 9). O ML calcula P(ímpar) e entra quando ≥ 58%.</p>
+        <div class="when">✅ Ideal quando: Pills ímpares dominando (>55%)</div>
+      </div>
+      <div class="contract-card" style="border-color: rgba(0,210,255,0.3);">
+        <div class="tag tag-cyan">DIGITOVER</div>
+        <h5 style="color: var(--cyan);">Superior (Over 4)</h5>
+        <p>O último dígito deve ser maior que 4 (5, 6, 7, 8, 9). Entra quando os altos estão abaixo de 40% (reversão esperada).</p>
+        <div class="when">✅ Ideal quando: Dígitos altos frios no momento</div>
+      </div>
+      <div class="contract-card" style="border-color: rgba(249,115,22,0.3);">
+        <div class="tag" style="background:rgba(249,115,22,0.2);color:var(--orange);">DIGITUNDER</div>
+        <h5 style="color: var(--orange);">Inferior (Under 5)</h5>
+        <p>O último dígito deve ser menor que 5 (0, 1, 2, 3, 4). Entra quando os baixos estão abaixo de 40% (reversão esperada).</p>
+        <div class="when">✅ Ideal quando: Dígitos baixos frios no momento</div>
+      </div>
+    </div>
+
+    <table class="table" style="margin-top: 28px;">
+      <thead>
+        <tr>
+          <th>Cenário nos Dígitos</th>
+          <th>Tipo Recomendado</th>
+          <th>Multiplicador</th>
+          <th>Virtuais</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Pills pares > 60%, oscilador neutro</td>
+          <td><strong style="color:var(--purple);">DIGITEVEN</strong></td>
+          <td>2.2×</td>
+          <td>3 · Na perda</td>
+        </tr>
+        <tr>
+          <td>Pills ímpares > 60%, oscilador neutro</td>
+          <td><strong style="color:var(--pink);">DIGITODD</strong></td>
+          <td>2.2×</td>
+          <td>3 · Na perda</td>
+        </tr>
+        <tr>
+          <td>Dígitos altos (5–9) abaixo de 40%</td>
+          <td><strong style="color:var(--cyan);">DIGITOVER</strong></td>
+          <td>2.0×</td>
+          <td>2 · Sempre</td>
+        </tr>
+        <tr>
+          <td>Dígitos baixos (0–4) abaixo de 40%</td>
+          <td><strong style="color:var(--orange);">DIGITUNDER</strong></td>
+          <td>2.0×</td>
+          <td>2 · Sempre</td>
+        </tr>
+        <tr>
+          <td>Mercado lateral, sem padrão claro</td>
+          <td><strong style="color:var(--muted);">Aguarde</strong></td>
+          <td>—</td>
+          <td>Não inicie agora</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MULTIPLICADOR -->
+<div class="section">
+  <div class="container">
+    <div class="section-label">
+      <div class="step-num">4</div>
+      <div>
+        <div class="step-tag">Martingale</div>
+        <h2>Entendendo o Multiplicador</h2>
+      </div>
+    </div>
+    <p>O multiplicador define o comportamento do Martingale de recuperação. Veja o impacto de cada opção:</p>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Multiplicador</th>
+          <th>Stake $0.35 após 1 perda</th>
+          <th>Stake após 2 perdas</th>
+          <th>Stake após 3 perdas</th>
+          <th>Banca mínima recomendada</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1.5×</strong> Conservador</td>
+          <td>$0.53</td>
+          <td>$0.79</td>
+          <td>$1.19</td>
+          <td>$50</td>
+        </tr>
+        <tr style="background: rgba(168,85,247,0.05);">
+          <td><strong style="color:var(--purple);">2.2× ⭐ IDEAL</strong></td>
+          <td>$0.77</td>
+          <td>$1.69</td>
+          <td>$3.73</td>
+          <td>$100</td>
+        </tr>
+        <tr>
+          <td><strong>2.5×</strong> Agressivo</td>
+          <td>$0.88</td>
+          <td>$2.19</td>
+          <td>$5.47</td>
+          <td>$200</td>
+        </tr>
+        <tr>
+          <td><strong>3.0×</strong> Muito Agressivo</td>
+          <td>$1.05</td>
+          <td>$3.15</td>
+          <td>$9.45</td>
+          <td>$500</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="warn">
+      <strong>⚠️ Importante:</strong> Multiplicadores altos (2.5× e 3.0×) podem recuperar perdas mais rápido, mas exigem banca maior e aumentam o risco em sequências longas de perda. O <strong>2.2×</strong> foi calculado para equilibrar recuperação e risco com a taxa de retorno média de 88% da Deriv.
+    </div>
+  </div>
+</div>
+
+<!-- PERDAS VIRTUAIS -->
+<div class="section">
+  <div class="container">
+    <div class="section-label">
+      <div class="step-num">5</div>
+      <div>
+        <div class="step-tag">Proteção</div>
+        <h2>Como Funcionam as Perdas Virtuais</h2>
+      </div>
+    </div>
+    <p>As perdas virtuais são a camada de proteção mais poderosa do Motor IA. Elas evitam entradas em sinais fracos:</p>
+
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; margin: 20px 0;">
+      <div style="font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 16px;">Exemplo: 3 perdas virtuais configuradas</div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="virt-dots">
+            <div class="vdot pending">?</div>
+            <div class="vdot pending">?</div>
+            <div class="vdot pending">?</div>
+          </div>
+          <span style="font-size: 13px; color: var(--muted2);">IA recebe sinal → <span style="color:var(--yellow);">simulando 1ª perda virtual</span></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="virt-dots">
+            <div class="vdot loss">✗</div>
+            <div class="vdot pending">?</div>
+            <div class="vdot pending">?</div>
+          </div>
+          <span style="font-size: 13px; color: var(--muted2);">Simulou 1ª · aguardando próximo sinal</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="virt-dots">
+            <div class="vdot loss">✗</div>
+            <div class="vdot loss">✗</div>
+            <div class="vdot pending">?</div>
+          </div>
+          <span style="font-size: 13px; color: var(--muted2);">Simulou 2ª · ainda aguardando</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="virt-dots">
+            <div class="vdot loss">✗</div>
+            <div class="vdot loss">✗</div>
+            <div class="vdot loss">✗</div>
+            <span style="font-size: 20px; margin-left: 4px;">→</span>
+            <div class="vdot real">▶</div>
+          </div>
+          <span style="font-size: 13px; color: var(--green); font-weight: 700;">3 virtuais completas → ENTRADA REAL LIBERADA!</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="cards" style="margin-top: 20px;">
+      <div class="card">
+        <div class="card-icon">🛡️</div>
+        <h4>"Iniciar com Virtuais: Sim"</h4>
+        <p>Sempre simula N perdas ao iniciar. Recomendado — evita entrar cedo em mercado ainda não analisado pelo ML.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔁</div>
+        <h4>"Neg. Virtuais: Na Perda"</h4>
+        <p>Só simula quando há perda acumulada. Mais eficiente — confirma o padrão antes de usar stake maior de recuperação.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h4>"Neg. Virtuais: Sempre"</h4>
+        <p>Simula antes de toda entrada real. Mais conservador — menos trades por sessão, mas com maior filtro de qualidade.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h4>"Neg. Virtuais: Nunca"</h4>
+        <p>Entra diretamente sem simulação. Use apenas quando o ML estiver com acurácia alta (>65%) e você já conhece o mercado.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCORE STRIP -->
+<div class="section">
+  <div class="container">
+    <div class="section-label">
+      <div class="step-num">6</div>
+      <div>
+        <div class="step-tag">Monitoramento</div>
+        <h2>Lendo o Score Strip em Tempo Real</h2>
+      </div>
+    </div>
+    <p>Durante a operação, o painel exibe 4 indicadores em tempo real. Aprenda a interpretar cada um:</p>
+
+    <div class="score-strip">
+      <div class="score-item">
+        <div class="score-label">Score IA</div>
+        <div class="score-val purple">73%</div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">Tipo</div>
+        <div class="score-val cyan">EVEN</div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">Virtuais</div>
+        <div class="score-val green">3/3 ✓</div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">Mult</div>
+        <div class="score-val orange">2.2×</div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-top: 20px;">
+      <div class="card" style="border-color: rgba(168,85,247,0.3);">
+        <h4 style="color: var(--purple);">Score IA</h4>
+        <p>Confiança do modelo para a próxima entrada. Abaixo de 58% = aguarda. 60–70% = bom. Acima de 70% = excelente.</p>
+      </div>
+      <div class="card" style="border-color: rgba(0,210,255,0.3);">
+        <h4 style="color: var(--cyan);">Tipo</h4>
+        <p>Tipo de contrato que o ML está analisando. EVEN, ODD, OVER ou UNDER — muda automaticamente com a análise.</p>
+      </div>
+      <div class="card" style="border-color: rgba(34,197,94,0.3);">
+        <h4 style="color: var(--green);">Virtuais X/N ✓</h4>
+        <p>Quantas perdas virtuais já foram simuladas. Quando atingir N/N, a próxima entrada será real com dinheiro.</p>
+      </div>
+      <div class="card" style="border-color: rgba(249,115,22,0.3);">
+        <h4 style="color: var(--orange);">Mult</h4>
+        <p>Multiplicador atual do Martingale. Sobe após perda, volta ao inicial após ganho. Mostra o step atual.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MELHORES CONFIGURAÇÕES -->
+<div class="section">
+  <div class="container">
+    <div class="section-label">
+      <div class="step-num">7</div>
+      <div>
+        <div class="step-tag">Configurações</div>
+        <h2>Configurações Recomendadas por Perfil</h2>
+      </div>
+    </div>
+
+    <div class="banca-cards">
+      <div class="banca-card" style="border-color: rgba(0,210,255,0.3);">
+        <div class="tag tag-cyan">INICIANTE</div>
+        <h4>Perfil Conservador</h4>
+        <div class="valor" style="color: var(--cyan);">$50–$100</div>
+        <ul>
+          <li>Stake: $0.35</li>
+          <li>Multiplicador: 1.5× ou 2.0×</li>
+          <li>Perdas virtuais: 3 · Na perda</li>
+          <li>Iniciar com virtuais: Sim</li>
+          <li>Lucro alvo: $3–$5</li>
+          <li>Limite perda: $10–$15</li>
+          <li>Tipo: DIGITEVEN ou DIGITODD</li>
+        </ul>
+      </div>
+      <div class="banca-card" style="border-color: rgba(168,85,247,0.3);">
+        <div class="tag tag-purple">INTERMEDIÁRIO</div>
+        <h4>Perfil Balanceado</h4>
+        <div class="valor" style="color: var(--purple);">$100–$500</div>
+        <ul>
+          <li>Stake: $0.35–$1.00</li>
+          <li>Multiplicador: 2.2× ⭐</li>
+          <li>Perdas virtuais: 3 · Na perda</li>
+          <li>Iniciar com virtuais: Sim</li>
+          <li>Lucro alvo: $10–$30</li>
+          <li>Limite perda: $20–$50</li>
+          <li>Tipo: Conforme análise dos pills</li>
+        </ul>
+      </div>
+      <div class="banca-card" style="border-color: rgba(234,179,8,0.3);">
+        <div class="tag tag-yellow">AVANÇADO</div>
+        <h4>Perfil Agressivo</h4>
+        <div class="valor" style="color: var(--yellow);">$500+</div>
+        <ul>
+          <li>Stake: $1.00–$5.00</li>
+          <li>Multiplicador: 2.5× ou 3.0×</li>
+          <li>Perdas virtuais: 2 · Sempre</li>
+          <li>Iniciar com virtuais: Não</li>
+          <li>Lucro alvo: $50–$100</li>
+          <li>Limite perda: $100–$200</li>
+          <li>Tipo: OVER/UNDER em desvio alto</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tip" style="margin-top: 24px;">
+      <strong>🏆 Regra dos 10%:</strong> Configure o <strong>Lucro Alvo em no máximo 10% da banca</strong>. Com $300, pare ao atingir +$30. Atingiu? O bot encerra sozinho. Consistência de 5–10% por sessão é mais poderosa do que tentar dobrar a banca de uma vez.
+    </div>
+  </div>
+</div>
+
+<!-- DICAS AVANÇADAS -->
+<div class="section">
+  <div class="container">
+    <div class="section-label">
+      <div class="step-num">✨</div>
+      <div>
+        <div class="step-tag">Dicas Avançadas</div>
+        <h2>Como Extrair o Máximo do Motor IA</h2>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card" style="border-color: rgba(34,197,94,0.3);">
+        <div class="card-icon">📊</div>
+        <h4>Leia os Pills Antes de Iniciar</h4>
+        <p>Vá na aba Dígitos antes de ligar o bot. Se os pills mostram 60%+ pares → use DIGITEVEN. 60%+ ímpares → DIGITODD. Isso amplifica o score do ML.</p>
+      </div>
+      <div class="card" style="border-color: rgba(34,197,94,0.3);">
+        <div class="card-icon">⏰</div>
+        <h4>Deixe o ML Aquecer</h4>
+        <p>Os primeiros 5–10 minutos são de aprendizado. Não julgue o desempenho no início. O bot fica progressivamente mais preciso conforme coleta dados do mercado atual.</p>
+      </div>
+      <div class="card" style="border-color: rgba(34,197,94,0.3);">
+        <div class="card-icon">🔄</div>
+        <h4>Troque o Tipo se Necessário</h4>
+        <p>Se o mercado mudou de comportamento (pills passaram de par para ímpar), pare o bot, mude o tipo e reinicie. O ML se calibra para o novo tipo.</p>
+      </div>
+      <div class="card" style="border-color: rgba(239,68,68,0.3);">
+        <div class="card-icon">🛑</div>
+        <h4>Respeite o Stop Loss</h4>
+        <p>Configure um limite de perda real e não mude durante a sessão. Nenhum ML é 100% — o stop loss protege sua banca em dias de mercado adverso.</p>
+      </div>
+      <div class="card" style="border-color: rgba(239,68,68,0.3);">
+        <div class="card-icon">🌙</div>
+        <h4>Cuidado com Horários</h4>
+        <p>Mercados sintéticos funcionam 24h, mas costumam ter padrões melhores em certos horários. Observe em qual período o bot performa melhor para você.</p>
+      </div>
+      <div class="card" style="border-color: rgba(239,68,68,0.3);">
+        <div class="card-icon">📉</div>
+        <h4>Sequência de 5+ Perdas?</h4>
+        <p>Pare o bot. O mercado provavelmente mudou de comportamento. Analise os pills, aguarde 5 minutos e reinicie com um novo ciclo de aprendizado.</p>
+      </div>
+    </div>
+
+    <div class="tip-cyan" style="margin-top: 24px;">
+      <strong>💡 Combinação poderosa:</strong> Use o Modo IA Avançado no painel esquerdo para operar automaticamente, e ao mesmo tempo acompanhe os pills na aba Dígitos para detectar mudanças de padrão cedo. Quando os pills mudarem, você ajusta o tipo do bot antes de começar a perder.
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  ALPHA DOLAR 2.0 · GUIA DO MODO IA AVANÇADO · MOTOR ML ONLINE · OPERE COM INTELIGÊNCIA
+</div>
+
+</body>
+</html>

@@ -1,0 +1,67 @@
+<div class="sidebar">
+    <h3 class="sidebar-title">🎮 Configuração Manual</h3>
+
+    <div class="config-group">
+        <label class="config-label">Mercado</label>
+        <select class="config-select" id="manualMarket">
+            <option value="R_100">Volatility 100 Index</option>
+            <option value="R_50">Volatility 50 Index</option>
+            <option value="R_25">Volatility 25 Index</option>
+            <option value="R_10">Volatility 10 Index</option>
+        </select>
+    </div>
+
+    <div class="config-group">
+        <label class="config-label">Tipo de Negociação</label>
+        <select class="config-select" id="manualType">
+            <option value="DIGITODD">🔴 Ímpar</option>
+            <option value="DIGITEVEN">🔵 Par</option>
+            <option value="CALL">⬆️ Rise</option>
+            <option value="PUT">⬇️ Fall</option>
+        </select>
+    </div>
+
+    <div class="config-group">
+        <label class="config-label">Duração</label>
+        <select class="config-select" id="manualDuration">
+            <option value="1">1 tick</option>
+            <option value="2">2 ticks</option>
+            <option value="3">3 ticks</option>
+            <option value="5">5 ticks</option>
+            <option value="10">10 ticks</option>
+        </select>
+    </div>
+
+    <div class="config-group">
+        <label class="config-label">💰 Quantia Inicial ($)</label>
+        <input type="number" class="config-input" id="manualStake" value="1.00" min="0.35" step="0.10">
+    </div>
+
+    <div class="config-group">
+        <label class="config-label">🎯 Lucro Alvo ($)</label>
+        <input type="number" class="config-input" id="manualTarget" value="50.00" min="1">
+    </div>
+
+    <div class="config-group">
+        <label class="config-label">⚠️ Limite de Perda ($)</label>
+        <input type="number" class="config-input" id="manualStop" value="100.00" min="1">
+    </div>
+
+    <div class="config-group">
+        <label class="config-label">📊 Gerenciamento de Risco</label>
+        <select class="config-select" id="manualRisk">
+            <option value="fixed">Quantia Fixa</option>
+            <option value="martingale">Martingale</option>
+            <option value="fibonacci">Fibonacci</option>
+        </select>
+    </div>
+
+    <button class="btn-primary" id="manualStartBtn" onclick="toggleBot('manual')">
+        <i class="fas fa-play"></i> Iniciar Bot Manual
+    </button>
+
+    <div class="bot-status" id="manualStatus">
+        <div class="status-indicator offline"></div>
+        <span>Bot Parado</span>
+    </div>
+</div>

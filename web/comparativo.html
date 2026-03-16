@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha Dolar — Comparativo Demo vs Real</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#050308;color:#e2e8f0;font-family:'Segoe UI',sans-serif;min-height:100vh;}
+  .navbar{background:rgba(10,6,20,0.95);border-bottom:1px solid rgba(168,85,247,0.2);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .navbar-brand{font-size:18px;font-weight:900;background:linear-gradient(135deg,#d4a8ff,#f0abfc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .navbar-back{color:#a855f7;text-decoration:none;font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;padding:8px 14px;border:1px solid rgba(168,85,247,0.3);border-radius:8px;transition:all 0.2s;}
+  .navbar-back:hover{background:rgba(168,85,247,0.1);}
+  .container{max-width:900px;margin:0 auto;padding:24px 16px;}
+  .page-title{font-size:22px;font-weight:900;margin-bottom:4px;background:linear-gradient(135deg,#d4a8ff,#f0abfc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .page-sub{font-size:13px;color:#64748b;margin-bottom:24px;}
+  .bot-card{background:#0a0614;border:1px solid rgba(168,85,247,0.15);border-radius:16px;padding:20px;margin-bottom:20px;}
+  .bot-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .bot-name{font-size:16px;font-weight:900;color:#d4a8ff;}
+  .bot-reset{background:transparent;border:1px solid rgba(239,68,68,0.3);color:#ef4444;font-size:11px;font-weight:700;padding:6px 12px;border-radius:8px;cursor:pointer;}
+  .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .account-block{border-radius:12px;padding:14px;}
+  .account-block.demo{background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);}
+  .account-block.real{background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);}
+  .account-label{font-size:10px;font-weight:900;letter-spacing:1.5px;margin-bottom:12px;}
+  .account-block.demo .account-label{color:#60a5fa;}
+  .account-block.real .account-label{color:#22c55e;}
+  .stat-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+  .stat-row:last-child{border-bottom:none;}
+  .stat-label{font-size:11px;color:#64748b;}
+  .stat-value{font-size:12px;font-weight:700;color:#e2e8f0;}
+  .stat-value.green{color:#22c55e;}
+  .stat-value.red{color:#ef4444;}
+  .stat-value.blue{color:#60a5fa;}
+  .lucro-bar-wrap{margin-top:10px;}
+  .lucro-bar-label{font-size:10px;color:#64748b;margin-bottom:4px;display:flex;justify-content:space-between;}
+  .lucro-bar-bg{background:#1e1030;border-radius:6px;height:5px;overflow:hidden;}
+  .lucro-bar-fill{height:5px;border-radius:6px;transition:width 0.5s;}
+  .empty-state{text-align:center;padding:20px;color:#475569;font-size:12px;}
+  .sessions-list{margin-top:14px;border-top:1px solid rgba(255,255,255,0.06);padding-top:12px;}
+  .sessions-title{font-size:10px;color:#64748b;font-weight:700;letter-spacing:1px;margin-bottom:8px;}
+  .session-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:11px;}
+  .session-item:last-child{border-bottom:none;}
+  .session-date{color:#475569;}
+  .global-reset{display:flex;justify-content:center;margin-bottom:24px;}
+  .global-reset button{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#ef4444;font-size:12px;font-weight:700;padding:10px 24px;border-radius:10px;cursor:pointer;}
+  @media(max-width:500px){.compare-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="navbar">
+  <span class="navbar-brand">⚡ Alpha Dolar</span>
+  <a href="dashboard-fixed.html" class="navbar-back">← Dashboard</a>
+</div>
+<div class="container">
+  <div class="page-title">📊 Comparativo Demo vs Real</div>
+  <div class="page-sub">Histórico acumulado por robô — dados salvos localmente</div>
+  <div class="global-reset"><button onclick="resetarTudo()">🗑️ Resetar todos os dados</button></div>
+  <div id="bots-container"></div>
+</div>
+<script>
+const BOTS=[{id:'ia_pro',nome:'🧠 Alpha IA Pro'},{id:'alpha_bot',nome:'🤖 Alpha Bot (Principal)'},{id:'robo_mestre',nome:'👑 Robô Mestre'}];
+function getStats(botId,tipo){try{return JSON.parse(localStorage.getItem('cmp_'+botId+'_'+tipo)||'null')||{trades:0,wins:0,losses:0,lucro:0,maior_seq:0,sessoes:[]};}catch{return{trades:0,wins:0,losses:0,lucro:0,maior_seq:0,sessoes:[]};}}
+function saveStats(botId,tipo,data){localStorage.setItem('cmp_'+botId+'_'+tipo,JSON.stringify(data));}
+function resetarBot(botId){if(!confirm('Resetar dados de '+botId+'?'))return;['demo','real'].forEach(t=>localStorage.removeItem('cmp_'+botId+'_'+t));renderizar();}
+function resetarTudo(){if(!confirm('Resetar TODOS os dados?'))return;BOTS.forEach(b=>['demo','real'].forEach(t=>localStorage.removeItem('cmp_'+b.id+'_'+t)));renderizar();}
+function renderBlock(botId,tipo,label){const s=getStats(botId,tipo);const wr=s.trades>0?Math.round((s.wins/s.trades)*100):0;const sessoes=(s.sessoes||[]).slice(-5).reverse();return`<div class="account-block ${tipo}"><div class="account-label">${label}</div>${s.trades===0?'<div class="empty-state">Nenhuma sessão registrada</div>':`<div class="stat-row"><span class="stat-label">Trades</span><span class="stat-value">${s.trades}</span></div><div class="stat-row"><span class="stat-label">Wins / Losses</span><span class="stat-value">${s.wins} / ${s.losses}</span></div><div class="stat-row"><span class="stat-label">Win Rate</span><span class="stat-value ${wr>=60?'green':wr>=45?'blue':'red'}">${wr}%</span></div><div class="stat-row"><span class="stat-label">Lucro Total</span><span class="stat-value ${s.lucro>=0?'green':'red'}">${s.lucro>=0?'+':''}$${s.lucro.toFixed(2)}</span></div><div class="stat-row"><span class="stat-label">Maior seq. loss</span><span class="stat-value red">${s.maior_seq}×</span></div><div class="lucro-bar-wrap"><div class="lucro-bar-label"><span>Win Rate</span><span>${wr}%</span></div><div class="lucro-bar-bg"><div class="lucro-bar-fill" style="width:${Math.min(wr,100)}%;background:${wr>=60?'#22c55e':wr>=45?'#60a5fa':'#ef4444'};"></div></div></div>${sessoes.length>0?`<div class="sessions-list"><div class="sessions-title">ÚLTIMAS SESSÕES</div>${sessoes.map(ss=>`<div class="session-item"><span class="session-date">${ss.data}</span><span style="font-weight:700;color:${ss.lucro>=0?'#22c55e':'#ef4444'}">${ss.lucro>=0?'+':''}$${ss.lucro.toFixed(2)} (${ss.trades} trades)</span></div>`).join('')}</div>`:''}`}</div>`;}
+function renderizar(){document.getElementById('bots-container').innerHTML=BOTS.map(b=>`<div class="bot-card"><div class="bot-header"><div class="bot-name">${b.nome}</div><button class="bot-reset" onclick="resetarBot('${b.id}')">🗑️ Resetar</button></div><div class="compare-grid">${renderBlock(b.id,'demo','🔵 DEMO')}${renderBlock(b.id,'real','🟢 REAL')}</div></div>`).join('');}
+window.registrarSessaoComparativo=function(botId,tipo,{trades,wins,losses,lucro,maior_seq}){const s=getStats(botId,tipo);s.trades+=trades;s.wins+=wins;s.losses+=losses;s.lucro=Math.round((s.lucro+lucro)*100)/100;s.maior_seq=Math.max(s.maior_seq,maior_seq||0);const agora=new Date();const data=agora.toLocaleDateString('pt-BR')+' '+agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});s.sessoes=s.sessoes||[];s.sessoes.push({data,trades,wins,losses,lucro:Math.round(lucro*100)/100});if(s.sessoes.length>20)s.sessoes=s.sessoes.slice(-20);saveStats(botId,tipo,s);renderizar();};
+renderizar();
+</script>
+</body>
+</html>

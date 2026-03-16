@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel do Trader — Alpha Dolar</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #060912;
+  --panel: #0b0e17;
+  --border: #151d2e;
+  --blue: #00d2ff;
+  --cyan: #0ea5e9;
+  --green: #22c55e;
+  --red: #ef4444;
+  --gold: #f59e0b;
+  --purple: #a855f7;
+  --text: #e2e8f0;
+  --muted: #475569;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(0,210,255,.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,210,255,.018) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ══ LOGIN ══ */
+#loginScreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 48px 40px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(0,210,255,.15);
+  border-radius: 24px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 40px 80px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.05);
+  animation: cardIn .6s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes cardIn { from { opacity:0; transform:translateY(24px) scale(.97) } to { opacity:1; transform:none } }
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+.login-icon {
+  width: 46px; height: 46px;
+  background: linear-gradient(135deg, #0ea5e9, #00d2ff);
+  border-radius: 13px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 0 20px rgba(0,210,255,.3);
+}
+.login-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 18px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #00d2ff, #0ea5e9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.login-sub { text-align: center; color: #475569; font-size: 13px; margin-bottom: 36px; }
+.login-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #475569; margin-bottom: 8px; display: block; }
+.login-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 15px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  transition: border-color .2s;
+  margin-bottom: 20px;
+}
+.login-input:focus { border-color: rgba(0,210,255,.4); }
+.login-btn {
+  width: 100%;
+  padding: 15px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #0ea5e9, #00d2ff);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  letter-spacing: .5px;
+  box-shadow: 0 4px 20px rgba(0,210,255,.3);
+  transition: all .2s;
+}
+.login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,210,255,.4); }
+.login-error { color: var(--red); font-size: 12px; text-align: center; margin-top: 12px; display: none; }
+
+/* ══ MAIN ══ */
+#mainScreen { display: none; position: relative; z-index: 1; }
+
+/* ══ TOPBAR ══ */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+  background: rgba(6,9,18,.96);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+}
+.topbar::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,210,255,.3), transparent);
+}
+.tb-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'Orbitron', monospace; font-size: 14px; font-weight: 900;
+  background: linear-gradient(135deg, #00d2ff, #0ea5e9);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  letter-spacing: 1px;
+}
+.tb-logo-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, #0ea5e9, #00d2ff);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+}
+.tb-trader { display: flex; align-items: center; gap: 10px; }
+.tb-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(0,210,255,.2), rgba(14,165,233,.1));
+  border: 1.5px solid rgba(0,210,255,.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.tb-name { font-size: 13px; font-weight: 600; }
+.tb-role { font-size: 10px; color: var(--blue); font-weight: 700; letter-spacing: 1px; }
+.tb-logout {
+  padding: 7px 14px;
+  border-radius: 8px;
+  background: rgba(239,68,68,.08);
+  border: 1px solid rgba(239,68,68,.2);
+  color: #ef4444;
+  font-size: 12px; font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .18s;
+}
+.tb-logout:hover { background: rgba(239,68,68,.18); }
+
+/* ══ CONTENT ══ */
+.content { padding: 80px 24px 40px; max-width: 1300px; margin: 0 auto; }
+
+/* ══ HEADER BOT ══ */
+.bot-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px; flex-wrap: wrap; gap: 14px;
+}
+.bot-info { display: flex; align-items: center; gap: 14px; }
+.bot-icon {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(0,210,255,.15), rgba(14,165,233,.08));
+  border: 1px solid rgba(0,210,255,.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+}
+.bot-name-main { font-family: 'Orbitron', monospace; font-size: 20px; font-weight: 900; }
+.bot-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.status-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px; font-weight: 700;
+  letter-spacing: .5px;
+}
+.status-ativo { background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.3); color: var(--green); }
+.status-suspenso { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.3); color: var(--red); }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; animation: blink 2s infinite; }
+.dot-green { background: var(--green); box-shadow: 0 0 7px var(--green); }
+.dot-red { background: var(--red); }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
+
+/* ══ KPI GRID ══ */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.kpi {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .2s;
+}
+.kpi:hover { border-color: rgba(0,210,255,.2); }
+.kpi::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.kpi.blue::before { background: linear-gradient(90deg, var(--blue), var(--cyan)); }
+.kpi.green::before { background: linear-gradient(90deg, var(--green), #16a34a); }
+.kpi.red::before { background: linear-gradient(90deg, var(--red), #dc2626); }
+.kpi.gold::before { background: linear-gradient(90deg, var(--gold), #d97706); }
+.kpi.purple::before { background: linear-gradient(90deg, var(--purple), #9333ea); }
+.kpi-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.kpi-value {
+  font-family: 'Orbitron', monospace;
+  font-size: 24px; font-weight: 900;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.kpi-sub { font-size: 11px; color: var(--muted); }
+.kpi.blue .kpi-value { color: var(--blue); }
+.kpi.green .kpi-value { color: var(--green); }
+.kpi.red .kpi-value { color: var(--red); }
+.kpi.gold .kpi-value { color: var(--gold); }
+.kpi.purple .kpi-value { color: var(--purple); }
+
+/* ══ GRID 2 COL ══ */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+
+/* ══ PANELS ══ */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.panel-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.panel-hdr h3 {
+  font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--muted);
+}
+.panel-body { padding: 20px; }
+
+/* ══ RECEITA CARD ══ */
+.receita-card {
+  background: linear-gradient(135deg, rgba(0,210,255,.06), rgba(14,165,233,.03));
+  border: 1px solid rgba(0,210,255,.15);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 14px;
+}
+.receita-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  font-size: 13px;
+}
+.receita-row:last-child { border-bottom: none; padding-bottom: 0; }
+.receita-row .lbl { color: var(--muted); }
+.receita-row .val { font-family: 'Orbitron', monospace; font-weight: 700; font-size: 13px; }
+.receita-row .val.g { color: var(--green); }
+.receita-row .val.r { color: var(--red); }
+.receita-row .val.b { color: var(--blue); }
+.receita-row .val.gold { color: var(--gold); }
+.receita-row .val.purple { color: var(--purple); }
+
+.formula-box {
+  background: rgba(168,85,247,.06);
+  border: 1px solid rgba(168,85,247,.2);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.7;
+  margin-top: 14px;
+}
+.formula-box strong { color: var(--purple); }
+
+/* ══ CLIENTES TABLE ══ */
+.cli-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  transition: background .14s;
+}
+.cli-row:last-child { border-bottom: none; }
+.cli-row:hover { background: rgba(255,255,255,.02); }
+.cli-av {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(0,210,255,.15), rgba(14,165,233,.08));
+  border: 1px solid rgba(0,210,255,.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.cli-info { flex: 1; min-width: 0; }
+.cli-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cli-id { font-size: 10px; color: var(--muted); margin-top: 1px; font-family: monospace; }
+.cli-stats { display: flex; gap: 8px; flex-shrink: 0; }
+.cli-tag {
+  font-size: 10px; font-weight: 700;
+  padding: 3px 8px; border-radius: 6px;
+  font-family: 'Orbitron', monospace;
+}
+.cli-tag.g { background: rgba(34,197,94,.1); color: var(--green); }
+.cli-tag.r { background: rgba(239,68,68,.1); color: var(--red); }
+.cli-tag.b { background: rgba(0,210,255,.1); color: var(--blue); }
+.cli-online { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.cli-online.on { background: var(--green); box-shadow: 0 0 6px var(--green); animation: blink 2s infinite; }
+.cli-online.off { background: #334155; }
+
+/* ══ OPS TABLE ══ */
+.op-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  font-size: 12px;
+  transition: background .14s;
+}
+.op-row:last-child { border-bottom: none; }
+.op-row:hover { background: rgba(255,255,255,.02); }
+.op-dir {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
+}
+.op-dir.up { background: rgba(34,197,94,.1); color: var(--green); }
+.op-dir.dn { background: rgba(239,68,68,.1); color: var(--red); }
+.op-info { flex: 1; padding: 0 10px; }
+.op-cli { font-size: 11px; color: var(--muted); }
+.op-res { font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; }
+.op-res.g { color: var(--green); }
+.op-res.r { color: var(--red); }
+
+/* ══ PAGAMENTOS ══ */
+.pag-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  font-size: 13px;
+}
+.pag-row:last-child { border-bottom: none; }
+.pag-status {
+  font-size: 10px; font-weight: 700; padding: 3px 9px;
+  border-radius: 8px; letter-spacing: .5px;
+}
+.pag-pago { background: rgba(34,197,94,.1); color: var(--green); border: 1px solid rgba(34,197,94,.25); }
+.pag-pendente { background: rgba(245,158,11,.1); color: var(--gold); border: 1px solid rgba(245,158,11,.25); }
+
+/* ══ EMPTY ══ */
+.empty { padding: 32px; text-align: center; color: var(--muted); font-size: 13px; }
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:900px) {
+  .kpi-grid { grid-template-columns: repeat(2,1fr); }
+  .grid2 { grid-template-columns: 1fr; }
+}
+@media(max-width:600px) {
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .content { padding: 70px 14px 30px; }
+  .topbar { padding: 0 14px; }
+  .bot-header { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-icon">💹</div>
+      <span class="login-title">ALPHA DOLAR</span>
+    </div>
+    <p class="login-sub">Painel do Trader — Acesso Restrito</p>
+    <label class="login-label">Seu Bot</label>
+    <input class="login-input" id="loginBotName" type="text" placeholder="Ex: BOT JOAO 01">
+    <label class="login-label">Senha</label>
+    <input class="login-input" id="loginSenha" type="password" placeholder="Sua senha">
+    <button class="login-btn" onclick="fazerLogin()">ENTRAR NO PAINEL →</button>
+    <div class="login-error" id="loginError">Bot ou senha incorretos.</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="mainScreen">
+  <div class="topbar">
+    <div class="tb-logo">
+      <div class="tb-logo-icon">💹</div>
+      ALPHA DOLAR
+    </div>
+    <div class="tb-trader">
+      <div class="tb-avatar" id="tbAvatar">👤</div>
+      <div>
+        <div class="tb-name" id="tbNome">—</div>
+        <div class="tb-role">TRADER PARCEIRO</div>
+      </div>
+    </div>
+    <button class="tb-logout" onclick="fazerLogout()">⏻ Sair</button>
+  </div>
+
+  <div class="content">
+    <!-- HEADER BOT -->
+    <div class="bot-header">
+      <div class="bot-info">
+        <div class="bot-icon">🤖</div>
+        <div>
+          <div class="bot-name-main" id="botNomeDisplay">—</div>
+          <div class="bot-meta">
+            Dono: <span id="botDono">—</span> ·
+            ID Deriv: <span id="botDerivId">—</span> ·
+            Cadastrado em <span id="botCadastro">—</span>
+          </div>
+        </div>
+      </div>
+      <div id="botStatusBadge" class="status-badge status-ativo">
+        <div class="status-dot dot-green"></div>
+        ATIVO
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi blue">
+        <div class="kpi-label">🤖 Clientes Ativos</div>
+        <div class="kpi-value" id="kpiClientes">0</div>
+        <div class="kpi-sub">operaram hoje</div>
+      </div>
+      <div class="kpi green">
+        <div class="kpi-label">📈 Ganhos Clientes</div>
+        <div class="kpi-value" id="kpiGanhos">$0.00</div>
+        <div class="kpi-sub">total acumulado</div>
+      </div>
+      <div class="kpi red">
+        <div class="kpi-label">📉 Perdas Clientes</div>
+        <div class="kpi-value" id="kpiPerdas">$0.00</div>
+        <div class="kpi-sub">total acumulado</div>
+      </div>
+      <div class="kpi gold">
+        <div class="kpi-label">⚡ Trades Totais</div>
+        <div class="kpi-value" id="kpiTrades">0</div>
+        <div class="kpi-sub">operações registradas</div>
+      </div>
+    </div>
+
+    <!-- GRID 2 -->
+    <div class="grid2">
+      <!-- REVENUE SHARE -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <h3>💰 Revenue Share & Comissão</h3>
+        </div>
+        <div class="panel-body">
+          <div class="receita-card">
+            <div class="receita-row">
+              <span class="lbl">Total Ganhos dos Clientes</span>
+              <span class="val g" id="rsGanhos">$ 0.00</span>
+            </div>
+            <div class="receita-row">
+              <span class="lbl">Total Perdas dos Clientes</span>
+              <span class="val r" id="rsPerdas">$ 0.00</span>
+            </div>
+            <div class="receita-row">
+              <span class="lbl">Lucro Líquido Deriv</span>
+              <span class="val b" id="rsLucro">$ 0.00</span>
+            </div>
+            <div class="receita-row">
+              <span class="lbl">Seu Revenue Share (30%)</span>
+              <span class="val gold" id="rsShare">$ 0.00</span>
+            </div>
+            <div class="receita-row" style="border-top: 1px solid rgba(168,85,247,.2); padding-top: 12px; margin-top: 4px;">
+              <span class="lbl" style="color: var(--purple); font-weight: 700;">💸 A Pagar para Alpha Dolar (20%)</span>
+              <span class="val purple" id="rsPagar">$ 0.00</span>
+            </div>
+            <div class="receita-row">
+              <span class="lbl" style="font-weight: 700;">✅ Seu Lucro Líquido (80%)</span>
+              <span class="val g" id="rsLiquido">$ 0.00</span>
+            </div>
+          </div>
+          <div class="formula-box">
+            <strong>Como é calculado:</strong><br>
+            Lucro Líquido Deriv = Perdas − Ganhos dos clientes<br>
+            Revenue Share (estimado 30%) = Lucro × 0.30<br>
+            <strong>Sua comissão Alpha Dolar = Revenue Share × 20%</strong><br>
+            <strong>Seu lucro = Revenue Share × 80%</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- CLIENTES -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <h3>👥 Clientes do Bot</h3>
+          <span id="totalClientes" style="font-size:11px;color:var(--blue);font-weight:700">0 clientes</span>
+        </div>
+        <div id="clientesList"><div class="empty">Carregando clientes...</div></div>
+      </div>
+    </div>
+
+    <!-- OPERAÇÕES + HISTÓRICO -->
+    <div class="grid2">
+      <div class="panel">
+        <div class="panel-hdr">
+          <h3>⚡ Últimas Operações</h3>
+          <span style="font-size:11px;color:var(--muted)" id="ultimaAtt">—</span>
+        </div>
+        <div id="operacoesList"><div class="empty">Carregando operações...</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-hdr">
+          <h3>📋 Histórico de Pagamentos</h3>
+        </div>
+        <div id="pagamentosList">
+          <div class="empty">Nenhum pagamento registrado ainda.</div>
+        </div>
+        <div style="padding:16px 20px;border-top:1px solid var(--border)">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Seu lucro estimado acumulado:</div>
+          <div style="font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--gold)" id="proximoPagamento">$ 0.00</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API = 'https://alpha-dolar-backend.onrender.com';
+
+let botAtual = null;
+let dadosBot = null;
+
+// ══ LOGIN ══
+function fazerLogin() {
+  const botName = document.getElementById('loginBotName').value.trim();
+  const senha   = document.getElementById('loginSenha').value.trim();
+  const err     = document.getElementById('loginError');
+  err.style.display = 'none';
+
+  if (!botName || !senha) {
+    err.textContent = 'Preencha todos os campos.';
+    err.style.display = 'block';
+    return;
+  }
+
+  // Senha master global
+  if (senha === 'alpha2025') {
+    botAtual = botName;
+    entrarPainel(botName, true);
+    return;
+  }
+
+  // Verifica trader no backend (senha_trader ou deriv_id)
+  verificarTraderNoBackend(botName, senha);
+}
+
+async function verificarTraderNoBackend(botName, senha) {
+  const err = document.getElementById('loginError');
+  try {
+    const res  = await fetch(`${API}/api/bots`);
+    const bots = await res.json();
+    // ✅ FIX: campo correto é 'nome' no banco
+    const bot  = bots.find(b => b.nome === botName);
+
+    if (!bot) {
+      err.textContent = 'Bot não encontrado.';
+      err.style.display = 'block';
+      return;
+    }
+
+    // Aceita senha_trader (campo futuro) ou deriv_id como senha temporária
+    const senhaValida = bot.senha_trader || bot.deriv_id || 'alpha2025';
+    if (senha !== senhaValida) {
+      err.textContent = 'Senha incorreta.';
+      err.style.display = 'block';
+      return;
+    }
+
+    botAtual = botName;
+    entrarPainel(botName, false);
+  } catch(e) {
+    err.textContent = 'Erro ao conectar. Tente novamente.';
+    err.style.display = 'block';
+  }
+}
+
+function entrarPainel(botName, isMaster) {
+  sessionStorage.setItem('trader_bot',    botName);
+  sessionStorage.setItem('trader_master', isMaster ? '1' : '0');
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainScreen').style.display  = 'block';
+  document.getElementById('tbNome').textContent        = isMaster ? 'Admin Master' : botName;
+  document.getElementById('botNomeDisplay').textContent = botName;
+  carregarDados(botName);
+}
+
+function fazerLogout() {
+  sessionStorage.removeItem('trader_bot');
+  sessionStorage.removeItem('trader_master');
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('mainScreen').style.display  = 'none';
+  document.getElementById('loginBotName').value = '';
+  document.getElementById('loginSenha').value   = '';
+  botAtual = null;
+  dadosBot = null;
+}
+
+// ══ CARREGAR DADOS ══
+async function carregarDados(botName) {
+  try {
+    // 1. Info do bot
+    const resBots = await fetch(`${API}/api/bots`);
+    const bots    = await resBots.json();
+    // ✅ campo 'nome' (não 'bot_name')
+    const bot = bots.find(b => b.nome === botName);
+
+    if (bot) {
+      dadosBot = bot;
+      document.getElementById('botDono').textContent    = bot.dono || '—';
+      document.getElementById('botDerivId').textContent = bot.deriv_id || '—';
+      document.getElementById('botCadastro').textContent = bot.criado_em
+        ? new Date(bot.criado_em).toLocaleDateString('pt-BR') : '—';
+
+      const badge = document.getElementById('botStatusBadge');
+      if (bot.status === 'suspenso') {
+        badge.className = 'status-badge status-suspenso';
+        badge.innerHTML = '<div class="status-dot dot-red"></div> SUSPENSO';
+      } else {
+        badge.className = 'status-badge status-ativo';
+        badge.innerHTML = '<div class="status-dot dot-green"></div> ATIVO';
+      }
+    }
+
+    // 2. Operações — campo bot_name no banco
+    const resOps = await fetch(`${API}/api/operacoes?bot_name=${encodeURIComponent(botName)}`);
+    const ops    = await resOps.json();
+    renderOperacoes(ops);
+    calcularKPIs(ops);
+
+    // 3. Clientes — campo bot_name no banco
+    const resCli   = await fetch(`${API}/api/clientes`);
+    const clientes = await resCli.json();
+    // ✅ filtro correto pelo campo bot_name
+    const meusCli  = clientes.filter(c => c.bot_name === botName);
+    renderClientes(meusCli);
+
+    document.getElementById('ultimaAtt').textContent =
+      'Atualizado ' + new Date().toLocaleTimeString('pt-BR');
+  } catch(e) {
+    console.error('Erro ao carregar dados:', e);
+  }
+}
+
+// ══ KPIs ══
+function calcularKPIs(ops) {
+  let ganhos = 0, perdas = 0;
+  const clientesHoje = new Set();
+  const dataHoje     = new Date().toDateString();
+
+  ops.forEach(op => {
+    const lucro = parseFloat(op.lucro) || 0;
+    // ✅ FIX PRINCIPAL: banco salva 'win' / 'loss' (não 'ganhou')
+    const ganhou = op.resultado === 'win' || lucro > 0;
+
+    if (ganhou) ganhos += Math.abs(lucro);
+    else        perdas += Math.abs(lucro);
+
+    // Clientes únicos que operaram hoje
+    if (op.criado_em && new Date(op.criado_em).toDateString() === dataHoje) {
+      if (op.cliente_id) clientesHoje.add(op.cliente_id);
+    }
+  });
+
+  const lucroLiquidoDeriv = perdas - ganhos;
+  const revenueShare      = Math.max(0, lucroLiquidoDeriv * 0.30);
+  const aPagar            = revenueShare * 0.20;
+  const liquido           = revenueShare * 0.80;
+
+  document.getElementById('kpiClientes').textContent = clientesHoje.size || 0;
+  document.getElementById('kpiGanhos').textContent   = '$' + ganhos.toFixed(2);
+  document.getElementById('kpiPerdas').textContent   = '$' + perdas.toFixed(2);
+  document.getElementById('kpiTrades').textContent   = ops.length;
+
+  document.getElementById('rsGanhos').textContent  = '$ ' + ganhos.toFixed(2);
+  document.getElementById('rsPerdas').textContent  = '$ ' + perdas.toFixed(2);
+  document.getElementById('rsLucro').textContent   = '$ ' + Math.max(0, lucroLiquidoDeriv).toFixed(2);
+  document.getElementById('rsShare').textContent   = '$ ' + revenueShare.toFixed(2);
+  document.getElementById('rsPagar').textContent   = '$ ' + aPagar.toFixed(2);
+  document.getElementById('rsLiquido').textContent = '$ ' + liquido.toFixed(2);
+  document.getElementById('proximoPagamento').textContent = '$ ' + liquido.toFixed(2);
+}
+
+// ══ RENDER CLIENTES ══
+function renderClientes(clientes) {
+  const el = document.getElementById('clientesList');
+  document.getElementById('totalClientes').textContent = clientes.length + ' clientes';
+
+  if (!clientes.length) {
+    el.innerHTML = '<div class="empty">Nenhum cliente vinculado ainda.</div>';
+    return;
+  }
+
+  const avatares = ['👨','👩','🧑','👨‍💼','👩‍💼','🧔','👱','🧑‍💻'];
+  el.innerHTML = clientes.slice(0, 10).map((c, i) => `
+    <div class="cli-row">
+      <div class="cli-av">${avatares[i % avatares.length]}</div>
+      <div class="cli-info">
+        <div class="cli-name">${c.nome || 'Trader Anônimo'}</div>
+        <!-- ✅ campo correto: deriv_id -->
+        <div class="cli-id">${c.deriv_id || '—'}</div>
+      </div>
+      <div class="cli-stats">
+        <!-- ✅ campo correto: account_type -->
+        <span class="cli-tag b">${(c.account_type || 'demo').toUpperCase()}</span>
+      </div>
+      <!-- ✅ campo correto: ultimo_acesso -->
+      <div class="cli-online ${c.ultimo_acesso && isRecente(c.ultimo_acesso) ? 'on' : 'off'}"></div>
+    </div>
+  `).join('');
+}
+
+// ══ RENDER OPERAÇÕES ══
+function renderOperacoes(ops) {
+  const el = document.getElementById('operacoesList');
+
+  if (!ops || !ops.length) {
+    el.innerHTML = '<div class="empty">Nenhuma operação registrada.</div>';
+    return;
+  }
+
+  el.innerHTML = ops.slice(0, 15).map(op => {
+    const lucro  = parseFloat(op.lucro) || 0;
+    // ✅ FIX: resultado vem como 'win' / 'loss' do banco
+    const ganhou = op.resultado === 'win' || lucro > 0;
+    const hora   = op.criado_em
+      ? new Date(op.criado_em).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})
+      : '—';
+    // ✅ campos corretos: tipo, stake, cliente_id
+    return `
+      <div class="op-row">
+        <div class="op-dir ${ganhou ? 'up' : 'dn'}">${ganhou ? '▲' : '▼'}</div>
+        <div class="op-info">
+          <div>${op.tipo || 'CALL/PUT'} · ${op.stake ? '$' + parseFloat(op.stake).toFixed(2) : '—'}</div>
+          <div class="op-cli">${op.cliente_id || '—'} · ${hora}</div>
+        </div>
+        <div class="op-res ${ganhou ? 'g' : 'r'}">
+          ${ganhou ? '+' : '-'}$ ${Math.abs(lucro).toFixed(2)}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function isRecente(dateStr) {
+  if (!dateStr) return false;
+  return (Date.now() - new Date(dateStr).getTime()) < 5 * 60 * 1000;
+}
+
+// ══ EVENTOS ══
+document.getElementById('loginBotName').addEventListener('keydown', e => { if(e.key==='Enter') fazerLogin(); });
+document.getElementById('loginSenha').addEventListener('keydown',   e => { if(e.key==='Enter') fazerLogin(); });
+
+// Auto-refresh a cada 30 segundos
+setInterval(() => { if (botAtual) carregarDados(botAtual); }, 30000);
+
+// Restaura sessão
+const sessao = sessionStorage.getItem('trader_bot');
+if (sessao) entrarPainel(sessao, sessionStorage.getItem('trader_master') === '1');
+</script>
+</body>
+</html>

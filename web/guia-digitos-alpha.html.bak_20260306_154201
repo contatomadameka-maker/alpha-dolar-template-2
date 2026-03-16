@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha Dolar 2.0 — Guia Visual de Dígitos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0c10;
+  --panel: #111318;
+  --panel2: #13161e;
+  --border: #1e2230;
+  --blue: #42A5F5;
+  --green: #4caf50;
+  --red: #f44336;
+  --gold: #FFB300;
+  --purple: #ba68c8;
+  --pink: #d81b60;
+  --cyan: #00d2ff;
+  --text: #e0e0e0;
+  --muted: #555;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Syne',sans-serif; overflow-x:hidden; }
+
+/* ── HERO ── */
+.hero {
+  text-align:center;
+  padding:70px 20px 50px;
+  background: radial-gradient(ellipse at 50% -10%, rgba(0,210,255,0.13) 0%, rgba(216,27,96,0.06) 40%, transparent 70%);
+  border-bottom:1px solid var(--border);
+  position:relative;
+  overflow:hidden;
+}
+.hero::before {
+  content:'';
+  position:absolute; inset:0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.02) 40px),
+              repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.02) 40px);
+  pointer-events:none;
+}
+.hero-badge {
+  display:inline-block;
+  background:rgba(0,210,255,0.1);
+  border:1px solid rgba(0,210,255,0.3);
+  color:var(--cyan);
+  font-family:'Space Mono',monospace;
+  font-size:11px; letter-spacing:3px;
+  padding:6px 18px; border-radius:20px; margin-bottom:22px;
+}
+.hero h1 { font-size:clamp(28px,5vw,50px); font-weight:800; line-height:1.1; margin-bottom:14px; }
+.hero h1 .c1 { color:var(--cyan); }
+.hero h1 .c2 { color:var(--pink); }
+.hero p { color:#777; font-size:15px; max-width:520px; margin:0 auto; line-height:1.7; }
+
+.win-badge {
+  display:inline-flex; align-items:center; gap:10px;
+  background:rgba(76,175,80,0.1);
+  border:1px solid rgba(76,175,80,0.3);
+  border-radius:12px; padding:12px 20px;
+  margin:24px auto 0;
+  font-family:'Space Mono',monospace; font-size:13px; color:var(--green);
+}
+.win-dot { width:8px; height:8px; border-radius:50%; background:var(--green); animation:pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.6)} }
+
+/* ── NOVO: BANNER MODO IA AVANÇADO ── */
+.ia-banner {
+  margin: 40px auto 0;
+  max-width: 700px;
+  background: linear-gradient(135deg, rgba(216,27,96,0.15), rgba(0,210,255,0.08));
+  border: 1px solid rgba(216,27,96,0.4);
+  border-radius: 16px;
+  padding: 20px 24px;
+  display: flex; align-items: center; gap: 18px;
+  position: relative; overflow: hidden;
+}
+.ia-banner::before {
+  content:'';
+  position:absolute; inset:0;
+  background: repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(216,27,96,0.03) 8px, rgba(216,27,96,0.03) 9px);
+  pointer-events:none;
+}
+.ia-banner-icon { font-size:36px; flex-shrink:0; }
+.ia-banner-text h3 { color:var(--pink); font-size:15px; font-weight:800; margin-bottom:4px; }
+.ia-banner-text p { color:#aaa; font-size:13px; line-height:1.6; }
+.ia-badge-new {
+  background:var(--pink); color:#fff;
+  font-family:'Space Mono',monospace; font-size:9px; font-weight:700;
+  padding:3px 8px; border-radius:10px; margin-left:8px; letter-spacing:1px;
+  animation: badge-pulse 2s infinite;
+}
+@keyframes badge-pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+
+/* ── LAYOUT ── */
+.section { padding:50px 20px; max-width:980px; margin:0 auto; }
+.section-num { font-family:'Space Mono',monospace; font-size:11px; color:var(--cyan); letter-spacing:3px; margin-bottom:8px; }
+.section-title { font-size:28px; font-weight:800; margin-bottom:6px; }
+.section-sub { color:#666; font-size:14px; margin-bottom:32px; }
+.divider { border:none; border-top:1px solid var(--border); margin:0; }
+
+/* ── FLOW ── */
+.flow { display:flex; align-items:center; gap:0; flex-wrap:wrap; margin:20px 0; }
+.flow-step {
+  display:flex; align-items:center; gap:10px;
+  background:var(--panel); border:1px solid var(--border);
+  border-radius:10px; padding:12px 16px; font-size:13px; flex:1; min-width:130px;
+}
+.flow-step .fi { font-size:20px; flex-shrink:0; }
+.flow-step small { font-size:11px; color:#555; display:block; }
+.flow-arrow { color:var(--muted); font-size:20px; padding:0 6px; flex-shrink:0; }
+
+/* ── CARDS PASSO ── */
+.step-card { background:var(--panel); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:24px; }
+.step-header { display:flex; align-items:center; gap:16px; padding:20px 24px; border-bottom:1px solid var(--border); }
+.step-num {
+  width:36px; height:36px; border-radius:50%;
+  background:rgba(0,210,255,0.1); border:1.5px solid var(--cyan);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Space Mono',monospace; font-size:14px; font-weight:700; color:var(--cyan); flex-shrink:0;
+}
+.step-header h3 { font-size:16px; font-weight:700; }
+.step-header p { font-size:12px; color:#666; margin-top:2px; }
+.step-body { padding:24px; }
+
+/* ── TABELA MULTIMERCADO ── */
+.mm-table-demo { width:100%; border-collapse:collapse; font-family:'Space Mono',monospace; font-size:12px; margin-bottom:16px; }
+.mm-table-demo th { color:var(--muted); font-size:10px; letter-spacing:1px; padding:8px 10px; text-align:left; border-bottom:1px solid var(--border); }
+.mm-table-demo td { padding:10px 10px; border-bottom:1px solid rgba(255,255,255,0.03); }
+.mm-bar-row { display:flex; height:12px; border-radius:6px; overflow:hidden; gap:2px; }
+.mm-par  { background:rgba(76,175,80,0.7);  border-radius:6px 0 0 6px; display:flex; align-items:center; justify-content:center; font-size:9px; color:#000; font-weight:700; }
+.mm-impar{ background:rgba(66,165,245,0.5); border-radius:0 6px 6px 0; display:flex; align-items:center; justify-content:center; font-size:9px; color:#000; font-weight:700; }
+.arrow-box { display:flex; align-items:center; gap:12px; background:rgba(76,175,80,0.08); border:1px solid rgba(76,175,80,0.2); border-radius:10px; padding:14px 16px; margin-top:12px; }
+.arrow-icon { font-size:24px; flex-shrink:0; }
+.arrow-box p { font-size:13px; color:var(--green); font-weight:600; }
+.arrow-box small { color:#666; font-size:11px; display:block; margin-top:2px; }
+
+/* ── PILLS ── */
+.pills-grid { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+.pill-demo { display:flex; flex-direction:column; align-items:center; width:56px; height:64px; border-radius:10px; border:1.5px solid var(--border); background:#13151a; justify-content:center; gap:4px; position:relative; }
+.pill-demo .dn { font-family:'Space Mono',monospace; font-size:20px; font-weight:700; }
+.pill-demo .dp { font-family:'Space Mono',monospace; font-size:9px; color:#555; }
+.pill-demo.hi { border-color:var(--green); background:rgba(76,175,80,0.08); }
+.pill-demo.hi .dn { color:var(--green); }
+.pill-demo.lo { border-color:var(--red); background:rgba(244,67,54,0.08); }
+.pill-demo.lo .dn { color:var(--red); }
+.label-over { position:absolute; top:-24px; left:50%; transform:translateX(-50%); font-size:9px; font-weight:700; letter-spacing:1px; white-space:nowrap; }
+.label-over.green { color:var(--green); }
+.label-over.red { color:var(--red); }
+.pills-wrapper { position:relative; padding-top:28px; margin-bottom:8px; }
+
+/* ── OSC ── */
+.osc-demo { background:#0d0f14; border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:16px; }
+.chart-svg { width:100%; height:80px; }
+
+/* ── CENÁRIOS ── */
+.scenario-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:16px; }
+.scenario-card { background:var(--panel); border:1px solid var(--border); border-radius:14px; overflow:hidden; transition:border-color .2s, transform .2s; }
+.scenario-card:hover { border-color:#2a3050; transform:translateY(-2px); }
+.scenario-top { padding:16px; border-bottom:1px solid var(--border); }
+.scenario-tag { display:inline-block; font-family:'Space Mono',monospace; font-size:9px; letter-spacing:2px; padding:3px 10px; border-radius:20px; margin-bottom:10px; font-weight:700; }
+.tag-bull   { background:rgba(76,175,80,0.15); color:var(--green); border:1px solid rgba(76,175,80,0.3); }
+.tag-bear   { background:rgba(244,67,54,0.15); color:var(--red); border:1px solid rgba(244,67,54,0.3); }
+.tag-seq    { background:rgba(255,179,0,0.15); color:var(--gold); border:1px solid rgba(255,179,0,0.3); }
+.tag-quiet  { background:rgba(186,104,200,0.15); color:var(--purple); border:1px solid rgba(186,104,200,0.3); }
+.tag-pulse  { background:rgba(66,165,245,0.15); color:var(--blue); border:1px solid rgba(66,165,245,0.3); }
+.tag-skew   { background:rgba(77,208,225,0.15); color:#4dd0e1; border:1px solid rgba(77,208,225,0.3); }
+.tag-ia     { background:rgba(216,27,96,0.15); color:var(--pink); border:1px solid rgba(216,27,96,0.4); }
+.scenario-title { font-size:15px; font-weight:700; margin-bottom:6px; }
+.scenario-desc  { font-size:12px; color:#666; line-height:1.5; }
+.scenario-chart { padding:12px 16px; border-bottom:1px solid var(--border); background:#0d0f14; }
+.scenario-bots  { padding:14px 16px; }
+.bots-label { font-size:10px; letter-spacing:1.5px; color:var(--muted); margin-bottom:10px; font-weight:700; }
+.bot-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.bot-chip { font-family:'Space Mono',monospace; font-size:10px; padding:4px 10px; border-radius:20px; font-weight:700; }
+.chip-free    { background:rgba(66,165,245,0.1); color:var(--blue); border:1px solid rgba(66,165,245,0.3); }
+.chip-vip     { background:rgba(76,175,80,0.1); color:var(--green); border:1px solid rgba(76,175,80,0.3); }
+.chip-premium { background:rgba(255,179,0,0.1); color:var(--gold); border:1px solid rgba(255,179,0,0.3); }
+.chip-ia      { background:rgba(216,27,96,0.15); color:var(--pink); border:1px solid rgba(216,27,96,0.4); }
+
+/* ── BANCA TABLE ── */
+.banca-table { width:100%; border-collapse:collapse; }
+.banca-table th { background:#0d0f14; padding:12px 16px; text-align:left; font-size:11px; letter-spacing:1px; color:var(--muted); border-bottom:1px solid var(--border); }
+.banca-table td { padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.04); font-size:13px; }
+.banca-table tr:last-child td { border-bottom:none; }
+.tier-free    { color:var(--blue); font-weight:700; }
+.tier-vip     { color:var(--green); font-weight:700; }
+.tier-premium { color:var(--gold); font-weight:700; }
+
+/* ── HIGHLIGHT BOX ── */
+.highlight-box { background:rgba(66,165,245,0.06); border:1px solid rgba(66,165,245,0.2); border-radius:12px; padding:18px 20px; margin-top:16px; font-size:13px; line-height:1.7; color:#aaa; }
+.highlight-box strong { color:var(--blue); }
+.highlight-box.green { background:rgba(76,175,80,0.06); border-color:rgba(76,175,80,0.2); }
+.highlight-box.green strong { color:var(--green); }
+.highlight-box.pink  { background:rgba(216,27,96,0.06); border-color:rgba(216,27,96,0.3); }
+.highlight-box.pink  strong { color:var(--pink); }
+
+/* ── TICKER ── */
+.tb { flex-shrink:0; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:13px; font-weight:700; background:#13151a; border:1.5px solid #2a2d35; }
+
+/* ── NOVA SEÇÃO: MODO IA AVANÇADO ── */
+.ia-section {
+  background: linear-gradient(180deg, rgba(216,27,96,0.05) 0%, transparent 100%);
+  border-top:1px solid rgba(216,27,96,0.2);
+  border-bottom:1px solid rgba(216,27,96,0.2);
+  padding:50px 20px;
+}
+.ia-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; margin-top:24px; }
+.ia-card {
+  background:var(--panel2);
+  border:1px solid rgba(216,27,96,0.25);
+  border-radius:14px; padding:20px;
+  transition: border-color .2s, transform .2s;
+}
+.ia-card:hover { border-color:rgba(216,27,96,0.5); transform:translateY(-2px); }
+.ia-card-icon { font-size:28px; margin-bottom:10px; }
+.ia-card h4 { font-size:14px; font-weight:700; margin-bottom:6px; color:var(--pink); }
+.ia-card p { font-size:12px; color:#777; line-height:1.6; }
+
+/* score strip visual */
+.score-strip {
+  display:flex; gap:8px; flex-wrap:wrap; margin:20px 0 8px;
+}
+.score-chip {
+  flex:1; min-width:90px;
+  border-radius:10px; padding:10px 12px;
+  font-family:'Space Mono',monospace;
+}
+.score-chip .sc-label { font-size:9px; letter-spacing:1px; margin-bottom:4px; opacity:.7; }
+.score-chip .sc-val   { font-size:16px; font-weight:700; }
+
+/* virtual dots */
+.vdots { display:flex; gap:6px; align-items:center; margin:12px 0; }
+.vdot {
+  width:28px; height:28px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; font-family:'Space Mono',monospace;
+  border:1.5px solid var(--border); color:#555;
+}
+.vdot.done { background:rgba(244,67,54,0.2); border-color:var(--red); color:var(--red); }
+.vdot.real { background:rgba(0,210,255,0.2); border-color:var(--cyan); color:var(--cyan); animation:pulse 1s infinite; }
+
+/* ── NOVA SEÇÃO: MODAL MATRIX ── */
+.matrix-section { padding:50px 20px; max-width:980px; margin:0 auto; }
+.matrix-preview {
+  background: #0a0c10;
+  border:1px solid rgba(0,210,255,0.25);
+  border-radius:20px;
+  overflow:hidden;
+  position:relative;
+}
+.matrix-header {
+  background: linear-gradient(90deg, rgba(0,210,255,0.1), rgba(216,27,96,0.1));
+  border-bottom:1px solid rgba(0,210,255,0.15);
+  padding:14px 20px;
+  display:flex; align-items:center; gap:12px;
+}
+.matrix-dot { width:10px; height:10px; border-radius:50%; }
+.matrix-title { font-family:'Orbitron',sans-serif; font-size:13px; font-weight:700; color:var(--cyan); letter-spacing:2px; }
+.matrix-body { display:grid; grid-template-columns:1fr 1fr; gap:0; min-height:260px; }
+.matrix-left { padding:20px; border-right:1px solid rgba(255,255,255,0.05); }
+.matrix-right { padding:20px; }
+.pnl-display { text-align:center; margin-bottom:16px; }
+.pnl-label { font-size:10px; letter-spacing:2px; color:#555; font-family:'Space Mono',monospace; margin-bottom:4px; }
+.pnl-value { font-family:'Orbitron',sans-serif; font-size:28px; font-weight:900; color:var(--green); }
+.tradebar { display:flex; gap:4px; height:8px; border-radius:4px; overflow:hidden; margin:12px 0; }
+.tbar { flex:1; border-radius:4px; height:100%; }
+.tbar.signal { background:var(--cyan); }
+.tbar.buy    { background:var(--gold); }
+.tbar.win    { background:var(--green); }
+.feed-line { font-family:'Space Mono',monospace; font-size:10px; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.04); display:flex; gap:8px; align-items:center; }
+.feed-win  { color:var(--green); }
+.feed-loss { color:var(--red); }
+.feed-info { color:#555; }
+.feed-tag { font-size:9px; padding:1px 6px; border-radius:10px; }
+.feed-tag.w { background:rgba(76,175,80,0.2); color:var(--green); }
+.feed-tag.l { background:rgba(244,67,54,0.2); color:var(--red); }
+.matrix-btn {
+  display:inline-flex; align-items:center; gap:8px;
+  background: linear-gradient(135deg, var(--pink), #c2185b);
+  color:#fff; border:none; border-radius:10px;
+  padding:10px 18px; font-size:13px; font-weight:700;
+  cursor:pointer; width:100%; justify-content:center;
+  margin-top:12px; font-family:'Syne',sans-serif;
+  box-shadow: 0 4px 20px rgba(216,27,96,0.4);
+  animation: btn-glow 2s infinite;
+}
+@keyframes btn-glow { 0%,100%{box-shadow:0 4px 20px rgba(216,27,96,0.4)} 50%{box-shadow:0 4px 30px rgba(216,27,96,0.7)} }
+
+/* ── SEGURANÇA ── */
+.safety-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; margin-top:24px; }
+.safety-card {
+  background:var(--panel2);
+  border:1px solid rgba(76,175,80,0.2);
+  border-radius:12px; padding:18px;
+}
+.safety-card .si { font-size:26px; margin-bottom:8px; }
+.safety-card h4 { font-size:13px; font-weight:700; color:var(--green); margin-bottom:4px; }
+.safety-card p  { font-size:11px; color:#666; line-height:1.6; }
+
+/* ── TICKER ── */
+@keyframes ticker-scroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+/* ── FOOTER ── */
+.footer { text-align:center; padding:40px 20px; border-top:1px solid var(--border); color:#444; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:2px; }
+</style>
+</head>
+<body>
+
+<!-- ══ BOTÃO VOLTAR ══ -->
+<div style="position:fixed;top:14px;left:16px;z-index:9999">
+  <a href="/videos" style="display:inline-flex;align-items:center;gap:7px;background:rgba(10,12,18,.92);border:1px solid #1e2230;border-radius:9px;padding:8px 14px;color:#94a3b8;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;text-decoration:none;backdrop-filter:blur(12px);transition:all .18s;letter-spacing:.5px"
+     onmouseover="this.style.borderColor='rgba(66,165,245,.4)';this.style.color='#42A5F5'"
+     onmouseout="this.style.borderColor='#1e2230';this.style.color='#94a3b8'">
+    ← Vídeos
+  </a>
+</div>
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="hero-badge">📊 GUIA VISUAL · ALPHA DOLAR 2.0</div>
+  <h1>Como Ler os <span class="c1">Dígitos</span><br>e Escolher o <span class="c2">Bot Certo</span></h1>
+  <p>Aprenda a interpretar cada indicador do painel e decidir qual estratégia usar em cada momento do mercado — de forma simples e segura</p>
+  <div class="win-badge">
+    <div class="win-dot"></div>
+    🎉 Alpha Bot 2 · $20 lucro com banca de $70 · Hoje
+  </div>
+  <div class="ia-banner" style="margin-top:28px">
+    <div class="ia-banner-icon">🤖</div>
+    <div class="ia-banner-text">
+      <h3>✨ Modo IA Avançado disponível <span class="ia-badge-new">NOVO</span></h3>
+      <p>O Motor IA analisa 50 ticks em tempo real e só libera entrada quando o Score é favorável. <strong style="color:#fff">Você não precisa decidir nada — o sistema decide por você.</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SEGURANÇA — tranquilizando o usuário ══ -->
+<div class="section">
+  <div class="section-num">ANTES DE COMEÇAR</div>
+  <div class="section-title">O Sistema Protege Você</div>
+  <div class="section-sub">O Alpha Dolar 2.0 foi construído para operar com segurança. Veja o que está sempre ativo:</div>
+
+  <div class="safety-grid">
+    <div class="safety-card">
+      <div class="si">🛡️</div>
+      <h4>Stop Loss Automático</h4>
+      <p>O bot para sozinho se atingir o limite de perda que você definiu. Você nunca perde mais do que autorizou.</p>
+    </div>
+    <div class="safety-card">
+      <div class="si">🎯</div>
+      <h4>Lucro Alvo</h4>
+      <p>Ao atingir a meta de lucro, o bot encerra automaticamente. Você saca enquanto está no positivo.</p>
+    </div>
+    <div class="safety-card">
+      <div class="si">⏰</div>
+      <h4>Agendamento</h4>
+      <p>Programe horários de início e parada. O bot opera no horário certo e descansa quando você quiser.</p>
+    </div>
+    <div class="safety-card">
+      <div class="si">📊</div>
+      <h4>Score IA Mínimo</h4>
+      <p>No Modo IA Avançado, o bot só entra quando o score é ≥35%. Sem sinal, sem entrada. Simples assim.</p>
+    </div>
+    <div class="safety-card">
+      <div class="si">🔢</div>
+      <h4>Perdas Virtuais</h4>
+      <p>O bot simula perdas antes de usar dinheiro real. Só entra após confirmar o padrão virtualmente.</p>
+    </div>
+    <div class="safety-card">
+      <div class="si">🌐</div>
+      <h4>Mercado 24/7</h4>
+      <p>Índices sintéticos da Deriv: sem notícias econômicas, sem manipulação. Disponível a qualquer hora.</p>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ══ FLUXO GERAL ══ -->
+<div class="section">
+  <div class="section-num">VISÃO GERAL</div>
+  <div class="section-title">O Fluxo de Decisão</div>
+  <div class="section-sub">Sempre siga essa ordem antes de ligar qualquer bot</div>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="fi">🌐</div>
+      <div><strong>Multimercado</strong><small>Escolha o melhor mercado</small></div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="fi">💊</div>
+      <div><strong>Pills (0–9)</strong><small>Veja o desequilíbrio</small></div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="fi">📈</div>
+      <div><strong>Oscilador</strong><small>Confirme a direção</small></div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="fi">🤖</div>
+      <div><strong>Escolha o Bot</strong><small>Use a tabela de cenários</small></div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="border-color:rgba(216,27,96,0.4);background:rgba(216,27,96,0.05)">
+      <div class="fi">✨</div>
+      <div><strong style="color:var(--pink)">Ative a IA</strong><small>Score automático</small></div>
+    </div>
+  </div>
+
+  <div class="highlight-box" style="margin-top:0">
+    <strong>Dica:</strong> Usando o <strong>Modo IA Avançado</strong>, os passos 1–3 são feitos automaticamente pelo motor de análise. Você só precisa escolher o mercado — o resto o sistema cuida.
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ══ PASSO 1 ══ -->
+<div class="section">
+  <div class="section-num">PASSO 01</div>
+  <div class="section-title">Tabela Multimercado</div>
+  <div class="section-sub">Encontre o mercado mais "fora do equilíbrio" — é onde os bots trabalham melhor</div>
+
+  <div class="step-card">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div>
+        <h3>Como ler a tabela de Par/Ímpar</h3>
+        <p>O equilíbrio perfeito seria 50% / 50% — desvios indicam padrão explorável</p>
+      </div>
+    </div>
+    <div class="step-body">
+      <table class="mm-table-demo">
+        <thead>
+          <tr>
+            <th>MERCADO</th>
+            <th style="width:220px">DISTRIBUIÇÃO PAR vs ÍMPAR</th>
+            <th>PAR%</th><th>ÍMPAR%</th><th>SINAL</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:700;color:#e0e0e0">Vol 100</td>
+            <td><div class="mm-bar-row"><div class="mm-par" style="width:51%">51%</div><div class="mm-impar">49%</div></div></td>
+            <td>51%</td><td>49%</td><td style="color:#555;font-size:11px">Neutro</td>
+          </tr>
+          <tr style="background:rgba(76,175,80,0.05)">
+            <td style="font-weight:700;color:#4caf50">Vol 75 ← 🎯</td>
+            <td><div class="mm-bar-row"><div class="mm-par" style="width:61%">61%</div><div class="mm-impar">39%</div></div></td>
+            <td style="color:#4caf50;font-weight:700">61%</td>
+            <td style="color:#f44336">39%</td>
+            <td style="color:#4caf50;font-size:12px;font-weight:700">⚡ FORTE</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;color:#e0e0e0">Vol 50</td>
+            <td><div class="mm-bar-row"><div class="mm-par" style="width:48%">48%</div><div class="mm-impar">52%</div></div></td>
+            <td>48%</td><td>52%</td><td style="color:#555;font-size:11px">Neutro</td>
+          </tr>
+          <tr>
+            <td style="font-weight:700;color:#e0e0e0">Vol 25</td>
+            <td><div class="mm-bar-row"><div class="mm-par" style="width:54%">54%</div><div class="mm-impar">46%</div></div></td>
+            <td>54%</td><td>46%</td>
+            <td style="color:#ffb300;font-size:12px;font-weight:700">⚠ LEVE</td>
+          </tr>
+          <tr style="background:rgba(244,67,54,0.05)">
+            <td style="font-weight:700;color:#f44336">Vol 10 ← 🎯</td>
+            <td><div class="mm-bar-row"><div class="mm-par" style="width:37%">37%</div><div class="mm-impar">63%</div></div></td>
+            <td style="color:#f44336">37%</td>
+            <td style="color:#4caf50;font-weight:700">63%</td>
+            <td style="color:#4caf50;font-size:12px;font-weight:700">⚡ FORTE</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="arrow-box">
+        <div class="arrow-icon">👆</div>
+        <div>
+          <p>Escolha Vol 75 ou Vol 10 — ambos têm desvio acima de 10%</p>
+          <small>Desvio &gt;55%: leve · &gt;58%: bom · &gt;62%: excelente. Abaixo de 53% aguarde.</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ══ PASSO 2 ══ -->
+<div class="section">
+  <div class="section-num">PASSO 02</div>
+  <div class="section-title">Pills de Frequência (0–9)</div>
+  <div class="section-sub">Após escolher o mercado, veja quais dígitos estão "quentes" e "frios"</div>
+
+  <div class="step-card">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div>
+        <h3>Interpretar os Pills de Dígitos</h3>
+        <p>A média normal é ~10% para cada dígito. Desvios indicam oportunidade.</p>
+      </div>
+    </div>
+    <div class="step-body">
+      <div style="margin-bottom:32px">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:#4caf50;margin-bottom:16px;font-weight:700">CENÁRIO A — DÍGITOS ALTOS DOMINANDO</div>
+        <div class="pills-wrapper">
+          <div class="pills-grid">
+            <div class="pill-demo lo"><div class="label-over red">FRIO ↓</div><div class="dn">0</div><div class="dp">3%</div></div>
+            <div class="pill-demo lo"><div class="dn">1</div><div class="dp">4%</div></div>
+            <div class="pill-demo"><div class="dn" style="color:#aaa">2</div><div class="dp">9%</div></div>
+            <div class="pill-demo"><div class="dn" style="color:#aaa">3</div><div class="dp">10%</div></div>
+            <div class="pill-demo"><div class="dn" style="color:#aaa">4</div><div class="dp">10%</div></div>
+            <div class="pill-demo"><div class="dn" style="color:#aaa">5</div><div class="dp">11%</div></div>
+            <div class="pill-demo hi"><div class="dn">6</div><div class="dp">16%</div></div>
+            <div class="pill-demo hi"><div class="dn">7</div><div class="dp">14%</div></div>
+            <div class="pill-demo hi"><div class="label-over green">QUENTE ↑</div><div class="dn">8</div><div class="dp">18%</div></div>
+            <div class="pill-demo hi"><div class="dn">9</div><div class="dp">15%</div></div>
+          </div>
+        </div>
+        <div class="arrow-box">
+          <div class="arrow-icon">🎯</div>
+          <div>
+            <p style="color:#4caf50">Dígitos 6–9 dominando → Bots CALL recomendados</p>
+            <small>Alpha Mind, Quantum Trader, Mega Alpha 1.0. Dígitos altos = preço subindo consistentemente.</small>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:#f44336;margin-bottom:16px;font-weight:700">CENÁRIO B — DÍGITOS BAIXOS DOMINANDO</div>
+        <div class="pills-wrapper">
+          <div class="pills-grid">
+            <div class="pill-demo hi"><div class="label-over green">QUENTE ↑</div><div class="dn">0</div><div class="dp">19%</div></div>
+            <div class="pill-demo hi"><div class="dn">1</div><div class="dp">16%</div></div>
+            <div class="pill-demo hi"><div class="dn">2</div><div class="dp">14%</div></div>
+            <div class="pill-demo"><div class="dn" style="color:#aaa">3</div><div class="dp">10%</div></div>
+            <div class="pill-demo"><div class="dn" style="color:#aaa">4</div><div class="dp">9%</div></div>
+            <div class="pill-demo"><div class="dn" style="color:#aaa">5</div><div class="dp">10%</div></div>
+            <div class="pill-demo lo"><div class="dn">6</div><div class="dp">6%</div></div>
+            <div class="pill-demo lo"><div class="dn">7</div><div class="dp">5%</div></div>
+            <div class="pill-demo lo"><div class="label-over red">FRIO ↓</div><div class="dn">8</div><div class="dp">4%</div></div>
+            <div class="pill-demo lo"><div class="dn">9</div><div class="dp">7%</div></div>
+          </div>
+        </div>
+        <div class="arrow-box" style="border-color:rgba(244,67,54,0.3);background:rgba(244,67,54,0.06)">
+          <div class="arrow-icon">🎯</div>
+          <div>
+            <p style="color:#f44336">Dígitos 0–3 dominando → Bots PUT recomendados</p>
+            <small>Alpha Bot 2, Titan Core, Alpha Sniper. Dígitos baixos = preço caindo consistentemente.</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ══ PASSO 3 ══ -->
+<div class="section">
+  <div class="section-num">PASSO 03</div>
+  <div class="section-title">Oscilador de Dígitos</div>
+  <div class="section-sub">Confirmação final da direção — nunca opere contra o oscilador</div>
+
+  <div class="step-card">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <div>
+        <h3>Leitura do Oscilador</h3>
+        <p>Linha central = 4.5 (média). Acima = bullish. Abaixo = bearish.</p>
+      </div>
+    </div>
+    <div class="step-body">
+      <div style="margin-bottom:24px">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:#4caf50;margin-bottom:10px;font-weight:700">OSC BULLISH — linha subindo acima do centro</div>
+        <div class="osc-demo">
+          <svg class="chart-svg" viewBox="0 0 400 80" preserveAspectRatio="none">
+            <line x1="0" y1="40" x2="400" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
+            <defs><linearGradient id="gb" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4caf50" stop-opacity="0.3"/><stop offset="100%" stop-color="#4caf50" stop-opacity="0.0"/></linearGradient></defs>
+            <path d="M0,40 L20,38 L40,35 L60,32 L80,30 L100,28 L120,25 L140,22 L160,20 L180,18 L200,15 L220,18 L240,14 L260,12 L280,15 L300,12 L320,10 L340,12 L360,9 L380,8 L400,6 L400,40 Z" fill="url(#gb)"/>
+            <path d="M0,40 L20,38 L40,35 L60,32 L80,30 L100,28 L120,25 L140,22 L160,20 L180,18 L200,15 L220,18 L240,14 L260,12 L280,15 L300,12 L320,10 L340,12 L360,9 L380,8 L400,6" fill="none" stroke="#4caf50" stroke-width="2"/>
+            <text x="340" y="30" fill="#4caf50" font-size="10" font-family="monospace">▲ CALL</text>
+            <text x="5" y="35" fill="rgba(255,255,255,0.2)" font-size="9" font-family="monospace">4.5</text>
+          </svg>
+        </div>
+        <div class="arrow-box"><div class="arrow-icon">✅</div><div><p>Linha acima de 4.5 e subindo → Confirma CALL</p><small>Quanto mais inclinada para cima, mais forte o sinal</small></div></div>
+      </div>
+      <div style="margin-bottom:24px">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:#f44336;margin-bottom:10px;font-weight:700">OSC BEARISH — linha caindo abaixo do centro</div>
+        <div class="osc-demo">
+          <svg class="chart-svg" viewBox="0 0 400 80" preserveAspectRatio="none">
+            <line x1="0" y1="40" x2="400" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
+            <defs><linearGradient id="gr" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#f44336" stop-opacity="0.3"/><stop offset="100%" stop-color="#f44336" stop-opacity="0.0"/></linearGradient></defs>
+            <path d="M0,40 L20,42 L40,45 L60,48 L80,50 L100,52 L120,55 L140,58 L160,60 L180,62 L200,65 L220,62 L240,66 L260,68 L280,65 L300,68 L320,70 L340,68 L360,71 L380,72 L400,74 L400,40 Z" fill="url(#gr)"/>
+            <path d="M0,40 L20,42 L40,45 L60,48 L80,50 L100,52 L120,55 L140,58 L160,60 L180,62 L200,65 L220,62 L240,66 L260,68 L280,65 L300,68 L320,70 L340,68 L360,71 L380,72 L400,74" fill="none" stroke="#f44336" stroke-width="2"/>
+            <text x="340" y="60" fill="#f44336" font-size="10" font-family="monospace">▼ PUT</text>
+            <text x="5" y="35" fill="rgba(255,255,255,0.2)" font-size="9" font-family="monospace">4.5</text>
+          </svg>
+        </div>
+        <div class="arrow-box" style="border-color:rgba(244,67,54,0.3);background:rgba(244,67,54,0.06)"><div class="arrow-icon">🔴</div><div><p style="color:#f44336">Linha abaixo de 4.5 e caindo → Confirma PUT</p><small>Quanto mais inclinada para baixo, mais forte o sinal</small></div></div>
+      </div>
+      <div>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:#ffb300;margin-bottom:10px;font-weight:700">OSC LATERAL — mercado sem direção → AGUARDE</div>
+        <div class="osc-demo">
+          <svg class="chart-svg" viewBox="0 0 400 80" preserveAspectRatio="none">
+            <line x1="0" y1="40" x2="400" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
+            <path d="M0,40 L20,36 L40,44 L60,38 L80,42 L100,36 L120,44 L140,40 L160,36 L180,44 L200,40 L220,38 L240,44 L260,40 L280,36 L300,42 L320,38 L340,44 L360,40 L380,36 L400,42" fill="none" stroke="#ffb300" stroke-width="2" stroke-dasharray="6,3"/>
+            <text x="300" y="30" fill="#ffb300" font-size="10" font-family="monospace">⚠ AGUARDE</text>
+            <text x="5" y="35" fill="rgba(255,255,255,0.2)" font-size="9" font-family="monospace">4.5</text>
+          </svg>
+        </div>
+        <div class="arrow-box" style="border-color:rgba(255,179,0,0.3);background:rgba(255,179,0,0.06)"><div class="arrow-icon">⏸️</div><div><p style="color:#ffb300">Oscilando em torno de 4.5 → Não entre agora</p><small>Use Alpha Bot 3 ou Titan Core — eles têm filtro de mercado lateral embutido</small></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ══ MODO IA AVANÇADO ══ -->
+<div class="ia-section">
+  <div style="max-width:980px;margin:0 auto">
+    <div class="section-num" style="color:var(--pink)">MODO IA AVANÇADO <span class="ia-badge-new">NOVO</span></div>
+    <div class="section-title">O Bot Pensa Por Você</div>
+    <div class="section-sub">Ative o Modo IA e deixe o Motor Inteligente analisar cada tick antes de entrar</div>
+
+    <div class="ia-grid">
+      <div class="ia-card">
+        <div class="ia-card-icon">📐</div>
+        <h4>Frequência de Dígitos</h4>
+        <p>Analisa quais dígitos (0–9) aparecem mais nos últimos 50 ticks. Identifica desvios estatísticos antes de qualquer entrada.</p>
+      </div>
+      <div class="ia-card">
+        <div class="ia-card-icon">⚖️</div>
+        <h4>Ratio Par/Ímpar</h4>
+        <p>Calcula proporção entre dígitos pares e ímpares em tempo real. Desequilíbrio acima do esperado gera sinal de entrada.</p>
+      </div>
+      <div class="ia-card">
+        <div class="ia-card-icon">🔗</div>
+        <h4>Sequência Atual</h4>
+        <p>Detecta sequências de 3+ resultados iguais. Longa sequência ativa estratégia de reversão automaticamente.</p>
+      </div>
+      <div class="ia-card">
+        <div class="ia-card-icon">🎮</div>
+        <h4>Perdas Virtuais</h4>
+        <p>Simula X perdas antes de usar capital real. O bot só entra com dinheiro após confirmar o padrão virtualmente.</p>
+      </div>
+      <div class="ia-card">
+        <div class="ia-card-icon">🔢</div>
+        <h4>Score de Entrada</h4>
+        <p>Score mínimo de 35% é exigido para liberar qualquer entrada. Sem sinal forte, o bot simplesmente aguarda.</p>
+      </div>
+      <div class="ia-card">
+        <div class="ia-card-icon">⚡</div>
+        <h4>WebSocket em Tempo Real</h4>
+        <p>Conectado diretamente à API Deriv. Cada tick é analisado em milissegundos — nunca perde um movimento.</p>
+      </div>
+    </div>
+
+    <!-- Score strip visual -->
+    <div style="background:var(--panel2);border:1px solid rgba(216,27,96,0.3);border-radius:16px;padding:24px;margin-top:24px">
+      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--pink);margin-bottom:4px;font-weight:700">SCORE STRIP — exibido durante a operação</div>
+      <div style="font-size:12px;color:#666;margin-bottom:16px">Esses 4 indicadores ficam visíveis em tempo real enquanto o bot opera</div>
+      <div class="score-strip">
+        <div class="score-chip" style="background:rgba(76,175,80,0.12);border:1px solid rgba(76,175,80,0.3)">
+          <div class="sc-label" style="color:var(--green)">SCORE IA</div>
+          <div class="sc-val" style="color:var(--green)">73%</div>
+        </div>
+        <div class="score-chip" style="background:rgba(0,210,255,0.1);border:1px solid rgba(0,210,255,0.3)">
+          <div class="sc-label" style="color:var(--cyan)">TIPO</div>
+          <div class="sc-val" style="color:var(--cyan)">EVEN</div>
+        </div>
+        <div class="score-chip" style="background:rgba(255,179,0,0.1);border:1px solid rgba(255,179,0,0.3)">
+          <div class="sc-label" style="color:var(--gold)">VIRTUAIS</div>
+          <div class="sc-val" style="color:var(--gold)">3/3 ✓</div>
+        </div>
+        <div class="score-chip" style="background:rgba(216,27,96,0.1);border:1px solid rgba(216,27,96,0.3)">
+          <div class="sc-label" style="color:var(--pink)">MULT</div>
+          <div class="sc-val" style="color:var(--pink)">2.2×</div>
+        </div>
+      </div>
+      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;color:#555;margin:12px 0 6px">PERDAS VIRTUAIS SIMULADAS</div>
+      <div class="vdots">
+        <div class="vdot done">✗</div>
+        <div class="vdot done">✗</div>
+        <div class="vdot done">✗</div>
+        <div class="vdot real">▶</div>
+        <span style="font-size:11px;color:var(--cyan);font-family:'Space Mono',monospace;margin-left:6px">entrada real liberada!</span>
+      </div>
+    </div>
+
+    <div class="highlight-box pink" style="margin-top:16px">
+      <strong>Como usar:</strong> Na tela de operação, ative o toggle "Avançado" e clique em <strong>INICIAR ROBÔ</strong>. O Motor IA entra em ação automaticamente. Você acompanha tudo em tempo real pelo Score Strip ou pelo Modal IA Alpha (botão rosa ✨).
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL IA ALPHA ══ -->
+<div class="matrix-section">
+  <div class="section-num" style="color:var(--pink)">MODAL IA ALPHA</div>
+  <div class="section-title">O Painel de Controle Visual <span style="color:var(--pink)">✨</span></div>
+  <div class="section-sub">Clique no botão rosa "✨ MODO IA ALPHA" durante a operação para abrir o painel premium</div>
+
+  <!-- preview do modal -->
+  <div class="matrix-preview">
+    <div class="matrix-header">
+      <div class="matrix-dot" style="background:#f44336"></div>
+      <div class="matrix-dot" style="background:#ffb300;margin-left:4px"></div>
+      <div class="matrix-dot" style="background:#4caf50;margin-left:4px"></div>
+      <div style="flex:1;text-align:center">
+        <span class="matrix-title">⬡ IA ALPHA · OPERANDO</span>
+      </div>
+      <div style="font-family:'Space Mono',monospace;font-size:10px;color:#555">● LIVE</div>
+    </div>
+    <div class="matrix-body">
+      <div class="matrix-left">
+        <div class="pnl-display">
+          <div class="pnl-label">LUCRO DA SESSÃO</div>
+          <div class="pnl-value">+$12.40</div>
+        </div>
+        <div style="font-family:'Space Mono',monospace;font-size:9px;color:#555;margin-bottom:4px;letter-spacing:1px">BARRAS DE TRADE</div>
+        <div class="tradebar">
+          <div class="tbar signal"></div>
+          <div class="tbar buy"></div>
+          <div class="tbar win"></div>
+        </div>
+        <div style="display:flex;gap:8px;font-family:'Space Mono',monospace;font-size:9px;color:#555;margin-bottom:14px">
+          <span style="color:var(--cyan)">■ SINAL</span>
+          <span style="color:var(--gold)">■ COMPRA</span>
+          <span style="color:var(--green)">■ WIN</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-family:'Space Mono',monospace;font-size:11px">
+          <div style="background:#0d0f14;border-radius:8px;padding:8px;text-align:center">
+            <div style="color:#555;font-size:9px;margin-bottom:2px">WIN RATE</div>
+            <div style="color:var(--green);font-weight:700">68%</div>
+          </div>
+          <div style="background:#0d0f14;border-radius:8px;padding:8px;text-align:center">
+            <div style="color:#555;font-size:9px;margin-bottom:2px">TRADES</div>
+            <div style="color:var(--blue);font-weight:700">14</div>
+          </div>
+          <div style="background:#0d0f14;border-radius:8px;padding:8px;text-align:center">
+            <div style="color:#555;font-size:9px;margin-bottom:2px">SCORE IA</div>
+            <div style="color:var(--pink);font-weight:700">71%</div>
+          </div>
+          <div style="background:#0d0f14;border-radius:8px;padding:8px;text-align:center">
+            <div style="color:#555;font-size:9px;margin-bottom:2px">SALDO</div>
+            <div style="color:var(--gold);font-weight:700">$182</div>
+          </div>
+        </div>
+        <button class="matrix-btn">✨ MODO IA ALPHA</button>
+      </div>
+      <div class="matrix-right">
+        <div style="font-family:'Space Mono',monospace;font-size:9px;color:#555;letter-spacing:1px;margin-bottom:8px">FEED DE OPERAÇÕES</div>
+        <div class="feed-line feed-win"><span class="feed-tag w">WIN</span><span>+$0.62 · EVEN · score 74%</span></div>
+        <div class="feed-line feed-win"><span class="feed-tag w">WIN</span><span>+$0.62 · ODD · score 68%</span></div>
+        <div class="feed-line feed-loss"><span class="feed-tag l">LOSS</span><span>-$0.35 · EVEN · score 41%</span></div>
+        <div class="feed-line feed-win"><span class="feed-tag w">WIN</span><span>+$1.36 · EVEN · score 79%</span></div>
+        <div class="feed-line feed-win"><span class="feed-tag w">WIN</span><span>+$0.62 · ODD · score 65%</span></div>
+        <div class="feed-line feed-info"><span style="color:#555">...</span><span style="color:#555">aguardando score mínimo...</span></div>
+        <div class="feed-line feed-win"><span class="feed-tag w">WIN</span><span>+$0.62 · EVEN · score 73%</span></div>
+        <div class="feed-line feed-loss"><span class="feed-tag l">LOSS</span><span>-$0.77 · ODD · score 38%</span></div>
+        <div class="feed-line feed-win"><span class="feed-tag w">WIN</span><span>+$1.68 · EVEN · score 81%</span></div>
+        <div style="margin-top:12px;background:rgba(0,210,255,0.05);border:1px solid rgba(0,210,255,0.15);border-radius:8px;padding:10px">
+          <div style="font-family:'Space Mono',monospace;font-size:9px;color:#555;margin-bottom:4px">ÚLTIMO SINAL IA</div>
+          <div style="font-size:12px;color:var(--cyan)">📐 Ratio Par/Ímpar: 64%/36%</div>
+          <div style="font-size:12px;color:var(--green)">🎯 Score: 73% — ENTRADA LIBERADA</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight-box pink" style="margin-top:16px">
+    <strong>O que você vê no Modal IA Alpha:</strong> canvas animado com efeito Matrix ao fundo, lucro em tempo real, barras de progresso por trade, feed completo de operações com WIN/LOSS colorido, score IA a cada entrada e flash de celebração ao atingir a meta. Tudo em uma tela fullscreen imersiva.
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ══ PASSO 4 — CENÁRIOS ══ -->
+<div class="section">
+  <div class="section-num">PASSO 04</div>
+  <div class="section-title">Cenários → Bots Recomendados</div>
+  <div class="section-sub">Identifique o padrão e escolha o bot certo — ou ative o Modo IA e ele decide por você</div>
+
+  <div class="scenario-grid">
+
+    <div class="scenario-card">
+      <div class="scenario-top">
+        <div class="scenario-tag tag-bull">▲ TENDÊNCIA ALTA</div>
+        <div class="scenario-title">Dígitos altos dominando</div>
+        <div class="scenario-desc">Pills 6–9 verdes, oscilador subindo, Par &gt; 55%</div>
+      </div>
+      <div class="scenario-chart">
+        <svg viewBox="0 0 280 60" style="width:100%;height:55px">
+          <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4caf50" stop-opacity="0.4"/><stop offset="100%" stop-color="#4caf50" stop-opacity="0"/></linearGradient></defs>
+          <path d="M0,50 L30,45 L60,38 L90,30 L120,25 L150,18 L180,14 L210,10 L240,8 L280,4 L280,60 Z" fill="url(#g1)"/>
+          <path d="M0,50 L30,45 L60,38 L90,30 L120,25 L150,18 L180,14 L210,10 L240,8 L280,4" fill="none" stroke="#4caf50" stroke-width="2"/>
+          <text x="220" y="20" fill="#4caf50" font-size="11" font-family="monospace" font-weight="700">▲ CALL</text>
+        </svg>
+      </div>
+      <div class="scenario-bots">
+        <div class="bots-label">BOTS RECOMENDADOS</div>
+        <div class="bot-chips">
+          <span class="bot-chip chip-free">Alpha Bot 1</span>
+          <span class="bot-chip chip-vip">Alpha Mind</span>
+          <span class="bot-chip chip-vip">Quantum Trader</span>
+          <span class="bot-chip chip-premium">Mega Alpha 1.0</span>
+          <span class="bot-chip chip-ia">✨ IA EVEN</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="scenario-card">
+      <div class="scenario-top">
+        <div class="scenario-tag tag-bear">▼ TENDÊNCIA BAIXA</div>
+        <div class="scenario-title">Dígitos baixos dominando</div>
+        <div class="scenario-desc">Pills 0–3 verdes, oscilador caindo, Ímpar &gt; 55%</div>
+      </div>
+      <div class="scenario-chart">
+        <svg viewBox="0 0 280 60" style="width:100%;height:55px">
+          <defs><linearGradient id="g2" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#f44336" stop-opacity="0.4"/><stop offset="100%" stop-color="#f44336" stop-opacity="0"/></linearGradient></defs>
+          <path d="M0,10 L30,15 L60,22 L90,30 L120,35 L150,42 L180,46 L210,50 L240,52 L280,56 L280,0 Z" fill="url(#g2)"/>
+          <path d="M0,10 L30,15 L60,22 L90,30 L120,35 L150,42 L180,46 L210,50 L240,52 L280,56" fill="none" stroke="#f44336" stroke-width="2"/>
+          <text x="10" y="22" fill="#f44336" font-size="11" font-family="monospace" font-weight="700">▼ PUT</text>
+        </svg>
+      </div>
+      <div class="scenario-bots">
+        <div class="bots-label">BOTS RECOMENDADOS</div>
+        <div class="bot-chips">
+          <span class="bot-chip chip-free">Alpha Bot 2</span>
+          <span class="bot-chip chip-vip">Titan Core</span>
+          <span class="bot-chip chip-vip">Alpha Sniper</span>
+          <span class="bot-chip chip-premium">Alpha Elite</span>
+          <span class="bot-chip chip-ia">✨ IA ODD</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="scenario-card">
+      <div class="scenario-top">
+        <div class="scenario-tag tag-seq">🔁 SEQUÊNCIAS LONGAS</div>
+        <div class="scenario-title">3+ iguais seguidos</div>
+        <div class="scenario-desc">Ticker mostra 3+ do mesmo tipo — reversão provável</div>
+      </div>
+      <div class="scenario-chart">
+        <div style="padding:8px 0">
+          <div style="font-family:'Space Mono',monospace;font-size:9px;color:#555;margin-bottom:8px;letter-spacing:1px">TICKER — últimos dígitos</div>
+          <div style="display:flex;gap:5px;align-items:center">
+            <div class="tb" style="color:#42A5F5;border-color:#42A5F5">2</div>
+            <div class="tb" style="color:#42A5F5;border-color:#42A5F5">4</div>
+            <div class="tb" style="color:#42A5F5;border-color:#42A5F5">6</div>
+            <div class="tb" style="color:#42A5F5;border-color:#42A5F5">8</div>
+            <div class="tb" style="color:#ffb300;border-color:#ffb300;animation:pulse 0.8s infinite">?</div>
+            <span style="color:#ffb300;font-size:11px;font-family:monospace;margin-left:4px">← reversão?</span>
+          </div>
+        </div>
+      </div>
+      <div class="scenario-bots">
+        <div class="bots-label">BOTS RECOMENDADOS</div>
+        <div class="bot-chips">
+          <span class="bot-chip chip-free">Alpha Bot 2</span>
+          <span class="bot-chip chip-vip">Quantum Trader</span>
+          <span class="bot-chip chip-vip">Alpha Analytics</span>
+          <span class="bot-chip chip-ia">✨ IA OVER/UNDER</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="scenario-card">
+      <div class="scenario-top">
+        <div class="scenario-tag tag-quiet">😴 MERCADO LATERAL</div>
+        <div class="scenario-title">Oscilador plano, sem padrão</div>
+        <div class="scenario-desc">Pills todos ~10%, oscilador oscilando em torno de 4.5</div>
+      </div>
+      <div class="scenario-chart">
+        <svg viewBox="0 0 280 60" style="width:100%;height:55px">
+          <line x1="0" y1="30" x2="280" y2="30" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4,4"/>
+          <path d="M0,30 L20,26 L40,34 L60,28 L80,32 L100,26 L120,34 L140,30 L160,26 L180,34 L200,30 L220,27 L240,33 L260,29 L280,31" fill="none" stroke="#ba68c8" stroke-width="2" stroke-dasharray="5,2"/>
+          <text x="80" y="20" fill="#ba68c8" font-size="10" font-family="monospace">😴 SEM PADRÃO</text>
+        </svg>
+      </div>
+      <div class="scenario-bots">
+        <div class="bots-label">BOTS COM FILTRO LATERAL</div>
+        <div class="bot-chips">
+          <span class="bot-chip chip-free">Alpha Bot 3</span>
+          <span class="bot-chip chip-vip">Titan Core</span>
+          <span class="bot-chip chip-vip">Alpha Smart</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="scenario-card">
+      <div class="scenario-top">
+        <div class="scenario-tag tag-pulse">⚡ PULSO DE MERCADO</div>
+        <div class="scenario-title">Movimento brusco e rápido</div>
+        <div class="scenario-desc">Oscilador muda de direção subitamente</div>
+      </div>
+      <div class="scenario-chart">
+        <svg viewBox="0 0 280 60" style="width:100%;height:55px">
+          <path d="M0,30 L40,30 L50,10 L60,50 L70,15 L80,45 L90,20 L100,40 L160,40 L200,12 L220,8 L240,10 L260,6 L280,4" fill="none" stroke="#42A5F5" stroke-width="2"/>
+          <text x="150" y="30" fill="#42A5F5" font-size="10" font-family="monospace">⚡ PULSO → ▲</text>
+        </svg>
+      </div>
+      <div class="scenario-bots">
+        <div class="bots-label">BOTS RECOMENDADOS</div>
+        <div class="bot-chips">
+          <span class="bot-chip chip-vip">Alpha Pulse</span>
+          <span class="bot-chip chip-vip">Alpha Smart</span>
+          <span class="bot-chip chip-premium">Alpha Nexus</span>
+          <span class="bot-chip chip-ia">✨ IA AVANÇADO</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="scenario-card">
+      <div class="scenario-top">
+        <div class="scenario-tag tag-skew">📊 DESVIO ESTATÍSTICO</div>
+        <div class="scenario-title">Um dígito muito fora da média</div>
+        <div class="scenario-desc">Um dígito abaixo de 5% ou acima de 18% — equilíbrio tende a se restabelecer</div>
+      </div>
+      <div class="scenario-chart">
+        <div style="display:flex;align-items:flex-end;gap:3px;height:55px;padding-top:10px">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;justify-content:flex-end"><div style="font-size:7px;color:#555;font-family:monospace">11%</div><div style="width:100%;height:33px;background:rgba(66,165,245,0.4);border-radius:2px 2px 0 0"></div><div style="font-size:8px;color:#555;font-family:monospace">0</div></div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;justify-content:flex-end"><div style="font-size:7px;color:#555;font-family:monospace">10%</div><div style="width:100%;height:30px;background:rgba(66,165,245,0.4);border-radius:2px 2px 0 0"></div><div style="font-size:8px;color:#555;font-family:monospace">1</div></div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;justify-content:flex-end"><div style="font-size:7px;color:#f44336;font-family:monospace;font-weight:700">3%</div><div style="width:100%;height:9px;background:rgba(244,67,54,0.7);border-radius:2px 2px 0 0;border:1px solid #f44336"></div><div style="font-size:8px;color:#f44336;font-family:monospace;font-weight:700">2←</div></div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;justify-content:flex-end"><div style="font-size:7px;color:#555;font-family:monospace">9%</div><div style="width:100%;height:27px;background:rgba(66,165,245,0.4);border-radius:2px 2px 0 0"></div><div style="font-size:8px;color:#555;font-family:monospace">3</div></div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;justify-content:flex-end"><div style="font-size:7px;color:#4caf50;font-family:monospace;font-weight:700">20%</div><div style="width:100%;height:45px;background:rgba(76,175,80,0.7);border-radius:2px 2px 0 0;border:1px solid #4caf50"></div><div style="font-size:8px;color:#4caf50;font-family:monospace;font-weight:700">4←</div></div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;justify-content:flex-end"><div style="font-size:7px;color:#555;font-family:monospace">10%</div><div style="width:100%;height:30px;background:rgba(66,165,245,0.4);border-radius:2px 2px 0 0"></div><div style="font-size:8px;color:#555;font-family:monospace">5</div></div>
+        </div>
+      </div>
+      <div class="scenario-bots">
+        <div class="bots-label">BOTS RECOMENDADOS</div>
+        <div class="bot-chips">
+          <span class="bot-chip chip-vip">Alpha Analytics</span>
+          <span class="bot-chip chip-free">Alpha Bot 3</span>
+          <span class="bot-chip chip-premium">Mega Alpha 3.0</span>
+          <span class="bot-chip chip-ia">✨ IA AVANÇADO</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ══ TABELA DE BANCA ══ -->
+<div class="section">
+  <div class="section-num">GESTÃO DE BANCA</div>
+  <div class="section-title">Quanto você precisa para cada nível</div>
+  <div class="section-sub">Baseado no pior cenário de Martingale 3 steps — o Stop Loss sempre protege antes disso acontecer</div>
+
+  <div class="step-card">
+    <table class="banca-table">
+      <thead>
+        <tr>
+          <th>NÍVEL</th><th>BANCA MÍN.</th><th>STAKE INICIAL</th><th>META DIÁRIA</th><th>BOTS LIBERADOS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="tier-free">🔵 INICIANTE</td>
+          <td>$100</td><td>$1 – $2</td><td>$5 – $10</td>
+          <td>Alpha Bot 1, 2, 3 + IA Simples</td>
+        </tr>
+        <tr>
+          <td class="tier-vip">🟢 INTERMEDIÁRIO</td>
+          <td>$300</td><td>$2 – $5</td><td>$15 – $30</td>
+          <td>Alpha Mind, Quantum, Titan, Pulse, Smart, Analytics, Sniper + IA Avançado</td>
+        </tr>
+        <tr>
+          <td class="tier-premium">🟡 AVANÇADO</td>
+          <td>$1.000</td><td>$5 – $10</td><td>$50 – $100</td>
+          <td>Mega Alpha 1/2/3, Alpha Elite, Alpha Nexus + IA Avançado Mult 3×</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="highlight-box green">
+      <strong>Regra de ouro:</strong> Meta diária = máximo 10% da banca. Com $300, pare ao chegar em +$30. Atingiu? <strong>Desliga o bot e comemore.</strong> O mercado vai estar lá amanhã. Consistência de 5–10% ao dia é mais poderoso do que tentar dobrar a banca de uma vez. Com $70 de banca e $20 de lucro — você fez 28% em um dia. Isso é excepcional.
+    </div>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<div class="footer">
+  ALPHA DOLAR 2.0 · GUIA VISUAL DE DÍGITOS v2 · OPERE COM CONFIANÇA
+</div>
+
+</body>
+</html>

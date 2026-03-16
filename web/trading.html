@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpha Dolar 2.0 - Trading Dashboard</title>
+    <link rel="stylesheet" href="css/dashboard-styles.css">
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <link rel="stylesheet" href="css/modal-styles-v2.css">
+</head>
+<body>
+    <header class="topbar">
+        <div class="topbar-left">
+            <div class="logo">ALPHA DOLAR 2.0</div>
+        </div>
+        <div class="topbar-center"></div>
+        <div class="topbar-right">
+            <div class="account-type-switch">
+                <button class="type-btn active" id="demoBtnSwitch" onclick="switchAccountType('demo')">
+                    <span>DEMO</span>
+                </button>
+                <button class="type-btn" id="realBtnSwitch" onclick="switchAccountType('real')">
+                    <span>REAL</span>
+                </button>
+            </div>
+            <button class="btn-operar">Operar</button>
+            <div class="account-info">
+                <span class="account-label">Conta Demo</span>
+                <span class="account-balance" id="topBalance">$ 0.92</span>
+            </div>
+            <button class="btn-icon">🔔</button>
+            <button class="btn-icon">⚙️</button>
+            <div class="connection-status" id="connectionStatus" title="Conectando..."></div>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <aside class="left-panel">
+            <div class="panel-header">
+                <h4>Configurações da IA</h4>
+                <div class="mode-switch">
+                    <label class="switch">
+                        <input type="checkbox" id="advancedMode">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="mode-label" id="modeLabel">Simples</span>
+                </div>
+            </div>
+
+            <div class="session-profit">
+                <h2 id="sessionProfit">$0 (0%)</h2>
+            </div>
+
+            <div class="ia-simple-mode" id="iaSimpleMode">
+                <div class="form-group">
+                    <label>Mercado</label>
+                    <div class="custom-select" id="marketSelect" onclick="openMarketModal()">
+                        <div class="select-content">
+                            <svg class="market-icon" width="20" height="20">
+                                <rect x="3" y="8" width="1" height="8" fill="#42A5F5"/>
+                                <rect x="5" y="4" width="1" height="12" fill="#42A5F5"/>
+                                <rect x="7" y="6" width="1" height="10" fill="#42A5F5"/>
+                                <rect x="9" y="2" width="1" height="14" fill="#42A5F5"/>
+                                <rect x="11" y="9" width="1" height="7" fill="#42A5F5"/>
+                            </svg>
+                            <span id="selectedMarket">Volatility 100 Index</span>
+                        </div>
+                        <svg class="chevron-down" width="18" height="18" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M7 10l5 5 5-5z"/>
+                        </svg>
+                    </div>
+                    <div class="hint" id="marketHint">Volatilidade constante de 100% com um tique a cada 2 segundos</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Estratégia</label>
+                    <div class="custom-select" id="strategySelect" onclick="openStrategyModal()">
+                        <div class="select-content">
+                            <svg class="strategy-icon" width="18" height="18" viewBox="0 0 24 24">
+                                <path fill="#42A5F5" d="M7 14l5-5 5 5z"/>
+                            </svg>
+                            <svg class="strategy-icon" width="18" height="18" viewBox="0 0 24 24">
+                                <path fill="#42A5F5" d="M7 10l5 5 5-5z"/>
+                            </svg>
+                            <span id="selectedStrategy">Alpha Bot 1</span>
+                        </div>
+                        <svg class="chevron-down" width="18" height="18" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M7 10l5 5 5-5z"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Modo de negociação</label>
+                    <div class="custom-select" id="modeSelect" onclick="openTradingModeModal()">
+                        <div class="select-content">
+                            <svg class="mode-icon" width="18" height="18" viewBox="0 0 24 24">
+                                <path fill="#42A5F5" d="M7 2v11h3v9l7-12h-4l4-8z"/>
+                            </svg>
+                            <div class="mode-info">
+                                <span id="selectedMode">Veloz</span>
+                                <small id="modeDesc">Mais negociações, menos precisão</small>
+                            </div>
+                        </div>
+                        <svg class="chevron-down" width="18" height="18" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M7 10l5 5 5-5z"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="value-inputs-grid">
+                    <div class="input-group">
+                        <label>Quantia inicial</label>
+                        <div class="input-wrapper">
+                            <span class="currency">$</span>
+                            <input type="number" id="initialStake" value="0.35" min="0.35" step="0.01">
+                        </div>
+                        <div class="input-hint" id="stakePercent">38.04% do saldo</div>
+                    </div>
+                    <div class="input-group">
+                        <label>Lucro alvo</label>
+                        <div class="input-wrapper">
+                            <span class="currency">$</span>
+                            <input type="number" id="targetProfit" value="2.00" min="1" step="1">
+                        </div>
+                        <div class="input-hint" id="profitPercent">217.39% do saldo</div>
+                    </div>
+                    <div class="input-group">
+                        <label>Limite de perda</label>
+                        <div class="input-wrapper">
+                            <span class="currency">$</span>
+                            <input type="number" id="stopLoss" value="5.00" min="1" step="1">
+                        </div>
+                        <div class="input-hint" id="lossPercent">543.48% do saldo</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Gerenciamento de risco</label>
+                    <div class="risk-button" id="riskButton" onclick="openRiskModal()">
+                        <div class="risk-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24">
+                                <path fill="white" d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1Z"/>
+                            </svg>
+                        </div>
+                        <div class="risk-info">
+                            <h6>Conservador</h6>
+                            <div class="risk-level">
+                                <svg width="12" height="12" viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M1 21h22L12 2 1 21z"/>
+                                </svg>
+                                <span>Baixo risco</span>
+                            </div>
+                            <p class="risk-desc">Valor recomendado: no mínimo $50</p>
+                        </div>
+                        <svg class="chevron-right" width="18" height="18" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <button class="start-button" id="startButton">
+                    <svg width="18" height="18" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M8 5v14l11-7z"/>
+                    </svg>
+                    <span>Iniciar Robô</span>
+                </button>
+            </div>
+
+            <div class="ia-advanced-mode" id="iaAdvancedMode" style="display: none;">
+                <p style="text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.5);">
+                    Modo Avançado<br><small>Em desenvolvimento</small>
+                </p>
+            </div>
+        </aside>
+
+        <main class="center-panel">
+            <div class="center-tabs">
+                <button class="center-tab active" data-tab="grafico">GRÁFICO</button>
+                <button class="center-tab" data-tab="digitos">DÍGITOS</button>
+                <button class="center-tab" data-tab="negociacoes">NEGOCIAÇÕES</button>
+                <button class="center-tab" data-tab="registros">REGISTROS</button>
+            </div>
+
+            <div class="tab-content">
+                <div class="tab-pane active" id="tab-grafico">
+                    <div class="chart-container">
+                        <div id="tradingview_chart"></div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="tab-digitos">
+                    <div class="empty-state">
+                        <p>Painel de Dígitos</p>
+                        <small>Em desenvolvimento</small>
+                    </div>
+                </div>
+                <div class="tab-pane" id="tab-negociacoes">
+                    <div class="empty-state">
+                        <p>Negociações Ativas</p>
+                        <small>Em desenvolvimento</small>
+                    </div>
+                </div>
+                <div class="tab-pane" id="tab-registros">
+                    <div class="history-content">
+                        <div class="history-header-inline">
+                            <h3>Histórico de Operações</h3>
+                            <button class="btn-clear" id="clearHistory">Limpar</button>
+                        </div>
+                        <div class="history-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Hora</th>
+                                        <th>Tipo</th>
+                                        <th>Mercado</th>
+                                        <th>Valor</th>
+                                        <th>Duração</th>
+                                        <th>Resultado</th>
+                                        <th>Lucro</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <aside class="right-panel">
+            <div class="panel-header">
+                <h4>Modo manual</h4>
+                <button class="btn-agenda">Agendar</button>
+            </div>
+            <div class="manual-profit">
+                <h2 id="manualProfit">$0 (0%)</h2>
+            </div>
+            <div class="form-group">
+                <label>Mercado</label>
+                <select class="manual-select" id="manualMarket">
+                    <option value="R_100">Volatility 100 Index</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Tipo de Negociação</label>
+                <div class="trade-type-selector">
+                    <button class="trade-type-btn active" data-type="rise">
+                        <svg width="16" height="16" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M7 14l5-5 5 5z"/>
+                        </svg>
+                        <span>Rise/Fall Equals</span>
+                    </button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Duração</label>
+                <div class="duration-controls">
+                    <button class="btn-minus" id="durationMinus">−</button>
+                    <input type="number" id="manualDuration" value="1" min="1">
+                    <button class="btn-plus" id="durationPlus">+</button>
+                    <select class="duration-unit" id="durationUnit">
+                        <option value="ticks">Ticks</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Quantia inicial</label>
+                <div class="stake-controls">
+                    <button class="btn-minus" id="stakeMinus">−</button>
+                    <input type="number" id="manualStake" value="1" min="0.35" step="0.01">
+                    <button class="btn-plus" id="stakePlus">+</button>
+                </div>
+            </div>
+            <div class="manual-buttons">
+                <button class="manual-btn rise-btn" id="riseBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M7 14l5-5 5 5z"/>
+                    </svg>
+                    <div class="btn-content">
+                        <span>Rise Equal</span>
+                        <strong id="risePayout">85.00%</strong>
+                        <small id="riseReturn">1.85 USD</small>
+                    </div>
+                </button>
+                <button class="manual-btn fall-btn" id="fallBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M7 10l5 5 5-5z"/>
+                    </svg>
+                    <div class="btn-content">
+                        <span>Fall Equal</span>
+                        <strong id="fallPayout">84.00%</strong>
+                        <small id="fallReturn">1.84 USD</small>
+                    </div>
+                </button>
+            </div>
+            <div class="manual-stats">
+                <div class="stat-row">
+                    <span class="stat-label">Win Rate:</span>
+                    <span class="stat-value" id="winRate">0%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Total Trades:</span>
+                    <span class="stat-value" id="totalTrades">0</span>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <div class="modal-overlay" id="marketModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Selecione o Mercado</h3>
+                <button class="modal-close" onclick="closeMarketModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section"><h4>ÍNDICES CONTINUOUS</h4><div class="modal-list" id="continuousMarkets"></div></div>
+                <div class="modal-section"><h4>ÍNDICES DAILY RESET</h4><div class="modal-list" id="dailyResetMarkets"></div></div>
+                <div class="modal-section"><h4>ÍNDICES JUMP</h4><div class="modal-list" id="jumpMarkets"></div></div>
+                <div class="modal-section"><h4>FOREX</h4><div class="modal-list" id="forexMarkets"></div></div>
+                <div class="modal-section"><h4>CRIPTOMOEDAS</h4><div class="modal-list" id="cryptoMarkets"></div></div>
+                <div class="modal-section"><h4>COMMODITIES</h4><div class="modal-list" id="commodityMarkets"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="strategyModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Selecione a Estratégia</h3>
+                <button class="modal-close" onclick="closeStrategyModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section"><h4>ESTRATÉGIAS FREE</h4><div class="modal-list" id="freeStrategies"></div></div>
+                <div class="modal-section"><h4>ESTRATÉGIAS VIP</h4><div class="modal-list" id="vipStrategies"></div></div>
+                <div class="modal-section"><h4>ESTRATÉGIAS PREMIUM</h4><div class="modal-list" id="premiumStrategies"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="tradingModeModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Modo de Negociação</h3>
+                <button class="modal-close" onclick="closeTradingModeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="mode-list">
+                    <div class="mode-option" data-mode="lowRisk" onclick="selectTradingMode('lowRisk', '🛡️', 'Baixo risco')">
+                        <div class="mode-icon">🛡️</div>
+                        <div class="mode-content"><h5>Baixo risco</h5><p>Máxima precisão, menos negociações</p></div>
+                        <span class="premium-badge">Premium</span>
+                    </div>
+                    <div class="mode-option" data-mode="accurate" onclick="selectTradingMode('accurate', '🎯', 'Preciso')">
+                        <div class="mode-icon">🎯</div>
+                        <div class="mode-content"><h5>Preciso</h5><p>Menos negociações, mais precisão</p></div>
+                    </div>
+                    <div class="mode-option" data-mode="balanced" onclick="selectTradingMode('balanced', '⚖️', 'Balanceado')">
+                        <div class="mode-icon">⚖️</div>
+                        <div class="mode-content"><h5>Balanceado</h5><p>Negociações e precisão balanceada</p></div>
+                    </div>
+                    <div class="mode-option active" data-mode="faster" onclick="selectTradingMode('faster', '⚡', 'Veloz')">
+                        <div class="mode-icon">⚡</div>
+                        <div class="mode-content"><h5>Veloz</h5><p>Mais negociações, menos precisão</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="riskModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Gerenciamento de Risco</h3>
+                <button class="modal-close" onclick="closeRiskModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="risk-mode-list" id="riskModeList"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="botRunningModal">
+        <div class="modal-container-bot-running">
+            <div class="bot-running-header">
+                <div class="bot-header-content">
+                    <h3>Lucro</h3>
+                    <div id="botRunningProfit">$0 (0%)</div>
+                </div>
+                <div class="bot-header-content">
+                    <h3>Saldo</h3>
+                    <div id="botRunningSaldo">$0.92</div>
+                </div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="botProgressBar"></div>
+                </div>
+            </div>
+            <div class="bot-status-message">
+                <span id="botStatusText">Buscando trades</span>
+            </div>
+            <button class="btn-modo-ia">✨ MODO IA - ALPHA</button>
+            <div class="bot-config-display">
+                <div class="config-row"><div class="config-icon">💰</div><div class="config-label">Quantia inicial</div><div class="config-value" id="botDisplayStake">$0.35</div></div>
+                <div class="config-row"><div class="config-icon">🎯</div><div class="config-label">Lucro alvo</div><div class="config-value" id="botDisplayTarget">$2.00</div></div>
+                <div class="config-row"><div class="config-icon">⚠️</div><div class="config-label">Limite de perda</div><div class="config-value" id="botDisplayStop">$5.00</div></div>
+                <div class="config-row"><div class="config-icon">📊</div><div class="config-label">Mercado</div><div class="config-value" id="botDisplayMarket">Volatility 100 Index</div></div>
+                <div class="config-row"><div class="config-icon">🤖</div><div class="config-label">Estratégia</div><div class="config-value" id="botDisplayStrategy">Alpha Bot 1</div></div>
+                <div class="config-row"><div class="config-icon">⚡</div><div class="config-label">Modo</div><div class="config-value" id="botDisplayMode">Veloz</div></div>
+                <div class="config-row"><div class="config-icon">🛡️</div><div class="config-label">Gerenciamento de risco</div><div class="config-value" id="botDisplayRisk">Conservador</div></div>
+            </div>
+            <button class="btn-parar-robo" onclick="stopBotFromModal()">
+                <span class="stop-icon">⬛</span>
+                <span id="stopBotText">Parar Robô</span>
+                <span class="stop-spinner" id="stopSpinner" style="display: none;">⏳</span>
+            </button>
+        </div>
+    </div>
+
+    <style>
+    #botRunningModal:not(.active){display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+    .modal-overlay#botRunningModal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:none;align-items:flex-start;justify-content:flex-start;padding-top:80px;padding-left:20px;z-index:10001}
+    .modal-overlay#botRunningModal.active{display:flex!important;visibility:visible!important;opacity:1!important}
+    .modal-container-bot-running{background:linear-gradient(180deg,#2a2d3e,#1e2235);border-radius:16px;max-width:420px;width:100%;max-height:calc(100vh - 100px);box-shadow:0 10px 40px rgba(0,0,0,0.6);overflow-y:auto;animation:slideInLeft 0.3s ease}
+    @keyframes slideInLeft{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+    .bot-running-header{display:flex;justify-content:space-between;padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.08)}
+    .bot-running-header h3{font-size:14px;font-weight:600;margin:0;color:rgba(255,255,255,0.6);margin-bottom:8px}
+    .bot-running-header #botRunningProfit{font-size:28px;font-weight:700;color:#4caf50;font-family:'JetBrains Mono',monospace}
+    .bot-running-header #botRunningSaldo{font-size:28px;font-weight:700;font-family:'JetBrains Mono',monospace;color:#fff}
+    .progress-container{padding:20px 24px 12px}
+    .progress-bar{width:100%;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden}
+    .progress-fill{height:100%;background:linear-gradient(90deg,#42A5F5,#667eea);border-radius:3px;width:0;animation:progressAnimation 2s ease-in-out infinite}
+    @keyframes progressAnimation{0%{width:0}50%{width:70%}100%{width:100%}}
+    .bot-status-message{text-align:center;padding:8px 24px 20px;font-size:13px;color:rgba(255,255,255,0.7);font-weight:500}
+    .btn-modo-ia{width:calc(100% - 48px);margin:0 24px 20px;padding:14px;background:linear-gradient(135deg,#e91e63,#f06292);border:none;border-radius:8px;color:white;font-weight:700;font-size:14px;cursor:default;letter-spacing:0.5px}
+    .bot-config-display{padding:0 24px 20px}
+    .config-row{display:flex;align-items:center;padding:14px 16px;background:rgba(0,0,0,0.2);border-radius:8px;margin-bottom:10px;border:1px solid rgba(255,255,255,0.05)}
+    .config-icon{font-size:20px;width:36px;flex-shrink:0}
+    .config-label{flex:1;font-size:13px;color:rgba(255,255,255,0.7);font-weight:500}
+    .config-value{font-size:13px;color:#fff;font-weight:600;text-align:right;font-family:'JetBrains Mono',monospace}
+    .btn-parar-robo{width:calc(100% - 48px);margin:0 24px 24px;padding:16px;background:linear-gradient(135deg,#ff9800,#ffb74d);border:none;border-radius:8px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.2s}
+    .btn-parar-robo:hover{background:linear-gradient(135deg,#f57c00,#ff9800);transform:translateY(-1px);box-shadow:0 4px 12px rgba(255,152,0,0.4)}
+    .btn-parar-robo:active{transform:translateY(0)}
+    .stop-icon{font-size:16px}
+    .stop-spinner{font-size:16px;animation:spin 1s linear infinite}
+    @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    .modal-container-bot-running::-webkit-scrollbar{width:6px}
+    .modal-container-bot-running::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.2);border-radius:3px}
+    </style>
+
+    <div id="notificationContainer"></div>
+
+    <script src="js/api-v2.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/ia-controller-v4.js"></script>
+    <script src="js/dashboard-v3.js"></script>
+    <script src="js/tabs.js"></script>
+    <script src="js/modals.js"></script>
+    <script src="js/bot-running-modal.js"></script>
+    <script src="js/modal-stats-updater.js"></script>
+
+    <script>
+    (function(){console.log('🟠 Botão init');const API='https://alpha-dolar-backend.onrender.com/api';let running=false;async function start(t,c){const r=await fetch(`${API}/bot/start`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bot_type:t,config:c})});const d=await r.json();if(!r.ok||!d.success)throw new Error(d.message||'Erro');return d}async function stop(t){const r=await fetch(`${API}/bot/stop`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bot_type:t})});const d=await r.json();if(!r.ok||!d.success)throw new Error(d.message||'Erro');return d}function init(){const b=document.getElementById('startButton')||document.querySelector('.start-button')||Array.from(document.querySelectorAll('button')).find(x=>x.textContent.includes('Iniciar'));if(!b)return;const s=document.getElementById('initialStake');const t=document.getElementById('targetProfit');const l=document.getElementById('stopLoss');b.addEventListener('click',async function(e){e.preventDefault();e.stopPropagation();if(running){try{b.disabled=true;b.innerHTML='<span>PARANDO...</span>';await stop('ia');running=false;window.botRunning=false;b.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></svg><span>Iniciar Robô</span>';document.getElementById('botRunningModal')?.classList.remove('active');alert('✅ Bot parado!')}catch(err){alert('❌ Erro: '+err.message)}finally{b.disabled=false}}else{const c={mode:'simples',market:'R_100',strategy:'alpha_bot_1',trading_mode:'fast',risk_mode:'conservative',initial_stake:s?parseFloat(s.value):0.35,target_profit:t?parseFloat(t.value):2,stop_loss:l?parseFloat(l.value):5,multiplier:1,duration:1};try{b.disabled=true;b.innerHTML='<span>INICIANDO...</span>';const r=await start('ia',c);running=true;window.botRunning=true;b.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" fill="currentColor"/></svg><span>Parar Robô</span>';document.getElementById('botRunningModal')?.classList.add('active');alert('✅ Bot iniciado!')}catch(err){alert('❌ Erro: '+err.message);b.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></svg><span>Iniciar Robô</span>'}finally{b.disabled=false}}})}if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init)}else{init()}setTimeout(init,2000)})();
+    </script>
+
+</body>
+</html>
