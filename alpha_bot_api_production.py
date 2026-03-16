@@ -281,6 +281,15 @@ def start_bot():
             BotConfig.LUCRO_ALVO     = lucro_alvo
             BotConfig.LIMITE_PERDA   = limite_perda
             BotConfig.API_TOKEN      = token
+            # Salvar config no estado do usuário para isolamento
+            get_user_state(deriv_id, bot_type).update({
+                'token': token,
+                'symbol': symbol,
+                'stake_inicial': stake_inicial,
+                'lucro_alvo': lucro_alvo,
+                'limite_perda': limite_perda,
+                'deriv_id': deriv_id,
+            })
             get_user_state(deriv_id, bot_type)['deriv_id']     = deriv_id
             get_user_state(deriv_id, bot_type)['account_type'] = account_type
             # Buscar nome do bot cadastrado para este cliente
@@ -445,8 +454,25 @@ def start_bot():
             # Patch no método do objeto — sobrevive ao bot.start() que chama set_contract_callback(self.on_contract_update)
             bot.on_contract_update = patched_contract_update
 
+            # Capturar token e configurações específicas deste usuário
+            _user_token = token
+            _user_symbol = symbol
+            _user_stake = stake_inicial
+            _user_target = lucro_alvo
+            _user_stop = limite_perda
+
             def run_bot():
                 try:
+                    # Configurar BotConfig com valores específicos deste usuário
+                    # antes de iniciar — dentro da thread para evitar conflito
+                    import threading
+                    _lock = getattr(run_bot, '_lock', threading.Lock())
+                    with _lock:
+                        BotConfig.API_TOKEN      = _user_token
+                        BotConfig.DEFAULT_SYMBOL = _user_symbol
+                        BotConfig.STAKE_INICIAL  = _user_stake
+                        BotConfig.LUCRO_ALVO     = _user_target
+                        BotConfig.LIMITE_PERDA   = _user_stop
                     bot.start()
                 except Exception as e:
                     print(f"❌ Erro thread bot: {e}")
@@ -597,7 +623,7 @@ def get_bot_stats(bot_type):
         'total_trades': stats.get('total_trades', 0), 'win_rate': stats.get('win_rate', 0),
         'vitorias': stats.get('vitorias', 0), 'derrotas': stats.get('derrotas', 0),
         'perda_dc': get_user_state(deriv_id, bot_type).get('_perda_desde_ultimo_ganho', 0),
-        'limite_perda': BotConfig.LIMITE_PERDA,
+        'limite_perda': state.get('limite_perda', BotConfig.LIMITE_PERDA),
     })
 
 # ==================== TRADES ====================
