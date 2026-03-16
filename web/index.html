@@ -316,14 +316,29 @@ footer{text-align:center;padding:26px;border-top:1px solid var(--border);color:#
 </head>
 <body>
 
+<script>
+(function(){
+  console.log('%c ALPHA DOLAR TRADING BOT 2.0 ','background:linear-gradient(90deg,#00d2ff,#0ea5e9);color:#000;font-weight:900;font-size:14px;padding:6px 12px;border-radius:4px');
+  console.log('%c CÓDIGO PROTEGIDO — USO NÃO AUTORIZADO É CRIME ','background:#dc2626;color:#fff;font-weight:700;font-size:12px;padding:6px 12px');
+  console.log('%c⚠️  Se alguém pediu para você colar algo aqui, é uma tentativa de fraude!','color:#f59e0b;font-weight:700;font-size:13px');
+  document.addEventListener('contextmenu',function(e){e.preventDefault();});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='F12'){e.preventDefault();return false;}
+    if(e.ctrlKey&&e.shiftKey&&['I','i','J','j','C','c'].includes(e.key)){e.preventDefault();return false;}
+    if(e.ctrlKey&&['u','U','s','S'].includes(e.key)){e.preventDefault();return false;}
+  });
+})();
+</script>
+
+
 <nav>
   <a class="nav-logo" href="/home"><svg width="210" height="36" viewBox="0 0 210 36" xmlns="http://www.w3.org/2000/svg" style="display:block"><defs><linearGradient id="logograd" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#00d2ff"/><stop offset="100%" style="stop-color:#0ea5e9"/></linearGradient></defs><text x="0" y="32" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="34" fill="url(#logograd)">A</text><text x="12" y="32" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="34" fill="none" stroke="url(#logograd)" stroke-width="1.5" opacity="0.45">$</text><line x1="38" y1="4" x2="38" y2="32" stroke="#1e2230" stroke-width="1.5"/><text x="46" y="20" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="13" fill="#e2e8f0" letter-spacing="2">ALPHA DOLAR</text><text x="48" y="32" font-family="Arial,sans-serif" font-size="9" fill="#475569" letter-spacing="3">TRADING BOT 2.0</text></svg></a>
   <div class="nav-links">
     <a class="nav-link ativo" href="/home">Início</a>
     <a class="nav-link" href="/dashboard">Operar</a>
-    <button class="nav-link signals" onclick="abrirLoja('sinais')">✦ AI Signals 🔒</button>
+    <button class="nav-link signals" onclick="abrirLoja('sinais')">✦ Alpha Signals 🔒</button>
     <button class="nav-link" onclick="abrirLoja('assinaturas')">Loja</button>
-    <button class="nav-link" onclick="location.href='/videos'">Vídeos</button>
+    <button class="nav-link" onclick="location.href='/videos'">Tutoriais/Vídeos</button>
     <button class="nav-link" onclick="window.open('https://wa.me/5547996214217','_blank')">Suporte</button>
   </div>
   <div class="nav-right">
@@ -356,7 +371,7 @@ footer{text-align:center;padding:26px;border-top:1px solid var(--border);color:#
 <div class="nav-mobile" id="navMobile">
   <a class="nav-link ativo" href="/home">🏠 Início</a>
   <a class="nav-link" href="/dashboard">⚡ Operar</a>
-  <button class="nav-link signals" onclick="abrirLoja('sinais');fecharMenu()">✦ AI Signals 🔒</button>
+  <button class="nav-link signals" onclick="abrirLoja('sinais');fecharMenu()">✦ Alpha Signals 🔒</button>
   <button class="nav-link" onclick="abrirLoja('assinaturas');fecharMenu()">🛒 Loja</button>
   <button class="nav-link" onclick="location.href='/videos'">📺 Vídeos</button>
   <button class="nav-link" onclick="window.open('https://wa.me/5547996214217','_blank')">💬 Suporte</button>

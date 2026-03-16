@@ -39,7 +39,12 @@ class AlphaDolar:
         self.strategy = strategy
 
         self.martingale = Martingale() if use_martingale else None
-        self.stop_loss = StopLoss()
+        self.stop_loss = StopLoss(
+            limite_perda=BotConfig.LIMITE_PERDA,
+            lucro_alvo=BotConfig.LUCRO_ALVO,
+            stop_loss_type=BotConfig.STOP_LOSS_TYPE,
+            max_consecutive_losses=BotConfig.MAX_CONSECUTIVE_LOSSES
+        )
 
         self.is_running = False
         self.current_stake = BotConfig.STAKE_INICIAL
