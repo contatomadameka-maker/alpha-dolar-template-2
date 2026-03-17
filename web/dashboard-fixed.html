@@ -2900,6 +2900,13 @@ body { overflow-x: hidden !important; }
 
                 // ─── DETECÇÃO: bot parou (running false) ───
                 if (_botRodandoAnterior && !isRunning && botRunning) {
+                    // Se não tem stop_reason, servidor pode ter reiniciado — tenta reconectar
+                    if (!stopReason) {
+                        console.warn('Backend reiniciou — tentando reconectar...');
+                        if (window._addLogLine) window._addLogLine('🔄 Reconectando ao servidor...', 'log-warn');
+                        try { await startBotAPI(); } catch(e) {}
+                        return;
+                    }
                     // ✅ FIX: delega para executarTransicaoBotParado que faz fetch final
                     executarTransicaoBotParado(stopReason, stopMessage, data);
                     return;
@@ -8747,8 +8754,16 @@ document.addEventListener('DOMContentLoaded', function() {
       // Detecta parada do backend
       const isRunning = data.running || data.bot_running || false;
       if (!isRunning && st.running) {
-        const stopReason  = data.stop_reason  || 'manual';
+        const stopReason  = data.stop_reason || null;
         const stopMessage = data.stop_message || null;
+        // Se não tem stop_reason, pode ser restart do servidor — reinicia bot
+        if (!stopReason) {
+          console.warn('Backend reiniciou — bot perdido na memória, reiniciando...');
+          if (window._addLogLine) window._addLogLine('🔄 Reconectando ao servidor...', 'log-warn');
+          // Tenta reiniciar automaticamente
+          try { await window.iaAdvIniciar && window.iaAdvIniciar(); } catch(e) {}
+          return;
+        }
         await iaAdvParar(stopReason);
         if (typeof window.mostrarModalBotParado === 'function') {
           window.mostrarModalBotParado(stopReason, stopMessage, data);
