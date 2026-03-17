@@ -2905,11 +2905,9 @@ body { overflow-x: hidden !important; }
                 if (_botRodandoAnterior && !isRunning && botRunning) {
                     // Se não tem stop_reason, servidor pode ter reiniciado — tenta reconectar
                     if (!stopReason) {
-                        console.warn('Backend reiniciou — tentando reconectar...');
-                        if (window._addLogLine) window._addLogLine('🔄 Reconectando ao servidor...', 'log-warn');
-                        // Aguarda 5s antes de reconectar — Redis pode estar sincronizando
-                        await new Promise(r => setTimeout(r, 5000));
-                        try { await startBotAPI(); } catch(e) {}
+                        // Não reconecta automaticamente — pode causar loop
+                        console.warn('Bot parou sem motivo — possível restart do servidor');
+                        if (window._addLogLine) window._addLogLine('⚠️ Conexão perdida — clique em Iniciar para reconectar', 'log-warn');
                         return;
                     }
                     // ✅ FIX: delega para executarTransicaoBotParado que faz fetch final
@@ -8765,12 +8763,10 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!isRunning && st.running) {
         const stopReason  = data.stop_reason || null;
         const stopMessage = data.stop_message || null;
-        // Se não tem stop_reason, pode ser restart do servidor — reinicia bot
+        // Se não tem stop_reason, pode ser restart do servidor
         if (!stopReason) {
-          console.warn('Backend reiniciou — bot perdido na memória, reiniciando...');
-          if (window._addLogLine) window._addLogLine('🔄 Reconectando ao servidor...', 'log-warn');
-          // Tenta reiniciar automaticamente
-          try { await window.iaAdvIniciar && window.iaAdvIniciar(); } catch(e) {}
+          console.warn('Bot parou sem motivo — possível restart do servidor');
+          if (window._addLogLine) window._addLogLine('⚠️ Conexão perdida — clique em Iniciar para reconectar', 'log-warn');
           return;
         }
         await iaAdvParar(stopReason);

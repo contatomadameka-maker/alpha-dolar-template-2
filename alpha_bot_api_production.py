@@ -540,8 +540,14 @@ def start_bot():
                 finally:
                     get_user_state(deriv_id, bot_type)['running'] = False
 
+            # Marcar running=True no Redis ANTES de iniciar thread
+            # Evita que o frontend detecte 'parado' durante inicialização
+            if STATE_MANAGER:
+                _sm_update(deriv_id, bot_type, {'running': True, 'stop_reason': None, 'stop_message': None})
+
             thread = threading.Thread(target=run_bot, daemon=True)
             thread.start()
+            set_bot_instance(deriv_id, bot_type, bot)
 
             get_user_state(deriv_id, bot_type).update({
                 'running': True, 'instance': bot, 'thread': thread,
