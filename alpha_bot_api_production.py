@@ -463,9 +463,11 @@ def start_bot():
                     'longcode': getattr(getattr(bot, 'api', None), '_ultimo_longcode', None),
                     'perda_acum': round(perda_acum, 2),
                 }
-                get_user_state(deriv_id, bot_type)['trades'].append(trade)
-                if len(get_user_state(deriv_id, bot_type)['trades']) > 100:
-                    get_user_state(deriv_id, bot_type)['trades'].pop(0)
+                _trades_list = list(get_user_state(deriv_id, bot_type).get('trades', []))
+                _trades_list.append(trade)
+                if len(_trades_list) > 100:
+                    _trades_list.pop(0)
+                get_user_state(deriv_id, bot_type)['trades'] = _trades_list
                 # Salvar operação no Supabase (somente conta REAL)
                 try:
                     if get_user_state(deriv_id, bot_type).get('account_type', 'demo') == 'real':
