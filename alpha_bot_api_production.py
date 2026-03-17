@@ -637,7 +637,10 @@ def get_bot_trades(bot_type):
 @app.route('/api/balance')
 @app.route('/api/account/balance')
 def get_balance():
-    for bot_type, state in bots_state.items():
+    deriv_id = request.args.get('deriv_id', 'anonymous')
+    # Busca saldo apenas do usuário correto
+    user_bots = bots_state.get(deriv_id, {})
+    for bot_type, state in user_bots.items():
         bot = state.get('instance')
         if bot and BOTS_AVAILABLE and hasattr(bot, 'api'):
             try:
