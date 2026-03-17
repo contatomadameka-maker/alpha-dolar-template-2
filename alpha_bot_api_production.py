@@ -930,8 +930,9 @@ def auto_restart_bots():
         except Exception as e:
             print(f"⚠️ Auto-restart {bot_type} falhou: {e}")
 
-# Iniciar auto-restart em thread separada
-threading.Thread(target=auto_restart_bots, daemon=True).start()
+# Auto-restart desabilitado — causa conflito com múltiplos usuários
+# threading.Thread(target=auto_restart_bots, daemon=True).start()
+print('ℹ️ Auto-restart desabilitado')
 
 
 @app.route('/api/ia/analytics', methods=['GET'])
