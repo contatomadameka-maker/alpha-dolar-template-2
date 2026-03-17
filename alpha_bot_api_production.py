@@ -104,20 +104,80 @@ def resolve_symbol(s):
     return SYMBOL_MAP.get(s, s or 'R_100')
 
 # ==================== ESTADO GLOBAL ====================
-# bots_state agora é isolado por usuário: bots_state[deriv_id][bot_type]
-bots_state = {}
+# Estado agora gerenciado pelo state_manager (Redis + fallback memória)
+bots_state = {}  # mantido para compatibilidade
+
+try:
+    from backend.state_manager import (
+        get_user_state as _sm_get,
+        update_user_state as _sm_update,
+        set_bot_instance, get_bot_instance, clear_bot_instance,
+        is_redis_available
+    )
+    STATE_MANAGER = True
+    print(f"✅ State Manager carregado! Redis: {'✅' if is_redis_available() else '⚠️ fallback memória'}")
+except ImportError:
+    try:
+        from state_manager import (
+            get_user_state as _sm_get,
+            update_user_state as _sm_update,
+            set_bot_instance, get_bot_instance, clear_bot_instance,
+            is_redis_available
+        )
+        STATE_MANAGER = True
+    except:
+        STATE_MANAGER = False
+        print("⚠️ State Manager não disponível — usando memória local")
+
+
+class _StateProxy(dict):
+    """Proxy que salva automaticamente no Redis ao modificar"""
+    def __init__(self, deriv_id, bot_type, data):
+        super().__init__(data)
+        self._deriv_id = deriv_id
+        self._bot_type = bot_type
+    
+    def __setitem__(self, key, value):
+        super().__setitem__(key, value)
+        if key not in ('instance', 'thread', '_instance') and STATE_MANAGER:
+            try:
+                _sm_update(self._deriv_id, self._bot_type, {key: value})
+            except: pass
+        # Também atualiza instância local
+        if key == 'instance' and STATE_MANAGER:
+            try:
+                set_bot_instance(self._deriv_id, self._bot_type, value)
+            except: pass
+    
+    def update(self, d=None, **kwargs):
+        if d:
+            for k, v in d.items():
+                self[k] = v
+        for k, v in kwargs.items():
+            self[k] = v
 
 def get_user_state(deriv_id, bot_type):
-    """Retorna ou cria estado isolado por usuário"""
+    """Retorna estado isolado por usuário"""
     if not deriv_id:
         deriv_id = 'anonymous'
+    if STATE_MANAGER:
+        state = _sm_get(deriv_id, bot_type)
+        # Anexar instância local
+        instance = get_bot_instance(deriv_id, bot_type)
+        proxy = _StateProxy(deriv_id, bot_type, state)
+        proxy['instance'] = instance
+        return proxy
+    # Fallback memória
     if deriv_id not in bots_state:
         bots_state[deriv_id] = {}
     if bot_type not in bots_state[deriv_id]:
-        bots_state[deriv_id][bot_type] = {
+        bots_state[deriv_id][bot_type] = _StateProxy(deriv_id, bot_type, {
             'running': False, 'instance': None, 'thread': None,
-            'trades': [], 'stop_reason': None, 'stop_message': None
-        }
+            'trades': [], 'stop_reason': None, 'stop_message': None,
+            'mart_step': 0, 'mart_max': 3,
+            '_perda_desde_ultimo_ganho': 0.0,
+            '_lucro_desde_ultimo_reset': 0.0,
+        })
     return bots_state[deriv_id][bot_type]
 
 # ==================== ROTAS ESTÁTICAS ====================
