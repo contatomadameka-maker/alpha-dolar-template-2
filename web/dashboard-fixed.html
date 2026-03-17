@@ -4966,14 +4966,13 @@ window._MKT_DATA = {
           <div style="font-size:11px;font-weight:700;color:#fbbf24;">🎭 Perdas Virtuais</div>
           <div style="font-size:9px;color:#64748b;">Simula N perdas antes de entrar com dinheiro real</div>
         </div>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+        <div style="display:flex;align-items:center;gap:6px;cursor:pointer;z-index:10;" onclick="proToggleVirtual()">
           <span style="font-size:10px;color:#64748b;" id="proVirtualLabel">OFF</span>
-          <div style="position:relative;width:36px;height:20px;" onclick="proToggleVirtual()">
-            <input type="checkbox" id="proVirtualAtivo" style="opacity:0;position:absolute;" onchange="proToggleVirtual()">
+          <div style="position:relative;width:36px;height:20px;pointer-events:none;">
             <span id="proVirtualSlider" style="position:absolute;inset:0;background:#374151;border-radius:20px;transition:.3s;"></span>
             <span id="proVirtualThumb" style="position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:50%;transition:.3s;"></span>
           </div>
-        </label>
+        </div>
       </div>
       <div id="proVirtualConfig" style="display:none;gap:8px;align-items:center;">
         <div style="flex:1;">
