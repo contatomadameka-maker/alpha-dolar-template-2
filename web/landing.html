@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpha Dolar 2.0 — O Robô Que Opera Por Você</title>
+<meta name="description" content="Plataforma de trading com IA que opera automaticamente na Deriv. 15 estratégias, Alpha IA Pro, sinais em tempo real. Acesso gratuito por tempo limitado.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Fira+Code:wght@400;500&display=swap');
+
+:root {
+  --bg: #020408;
+  --s1: #080d16;
+  --s2: #0d1524;
+  --border: #1a2540;
+  --cyan: #00e5ff;
+  --cyan2: #0095b3;
+  --green: #00ff87;
+  --gold: #ffc340;
+  --red: #ff3d5a;
+  --purple: #9b59ff;
+  --text: #dce8f5;
+  --muted: #4d6280;
+  --muted2: #8aa0bd;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Cabinet Grotesk', sans-serif;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* CUSTOM CURSOR */
+.cursor {
+  position: fixed;
+  width: 12px; height: 12px;
+  background: var(--cyan);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transition: transform 0.1s, opacity 0.3s;
+  mix-blend-mode: difference;
+}
+.cursor-ring {
+  position: fixed;
+  width: 36px; height: 36px;
+  border: 1px solid rgba(0,229,255,0.4);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transition: transform 0.15s ease, width 0.3s, height 0.3s;
+}
+
+/* NOISE OVERLAY */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.4;
+}
+
+/* NAV */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 500;
+  padding: 16px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(2,4,8,0.8);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(0,229,255,0.06);
+}
+
+.nav-logo {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--cyan);
+  text-decoration: none;
+  letter-spacing: -0.5px;
+}
+
+.nav-logo span { color: var(--text); }
+
+.nav-cta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--cyan);
+  color: #000;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 10px 22px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+.nav-cta:hover { background: #fff; transform: translateY(-1px); }
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 120px 40px 80px;
+  overflow: hidden;
+}
+
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 30%, transparent 70%);
+}
+
+.hero-glow {
+  position: absolute;
+  width: 800px; height: 800px;
+  background: radial-gradient(circle, rgba(0,229,255,0.06) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 480px;
+  gap: 80px;
+  align-items: center;
+}
+
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,255,135,0.08);
+  border: 1px solid rgba(0,255,135,0.2);
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 5px 14px;
+  border-radius: 4px;
+  margin-bottom: 28px;
+  text-transform: uppercase;
+  animation: fadeUp 0.6s ease both;
+}
+
+.hero-tag::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.hero-h1 {
+  font-family: 'Clash Display', sans-serif;
+  font-size: clamp(44px, 6vw, 80px);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -2px;
+  margin-bottom: 24px;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+
+.hero-h1 .cyan { color: var(--cyan); }
+.hero-h1 .dim { color: var(--muted2); }
+
+.hero-p {
+  font-size: 18px;
+  color: var(--muted2);
+  line-height: 1.7;
+  max-width: 520px;
+  margin-bottom: 40px;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+
+.hero-p strong { color: var(--text); }
+
+.hero-btns {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  animation: fadeUp 0.6s 0.3s ease both;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--cyan);
+  color: #000;
+  font-weight: 800;
+  font-size: 15px;
+  padding: 16px 32px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.4s;
+}
+.btn-primary:hover::after { transform: translateX(100%); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,229,255,0.4); }
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 15px;
+  padding: 16px 32px;
+  border-radius: 6px;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+.btn-ghost:hover { border-color: var(--cyan); color: var(--cyan); }
+
+/* HERO CARD */
+.hero-card {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  animation: fadeUp 0.6s 0.4s ease both;
+  position: relative;
+  overflow: hidden;
+}
+.hero-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+}
+.hc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.hc-title { font-size: 12px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+.hc-badge {
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  color: var(--green);
+  background: rgba(0,255,135,0.08);
+  border: 1px solid rgba(0,255,135,0.2);
+  padding: 3px 10px;
+  border-radius: 4px;
+}
+.hc-profit {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 4px;
+  letter-spacing: -2px;
+}
+.hc-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+.hc-trades {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.hc-trade {
+  background: var(--s2);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+.hc-trade-val { font-size: 16px; font-weight: 800; margin-bottom: 2px; }
+.hc-trade-lbl { font-size: 10px; color: var(--muted); letter-spacing: 0.5px; }
+.hc-bar { height: 4px; background: var(--s2); border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
+.hc-bar-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--green)); border-radius: 4px; animation: grow 2s 1s ease both; }
+@keyframes grow { from { width: 0; } to { width: 74%; } }
+.hc-log {
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  color: var(--muted2);
+  line-height: 1.8;
+}
+.hc-log .win { color: var(--green); }
+.hc-log .loss { color: var(--red); }
+.hc-log .info { color: var(--cyan); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* TICKER */
+.ticker {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 0;
+  overflow: hidden;
+  white-space: nowrap;
+  background: var(--s1);
+}
+.ticker-inner {
+  display: inline-flex;
+  gap: 48px;
+  animation: tickerScroll 20s linear infinite;
+}
+.ticker-item {
+  font-family: 'Fira Code', monospace;
+  font-size: 12px;
+  color: var(--muted2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ticker-item .up { color: var(--green); }
+.ticker-item .down { color: var(--red); }
+@keyframes tickerScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* SECTION BASE */
+.section { padding: 100px 40px; position: relative; }
+.container { max-width: 1200px; margin: 0 auto; }
+
+.eyebrow {
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  color: var(--cyan);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.eyebrow::before { content: '//'; opacity: 0.4; }
+
+.s-title {
+  font-family: 'Clash Display', sans-serif;
+  font-size: clamp(36px, 5vw, 60px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -1.5px;
+  margin-bottom: 20px;
+}
+.s-title .accent { color: var(--cyan); }
+
+.s-desc {
+  font-size: 17px;
+  color: var(--muted2);
+  max-width: 560px;
+  line-height: 1.7;
+  margin-bottom: 56px;
+}
+
+/* FEATURES GRID */
+.feat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.feat-card {
+  background: var(--s1);
+  padding: 32px;
+  transition: background 0.2s;
+  position: relative;
+}
+.feat-card:hover { background: var(--s2); }
+.feat-icon { font-size: 32px; margin-bottom: 16px; display: block; }
+.feat-title { font-size: 17px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+.feat-desc { font-size: 14px; color: var(--muted2); line-height: 1.6; }
+.feat-tag {
+  display: inline-block;
+  margin-top: 12px;
+  font-family: 'Fira Code', monospace;
+  font-size: 10px;
+  color: var(--cyan);
+  background: rgba(0,229,255,0.07);
+  border: 1px solid rgba(0,229,255,0.15);
+  padding: 3px 10px;
+  border-radius: 4px;
+}
+
+/* BOTS SECTION */
+.bots-section { background: var(--s1); }
+.bots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 48px;
+}
+.bot-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.bot-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--bot-color, var(--cyan));
+  transform: scaleX(0);
+  transition: transform 0.3s;
+  transform-origin: left;
+}
+.bot-card:hover::after { transform: scaleX(1); }
+.bot-card:hover { border-color: rgba(255,255,255,0.1); transform: translateY(-3px); }
+.bot-name { font-size: 16px; font-weight: 800; margin-bottom: 6px; }
+.bot-desc { font-size: 13px; color: var(--muted2); line-height: 1.5; margin-bottom: 12px; }
+.bot-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.bot-wr {
+  font-family: 'Fira Code', monospace;
+  font-size: 12px;
+  color: var(--green);
+}
+.bot-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+/* STATS SECTION */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 56px 0;
+}
+.stat-box {
+  background: var(--s1);
+  padding: 32px 24px;
+  text-align: center;
+}
+.stat-n {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 52px;
+  font-weight: 700;
+  letter-spacing: -2px;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.stat-l { font-size: 13px; color: var(--muted2); }
+
+/* TERMINAL SECTION */
+.terminal {
+  background: #020408;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 48px;
+}
+.terminal-header {
+  background: #0d1524;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.dot { width: 12px; height: 12px; border-radius: 50%; }
+.terminal-body {
+  padding: 24px;
+  font-family: 'Fira Code', monospace;
+  font-size: 13px;
+  line-height: 2;
+}
+.t-cmd { color: var(--cyan); }
+.t-out { color: var(--muted2); }
+.t-win { color: var(--green); }
+.t-loss { color: var(--red); }
+.t-info { color: var(--gold); }
+.t-cursor { display: inline-block; width: 8px; height: 14px; background: var(--cyan); animation: blink 1s infinite; vertical-align: middle; }
+
+/* CTA SECTION */
+.cta-section {
+  padding: 120px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.cta-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 50%, rgba(0,229,255,0.06) 0%, transparent 70%);
+}
+.cta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,195,64,0.1);
+  border: 1px solid rgba(255,195,64,0.25);
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 6px 16px;
+  border-radius: 4px;
+  margin-bottom: 32px;
+  text-transform: uppercase;
+}
+.cta-h2 {
+  font-family: 'Clash Display', sans-serif;
+  font-size: clamp(44px, 7vw, 88px);
+  font-weight: 700;
+  letter-spacing: -2px;
+  line-height: 1;
+  margin-bottom: 24px;
+  position: relative;
+}
+.cta-sub {
+  font-size: 18px;
+  color: var(--muted2);
+  max-width: 520px;
+  margin: 0 auto 48px;
+  line-height: 1.6;
+  position: relative;
+}
+.cta-sub strong { color: var(--text); }
+
+.cta-main-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--cyan);
+  color: #000;
+  font-weight: 900;
+  font-size: 18px;
+  padding: 20px 48px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.3s;
+  position: relative;
+  letter-spacing: -0.3px;
+  box-shadow: 0 0 0 0 rgba(0,229,255,0.4);
+  animation: ctaPulse 2.5s infinite;
+}
+@keyframes ctaPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,229,255,0.4); }
+  50% { box-shadow: 0 0 0 20px rgba(0,229,255,0); }
+}
+.cta-main-btn:hover { background: #fff; transform: scale(1.03); }
+.cta-note { margin-top: 16px; font-size: 13px; color: var(--muted); position: relative; }
+
+/* FAQ */
+.faq-list { margin-top: 48px; }
+.faq-item {
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+.faq-q {
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  padding: 24px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: none;
+  text-align: left;
+  gap: 16px;
+}
+.faq-q .icon {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  transition: all 0.3s;
+  color: var(--cyan);
+}
+.faq-item.open .faq-q .icon { transform: rotate(45deg); background: var(--cyan); color: #000; border-color: var(--cyan); }
+.faq-a {
+  font-size: 15px;
+  color: var(--muted2);
+  line-height: 1.7;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.3s;
+}
+.faq-item.open .faq-a { max-height: 200px; padding-bottom: 24px; }
+
+/* MID CTA BAND */
+.cta-band {
+  background: var(--cyan);
+  padding: 40px;
+  text-align: center;
+}
+.cta-band h3 {
+  font-family: 'Clash Display', sans-serif;
+  font-size: clamp(24px, 4vw, 40px);
+  font-weight: 700;
+  color: #000;
+  letter-spacing: -1px;
+  margin-bottom: 20px;
+}
+.cta-band a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #000;
+  color: var(--cyan);
+  font-weight: 800;
+  font-size: 15px;
+  padding: 14px 32px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.cta-band a:hover { background: var(--s1); }
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 40px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+footer a { color: var(--cyan); text-decoration: none; }
+
+/* SCROLL REVEAL */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 900px) {
+  nav { padding: 14px 20px; }
+  .hero { padding: 100px 20px 60px; }
+  .hero-content { grid-template-columns: 1fr; gap: 40px; }
+  .hero-card { display: none; }
+  .section { padding: 60px 20px; }
+  .feat-grid { grid-template-columns: 1fr; }
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .cta-section { padding: 80px 20px; }
+  .cta-band { padding: 32px 20px; }
+  footer { padding: 32px 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Alpha <span>Dolar</span></a>
+  <a href="https://alphadolar.online/login" class="nav-cta">▶ Entrar de graça</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-content container">
+    <div>
+      <div class="hero-tag">🟢 Acesso gratuito · Por tempo limitado</div>
+      <h1 class="hero-h1">
+        O robô que<br>
+        <span class="cyan">opera por você</span><br>
+        <span class="dim">enquanto você dorme</span>
+      </h1>
+      <p class="hero-p">
+        Plataforma de trading com <strong>inteligência artificial</strong> que analisa o mercado Deriv em tempo real, executa ordens automaticamente e protege seu capital — sem precisar saber nada de trading.
+      </p>
+      <div class="hero-btns">
+        <a href="https://alphadolar.online/login" class="btn-primary">▶ Acessar agora — é grátis</a>
+        <a href="#como-funciona" class="btn-ghost">Ver como funciona ↓</a>
+      </div>
+    </div>
+    <div class="hero-card">
+      <div class="hc-header">
+        <span class="hc-title">Alpha IA Pro · Sessão ao vivo</span>
+        <span class="hc-badge">● OPERANDO</span>
+      </div>
+      <div class="hc-profit">+$18.43</div>
+      <div class="hc-sub">lucro da sessão · conta REAL</div>
+      <div class="hc-trades">
+        <div class="hc-trade">
+          <div class="hc-trade-val" style="color:var(--green)">47</div>
+          <div class="hc-trade-lbl">VITÓRIAS</div>
+        </div>
+        <div class="hc-trade">
+          <div class="hc-trade-val" style="color:var(--red)">29</div>
+          <div class="hc-trade-lbl">DERROTAS</div>
+        </div>
+        <div class="hc-trade">
+          <div class="hc-trade-val" style="color:var(--cyan)">74%</div>
+          <div class="hc-trade-lbl">WIN RATE</div>
+        </div>
+      </div>
+      <div class="hc-bar"><div class="hc-bar-fill"></div></div>
+      <div class="hc-log">
+        <div><span class="win">✓ WIN</span> DIGITEVEN $0.35 → +$0.31</div>
+        <div><span class="loss">✗ LOSS</span> DIGITEVEN $0.80 → -$0.80</div>
+        <div><span class="win">✓ WIN</span> DIGITEVEN $1.70 → +$1.62</div>
+        <div><span class="info">⟳</span> Analisando mercado... Score 74%</div>
+        <div><span class="win">✓ WIN</span> DIGITEVEN $0.35 → +$0.31 <span class="t-cursor"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <span class="ticker-item">VOL 100 <span class="up">↑ 74%</span></span>
+    <span class="ticker-item">DIGITEVEN <span class="up">+$0.31</span></span>
+    <span class="ticker-item">WIN RATE <span class="up">68.4%</span></span>
+    <span class="ticker-item">TRADERS ATIVOS <span class="up">833</span></span>
+    <span class="ticker-item">ROBÔS RODANDO <span class="up">330</span></span>
+    <span class="ticker-item">LUCRO HOJE <span class="up">R$48.531</span></span>
+    <span class="ticker-item">VOL 75 <span class="up">↑ 62%</span></span>
+    <span class="ticker-item">DIGITMATCH <span class="up">+$2.87</span></span>
+    <span class="ticker-item">ALPHA IA PRO <span class="up">Score 81%</span></span>
+    <span class="ticker-item">JUMP 100 <span class="down">↓ 38%</span></span>
+    <span class="ticker-item">VOL 100 <span class="up">↑ 74%</span></span>
+    <span class="ticker-item">DIGITEVEN <span class="up">+$0.31</span></span>
+    <span class="ticker-item">WIN RATE <span class="up">68.4%</span></span>
+    <span class="ticker-item">TRADERS ATIVOS <span class="up">833</span></span>
+    <span class="ticker-item">ROBÔS RODANDO <span class="up">330</span></span>
+    <span class="ticker-item">LUCRO HOJE <span class="up">R$48.531</span></span>
+    <span class="ticker-item">VOL 75 <span class="up">↑ 62%</span></span>
+    <span class="ticker-item">DIGITMATCH <span class="up">+$2.87</span></span>
+    <span class="ticker-item">ALPHA IA PRO <span class="up">Score 81%</span></span>
+    <span class="ticker-item">JUMP 100 <span class="down">↓ 38%</span></span>
+  </div>
+</div>
+
+<!-- COMO FUNCIONA -->
+<section class="section" id="como-funciona">
+  <div class="container">
+    <div class="eyebrow reveal">Como funciona</div>
+    <h2 class="s-title reveal">Tecnologia que <span class="accent">trabalha por você</span></h2>
+    <p class="s-desc reveal">Três passos. Nenhuma habilidade técnica necessária. Resultados reais desde o primeiro dia.</p>
+
+    <div class="feat-grid reveal">
+      <div class="feat-card">
+        <span class="feat-icon">🔗</span>
+        <div class="feat-title">Conecte sua conta Deriv</div>
+        <div class="feat-desc">Login seguro via OAuth oficial da Deriv. Seus dados nunca passam por nossos servidores. Conexão criptografada.</div>
+        <span class="feat-tag">OAuth 2.0 · Seguro</span>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">⚙️</span>
+        <div class="feat-title">Configure o robô</div>
+        <div class="feat-desc">Escolha a estratégia, defina stake inicial, lucro alvo e stop loss. Ou deixe no automático — a IA cuida de tudo.</div>
+        <span class="feat-tag">3 cliques · Pronto</span>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">📈</span>
+        <div class="feat-title">Veja os lucros</div>
+        <div class="feat-desc">O robô analisa, entra e sai de posições 24/7. Você acompanha em tempo real pelo painel — de qualquer dispositivo.</div>
+        <span class="feat-tag">24/7 · Tempo real</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div style="background:var(--s1);padding:0 40px;">
+  <div class="container">
+    <div class="stats-row reveal">
+      <div class="stat-box">
+        <div class="stat-n" style="color:var(--cyan)">15</div>
+        <div class="stat-l">Estratégias de IA</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-n" style="color:var(--green)">833+</div>
+        <div class="stat-l">Traders ativos</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-n" style="color:var(--gold)">74%</div>
+        <div class="stat-l">Win rate médio</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-n" style="color:var(--purple)">24/7</div>
+        <div class="stat-l">Operando sempre</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTS -->
+<section class="section bots-section" id="bots">
+  <div class="container">
+    <div class="eyebrow reveal">Arsenal de estratégias</div>
+    <h2 class="s-title reveal">15 robôs. <span class="accent">Cada um com uma missão.</span></h2>
+    <p class="s-desc reveal">Do conservador ao agressivo. Do preciso ao veloz. Você escolhe o perfil que combina com sua estratégia.</p>
+
+    <div class="bots-grid reveal">
+      <div class="bot-card" style="--bot-color:#00e5ff;">
+        <div class="bot-name">✨ Alpha IA Pro</div>
+        <div class="bot-desc">Motor premium com análise de 6 tipos de contrato, modo AUTO inteligente e perdas virtuais.</div>
+        <div class="bot-meta">
+          <span class="bot-wr">Score até 81%</span>
+          <span class="bot-badge" style="background:rgba(0,229,255,0.1);color:#00e5ff;">PREMIUM</span>
+        </div>
+      </div>
+      <div class="bot-card" style="--bot-color:#00ff87;">
+        <div class="bot-name">🤖 Alpha IA Avançado</div>
+        <div class="bot-desc">IA com multiplicador inteligente e filtro de perdas virtuais antes de cada entrada real.</div>
+        <div class="bot-meta">
+          <span class="bot-wr">Win rate 68%+</span>
+          <span class="bot-badge" style="background:rgba(0,255,135,0.1);color:#00ff87;">AVANÇADO</span>
+        </div>
+      </div>
+      <div class="bot-card" style="--bot-color:#9b59ff;">
+        <div class="bot-name">🧠 Alpha Mind</div>
+        <div class="bot-desc">Análise preditiva com aprendizado de padrões de dígitos nos últimos 500 ticks.</div>
+        <div class="bot-meta">
+          <span class="bot-wr">Precisão adaptativa</span>
+          <span class="bot-badge" style="background:rgba(155,89,255,0.1);color:#9b59ff;">IA</span>
+        </div>
+      </div>
+      <div class="bot-card" style="--bot-color:#ffc340;">
+        <div class="bot-name">⚡ Quantum Trader</div>
+        <div class="bot-desc">Velocidade máxima. Captura micro-oportunidades em janelas de 1-5 ticks.</div>
+        <div class="bot-meta">
+          <span class="bot-wr">Alta frequência</span>
+          <span class="bot-badge" style="background:rgba(255,195,64,0.1);color:#ffc340;">VELOZ</span>
+        </div>
+      </div>
+      <div class="bot-card" style="--bot-color:#ff3d5a;">
+        <div class="bot-name">🎯 Alpha Sniper</div>
+        <div class="bot-desc">Aguarda o momento exato. Entra apenas quando a confluência de sinais é máxima.</div>
+        <div class="bot-meta">
+          <span class="bot-wr">Baixa freq · Alta precisão</span>
+          <span class="bot-badge" style="background:rgba(255,61,90,0.1);color:#ff3d5a;">PRECISO</span>
+        </div>
+      </div>
+      <div class="bot-card" style="--bot-color:#00e5ff;">
+        <div class="bot-name">🏆 Alpha Elite</div>
+        <div class="bot-desc">Estratégia VIP exclusiva com análise neural multicamada e gestão de banca automática.</div>
+        <div class="bot-meta">
+          <span class="bot-wr">Win rate 76%+</span>
+          <span class="bot-badge" style="background:rgba(0,229,255,0.1);color:#00e5ff;">VIP</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BAND 1 -->
+<div class="cta-band">
+  <h3>Robôs rodando agora para 833 traders. E você?</h3>
+  <a href="https://alphadolar.online/login">▶ Quero entrar de graça agora</a>
+</div>
+
+<!-- FERRAMENTAS -->
+<section class="section" id="ferramentas">
+  <div class="container">
+    <div class="eyebrow reveal">Muito além dos robôs</div>
+    <h2 class="s-title reveal">Um ecossistema <span class="accent">completo</span></h2>
+    <p class="s-desc reveal">Alpha Dolar 2.0 não é só um robô. É uma plataforma completa com tudo que um trader precisa.</p>
+
+    <div class="feat-grid reveal">
+      <div class="feat-card">
+        <span class="feat-icon">📊</span>
+        <div class="feat-title">Sinais Automáticos</div>
+        <div class="feat-desc">Scores em tempo real de EVEN, ODD, OVER, UNDER e MATCH — atualizados a cada 3 segundos diretamente no gráfico.</div>
+        <span class="feat-tag">Tempo real</span>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">⏰</span>
+        <div class="feat-title">Alpha Clock</div>
+        <div class="feat-desc">Score por faixa horária baseado em 500+ operações reais. Sabe exatamente quando o mercado está favorável.</div>
+        <span class="feat-tag">Baseado em dados</span>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🛡</span>
+        <div class="feat-title">Alpha Shield</div>
+        <div class="feat-desc">Monitor de volatilidade que alerta quando o mercado está perigoso. Proteção ativa do seu capital.</div>
+        <span class="feat-tag">Proteção ativa</span>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🏦</span>
+        <div class="feat-title">Alpha Bank</div>
+        <div class="feat-desc">Gestão de banca inteligente. Calcula stake ideal, stop loss e meta automaticamente pelo seu saldo.</div>
+        <span class="feat-tag">Gestão automática</span>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">🖐</span>
+        <div class="feat-title">Modo Manual</div>
+        <div class="feat-desc">Opera manualmente com apoio dos sinais automáticos e multiplicador de entrada para recuperar perdas.</div>
+        <span class="feat-tag">Controle total</span>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">📈</span>
+        <div class="feat-title">Analytics IA</div>
+        <div class="feat-desc">Win rate por tipo de contrato e por horário. A IA aprende com seu histórico e melhora as entradas.</div>
+        <span class="feat-tag">Machine learning</span>
+      </div>
+    </div>
+
+    <!-- TERMINAL -->
+    <div class="terminal reveal">
+      <div class="terminal-header">
+        <div class="dot" style="background:#ff3d5a;"></div>
+        <div class="dot" style="background:#ffc340;"></div>
+        <div class="dot" style="background:#00ff87;"></div>
+        <span style="font-family:'Fira Code',monospace;font-size:12px;color:var(--muted);margin-left:8px;">alpha-ia-pro · sessão ao vivo</span>
+      </div>
+      <div class="terminal-body">
+        <div><span class="t-cmd">$</span> <span class="t-out">iniciando Alpha IA Pro...</span></div>
+        <div><span class="t-cmd">$</span> <span class="t-info">conectado à Deriv API · saldo: $6.174,97</span></div>
+        <div><span class="t-cmd">$</span> <span class="t-out">analisando DIGITEVEN · score: 74% · modo: AUTO</span></div>
+        <div><span class="t-cmd">$</span> <span class="t-out">⟳ perdas virtuais: 1/3 simulada...</span></div>
+        <div><span class="t-cmd">$</span> <span class="t-out">⟳ perdas virtuais: 2/3 simulada...</span></div>
+        <div><span class="t-cmd">$</span> <span class="t-out">⟳ perdas virtuais: 3/3 simulada...</span></div>
+        <div><span class="t-cmd">$</span> <span class="t-info">✓ filtro aprovado · entrando REAL</span></div>
+        <div><span class="t-cmd">$</span> <span class="t-out">executando DIGITEVEN $0.35 · contrato: 309277278</span></div>
+        <div><span class="t-cmd">$</span> <span class="t-win">✓ WIN +$0.31 · win rate: 100% · trades: 1</span></div>
+        <div><span class="t-cmd">$</span> <span class="t-out">aguardando próximo sinal... <span class="t-cursor"></span></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BAND 2 -->
+<div class="cta-band" style="background:var(--green);">
+  <h3>Acesso gratuito. Por tempo limitado. Sem cartão.</h3>
+  <a href="https://alphadolar.online/login" style="color:var(--green);">▶ Criar conta gratuita agora</a>
+</div>
+
+<!-- FAQ -->
+<section class="section" id="faq">
+  <div class="container">
+    <div style="max-width:720px;margin:0 auto;">
+      <div class="eyebrow reveal">Perguntas frequentes</div>
+      <h2 class="s-title reveal">Tira <span class="accent">suas dúvidas</span></h2>
+
+      <div class="faq-list reveal">
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            Preciso saber sobre trading para usar?
+            <span class="icon">+</span>
+          </button>
+          <div class="faq-a">Não. O Alpha Dolar 2.0 foi desenvolvido para qualquer pessoa. Os robôs analisam e operam automaticamente. Você só precisa conectar sua conta Deriv e configurar os valores básicos como stake e stop loss.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            É realmente gratuito? Qual o limite?
+            <span class="icon">+</span>
+          </button>
+          <div class="faq-a">Sim, o acesso está 100% gratuito por tempo limitado. Você terá acesso completo a todas as funcionalidades — robôs, sinais, ferramentas e modo manual. Aproveite enquanto está aberto.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            Meu dinheiro fica seguro? Quem controla?
+            <span class="icon">+</span>
+          </button>
+          <div class="faq-a">Seu dinheiro permanece 100% na sua conta Deriv. Nós nunca tocamos em seu saldo. A conexão é via OAuth — apenas você tem acesso às suas credenciais. O robô opera COM sua conta, não SOBRE ela.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            Funciona no celular?
+            <span class="icon">+</span>
+          </button>
+          <div class="faq-a">Sim! A plataforma é 100% responsiva e funciona em qualquer dispositivo — celular, tablet ou computador. Os robôs também rodam no servidor, então não precisam do celular ligado.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            O robô opera quando fecho o navegador?
+            <span class="icon">+</span>
+          </button>
+          <div class="faq-a">Sim! Os robôs rodam em servidores 24/7. Quando você inicia o robô, ele continua operando independente de você estar online ou não. Você pode fechar o navegador tranquilamente.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            Qual conta da Deriv preciso ter?
+            <span class="icon">+</span>
+          </button>
+          <div class="faq-a">Qualquer conta Deriv funciona — demo ou real. Recomendamos começar pela conta demo para testar as estratégias sem risco. Quando se sentir confiante, migre para a conta real com valores baixos.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            Quais mercados o robô opera?
+            <span class="icon">+</span>
+          </button>
+          <div class="faq-a">Os índices sintéticos da Deriv: Volatility 10, 25, 50, 75 e 100 (versão padrão e 1s), além dos Jump 10, 25, 50, 75 e 100. Esses mercados operam 24/7, inclusive fins de semana e feriados.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-section">
+  <div class="cta-bg"></div>
+  <div style="position:relative;">
+    <div class="cta-badge">⏳ Acesso gratuito por tempo limitado</div>
+    <h2 class="cta-h2">
+      Pare de deixar<br>dinheiro na mesa.
+    </h2>
+    <p class="cta-sub">
+      833 traders já estão operando agora com Alpha Dolar 2.0. <strong>O acesso gratuito pode encerrar a qualquer momento.</strong>
+    </p>
+    <a href="https://alphadolar.online/login" class="cta-main-btn">
+      ▶ Acessar agora — sem pagar nada
+    </a>
+    <p class="cta-note">✓ Sem cartão &nbsp;·&nbsp; ✓ Sem contrato &nbsp;·&nbsp; ✓ Cancela quando quiser</p>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 Alpha Dolar 2.0 · Plataforma de trading automatizado · <a href="https://alphadolar.online/login">Entrar</a></p>
+  <p style="margin-top:8px;font-size:11px;color:var(--muted);">⚠️ Trading envolve risco. Resultados passados não garantem resultados futuros. Opere com responsabilidade.</p>
+</footer>
+
+<script>
+// CURSOR
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx = 0, my = 0, rx = 0, ry = 0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx - 6 + 'px';
+  cursor.style.top = my - 6 + 'px';
+});
+
+function animateRing() {
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) * 0.12;
+  ring.style.left = rx - 18 + 'px';
+  ring.style.top = ry - 18 + 'px';
+  requestAnimationFrame(animateRing);
+}
+animateRing();
+
+document.querySelectorAll('a, button').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursor.style.transform = 'scale(2)';
+    ring.style.width = '56px';
+    ring.style.height = '56px';
+  });
+  el.addEventListener('mouseleave', () => {
+    cursor.style.transform = 'scale(1)';
+    ring.style.width = '36px';
+    ring.style.height = '36px';
+  });
+});
+
+// SCROLL REVEAL
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      // Stagger children
+      e.target.querySelectorAll('.feat-card, .bot-card, .stat-box, .faq-item').forEach((child, i) => {
+        child.style.transitionDelay = (i * 0.08) + 's';
+        child.style.opacity = '0';
+        child.style.transform = 'translateY(20px)';
+        child.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        setTimeout(() => {
+          child.style.opacity = '1';
+          child.style.transform = 'translateY(0)';
+        }, i * 80 + 100);
+      });
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// FAQ
+function toggleFaq(btn) {
+  const item = btn.parentElement;
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+// COUNTER ANIMATION
+function animateCounter(el, target, duration = 2000) {
+  const start = performance.now();
+  const update = (time) => {
+    const progress = Math.min((time - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.floor(eased * target) + (el.dataset.suffix || '');
+    if (progress < 1) requestAnimationFrame(update);
+  };
+  requestAnimationFrame(update);
+}
+
+const statObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const nums = e.target.querySelectorAll('.stat-n');
+      nums.forEach(n => {
+        const val = parseInt(n.textContent);
+        if (!isNaN(val)) {
+          n.dataset.suffix = n.textContent.replace(/[0-9]/g, '');
+          animateCounter(n, val);
+        }
+      });
+      statObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.5 });
+
+document.querySelectorAll('.stats-row').forEach(el => statObs.observe(el));
+</script>
+</body>
+</html>

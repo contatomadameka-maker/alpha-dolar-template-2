@@ -202,6 +202,10 @@ def home():
 def dashboard():
      return send_from_directory(os.path.join(BASE_DIR, 'web'), 'dashboard-fixed.html')
 
+@app.route('/landing')
+def landing():
+    return send_from_directory(os.path.join(BASE_DIR, 'web'), 'landing.html')
+
 @app.route('/guia')
 def guia():
     return send_from_directory(BASE_DIR, 'guia-digitos-alpha.html')

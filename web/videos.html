@@ -207,6 +207,11 @@ footer{text-align:center;padding:26px;border-top:1px solid var(--border);color:#
   <aside class="sidebar">
     <div class="sidebar-title">Categorias</div>
 
+    <div class="cat-item" onclick="document.getElementById('card-parceiro').scrollIntoView({behavior:'smooth',block:'center'});" style="color:#00d2ff;">
+      <span class="cat-icon">🤝</span>
+      Seja Parceiro
+      <span class="cat-badge" style="background:rgba(0,210,255,0.2);color:#00d2ff;">NOVO</span>
+    </div>
     <div class="cat-item ativo" onclick="filtrar('introducao')">
       <span class="cat-icon">🚀</span>
       Introdução
@@ -405,6 +410,28 @@ footer{text-align:center;padding:26px;border-top:1px solid var(--border);color:#
     </div>
 
     <!-- CARD DESTAQUE — DEPÓSITO E SAQUE -->
+
+        <!-- Card Seja Parceiro -->
+        <div class="destaque-card" id="card-parceiro" style="border-color:rgba(0,210,255,0.4);margin-bottom:24px;" onclick="window.location.href='/parceiro.html'">
+          <div class="destaque-thumb" style="background:linear-gradient(135deg,#050d1a,#0a1f35,#0d1117);">
+            <div class="destaque-thumb-inner">
+              <span class="destaque-thumb-icon">🤝</span>
+              <span class="destaque-thumb-tag" style="background:linear-gradient(135deg,#00d2ff,#0ea5e9);border:none;color:#000;">PARCEIRO</span>
+            </div>
+          </div>
+          <div class="destaque-body">
+            <div class="destaque-categoria" style="color:#00d2ff;">🚀 SEJA PARCEIRO</div>
+            <h2 class="destaque-titulo">Tenha Seu Próprio Sistema</h2>
+            <p class="destaque-desc">Torne-se parceiro Alpha Dolar e tenha sua própria plataforma personalizada. Ganhe revenue da Deriv de todos os traders da sua rede + assinaturas mensais.</p>
+            <div class="destaque-tags">
+              <span class="dtag" style="background:rgba(0,210,255,0.15);color:#00d2ff;">White-Label</span>
+              <span class="dtag" style="background:rgba(34,197,94,0.15);color:#22c55e;">Revenue Share</span>
+              <span class="dtag" style="background:rgba(245,158,11,0.15);color:#f59e0b;">Renda Passiva</span>
+              <span class="dtag" style="background:rgba(168,85,247,0.15);color:#a855f7;">100% Personalizado</span>
+            </div>
+            <a href="/parceiro.html" class="btn-saibamais" style="background:linear-gradient(135deg,#0ea5e9,#00d2ff);box-shadow:0 4px 16px rgba(0,210,255,0.3);color:#000;">🤝 Quero ser parceiro →</a>
+          </div>
+        </div>
         <!-- Card Alpha IA Pro -->
         <div class="destaque-card" id="card-alpha-ia-pro" style="border-color:rgba(168,85,247,0.4);margin-bottom:24px;" onclick="window.location.href='/guia-alpha-ia-pro.html'">
           <div class="destaque-thumb" style="background:linear-gradient(135deg,#1a0a2e,#2d1060,#0d1117);">
