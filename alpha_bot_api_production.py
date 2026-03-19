@@ -409,10 +409,13 @@ def start_bot():
             def on_trade_completed(direction, won, profit, stake, symbol_used, exit_tick=None):
                 print(f"🔔 on_trade_completed CHAMADO! won={won} profit={profit} step_antes={get_user_state(deriv_id, bot_type).get('mart_step',0)}")
                 try:
-                    _cliente_id = next(iter([v.get('deriv_id','') for v in [bots_state.get(bot_type,{})] if v.get('deriv_id')]), '')
-                    _bot_name = get_user_state(deriv_id, bot_type).get('bot_name_real', bot_type)
-                    _salvar_op(_bot_name, _cliente_id, direction, won, profit, stake)
-                except: pass
+                    if get_user_state(deriv_id, bot_type).get('account_type', 'demo') == 'real':
+                        _cliente_id = deriv_id
+                        _bot_name = get_user_state(deriv_id, bot_type).get('bot_name', bot_type)
+                        print(f"💾 Salvando operação: cliente={_cliente_id} bot={_bot_name} won={won} profit={profit}")
+                        _salvar_op(_bot_name, _cliente_id, direction, won, profit, stake)
+                except Exception as e:
+                    print(f"Erro ao salvar op: {e}")
                 trades_ate_agora = get_user_state(deriv_id, bot_type)['trades']
                 total = len(trades_ate_agora) + 1
                 wins  = sum(1 for t in trades_ate_agora if t.get('result') == 'win') + (1 if won else 0)
