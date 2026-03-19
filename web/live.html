@@ -3745,6 +3745,10 @@ body { overflow-x: hidden !important; }
                                 longcode: c.longcode
                             });
                         }
+                        // Notifica FakeEngine para atualizar saldo do topo
+                        window.dispatchEvent(new CustomEvent('manualTradeRegistrado', {
+                            detail: { lucro: lucro, resultado: isWin ? 'WIN' : 'LOSS' }
+                        }));
 
                         delete pendingContracts[c.contract_id];
                     }
