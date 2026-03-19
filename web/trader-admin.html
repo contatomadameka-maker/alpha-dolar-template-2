@@ -643,7 +643,7 @@ async function carregarDados(botName) {
     const resBots = await fetch(`${API}/api/bots`);
     const bots    = await resBots.json();
     // ✅ campo 'nome' (não 'bot_name')
-    const bot = bots.find(b => b.nome === botName);
+    const bot = bots.find(b => b.nome && b.nome.toLowerCase() === botName.toLowerCase());
 
     if (bot) {
       dadosBot = bot;
@@ -672,7 +672,7 @@ async function carregarDados(botName) {
     const resCli   = await fetch(`${API}/api/clientes`);
     const clientes = await resCli.json();
     // ✅ filtro correto pelo campo bot_name
-    const meusCli  = clientes.filter(c => c.bot_name === botName);
+    const meusCli  = clientes.filter(c => c.bot_name && c.bot_name.toLowerCase() === botName.toLowerCase());
     renderClientes(meusCli);
 
     document.getElementById('ultimaAtt').textContent =
