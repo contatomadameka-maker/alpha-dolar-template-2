@@ -779,9 +779,142 @@ def _robo_auto_start():
         print(f"Auto-start robo falhou: {e}")
 
 MERCADOS_ROBO = ['R_100', 'R_75', 'R_50']
-TIPOS_ROBO = ['PAR', 'ÍMPAR', 'CALL', 'PUT']
+TIPOS_ROBO = ['PAR', 'IMPAR']
+IMG_BASE_URL = 'https://alphadolar.online/img'
+
+def _enviar_imagem_telegram(url_imagem, caption=''):
+    try:
+        token = os.environ.get('TELEGRAM_TOKEN', '')
+        chat_id = os.environ.get('TELEGRAM_CHAT_ID', '')
+        if not token or not chat_id:
+            return False
+        resp = requests.post(
+            f'https://api.telegram.org/bot{token}/sendPhoto',
+            json={'chat_id': chat_id, 'photo': url_imagem, 'caption': caption, 'parse_mode': 'HTML'}
+        )
+        return resp.json().get('ok', False)
+    except Exception as e:
+        print(f"Erro enviar imagem telegram: {e}")
+        return False
+
+def _verificar_resultado_sinal(mercado, tipo, ticks_espera=5):
+    import websocket, json, threading
+    resultado = {'ok': False, 'won': False, 'digito': None}
+    ev = threading.Event()
+    
+    def on_msg(ws, msg):
+        data = json.loads(msg)
+        if data.get('msg_type') == 'authorize':
+            ws.send(json.dumps({'ticks': mercado, 'subscribe': 1}))
+        elif data.get('msg_type') == 'tick':
+            q = float(data['tick']['quote'])
+            ds = f"{q:.5f}".replace('.','')
+            dg = int(ds[-1])
+            resultado['digito'] = dg
+            if tipo == 'PAR':
+                resultado['won'] = (dg % 2 == 0)
+            else:
+                resultado['won'] = (dg % 2 != 0)
+            resultado['ok'] = True
+            ws.close()
+            ev.set()
+    
+    def on_error(ws, err): ev.set()
+    def on_close(ws, *a): ev.set()
+    
+    try:
+        token = os.environ.get('DERIV_SIGNAL_TOKEN', '')
+        ws = websocket.WebSocketApp(
+            'wss://ws.derivws.com/websockets/v3?app_id=128988',
+            on_message=on_msg, on_error=on_error, on_close=on_close
+        )
+        def on_open(ws):
+            if token:
+                ws.send(json.dumps({'authorize': token}))
+            else:
+                ws.send(json.dumps({'ticks': mercado, 'subscribe': 1}))
+        ws.on_open = on_open
+        t = threading.Thread(target=ws.run_forever, daemon=True)
+        t.start()
+        ev.wait(timeout=15)
+    except Exception as e:
+        print(f"Erro verificar resultado: {e}")
+    
+    return resultado
 
 def robo_master_loop():
+    global robo_master_ativo
+    print("Robo Mestre iniciado!")
+    while robo_master_ativo:
+        try:
+            mercado = random.choice(MERCADOS_ROBO)
+            tipo = random.choice(TIPOS_ROBO)
+            prob = random.randint(72, 88)
+            emoji_tipo = '🔵' if tipo == 'PAR' else '🟡'
+            nome_tipo = 'AZUL (PAR)' if tipo == 'PAR' else 'AMARELO (ÍMPAR)'
+            
+            # Enviar sinal
+            texto_sinal = (
+                f"✅ ENTRADA CONFIRMADA
+
+"
+                f"ENTRAR NA COR {emoji_tipo} {nome_tipo}
+"
+                f"📊 Mercado: {mercado}
+"
+                f"🎯 Probabilidade: {prob}%
+"
+                f"🔄 ATÉ 3 GALES
+
+"
+                f"🤖 Alpha Dolar Signals"
+            )
+            sinal_manual(texto_sinal)
+            print(f"Sinal enviado: {tipo} {mercado} {prob}%")
+            
+            # Aguardar resultado — tenta até 3 gales
+            gale = 0
+            won = False
+            time.sleep(3)  # Aguarda 3s antes de verificar
+            
+            while gale <= 3 and robo_master_ativo:
+                res = _verificar_resultado_sinal(mercado, tipo)
+                if res['ok']:
+                    if res['won']:
+                        won = True
+                        break
+                    else:
+                        gale += 1
+                        if gale <= 3:
+                            sinal_manual(f"🔄 GALE {gale} — ENTRAR {emoji_tipo} {nome_tipo} | {mercado}")
+                            time.sleep(3)
+                else:
+                    break
+            
+            # Enviar imagem resultado
+            if won:
+                if gale == 0:
+                    img_url = f"{IMG_BASE_URL}/win-sem-gale.png"
+                    caption = "✅ WIN SEM GALE!"
+                elif gale == 1:
+                    img_url = f"{IMG_BASE_URL}/win-gale-1.png"
+                    caption = "✅ WIN NO GALE 1!"
+                else:
+                    img_url = f"{IMG_BASE_URL}/win-gale-2.png"
+                    caption = f"✅ WIN NO GALE {gale}!"
+            else:
+                img_url = f"{IMG_BASE_URL}/loss.png"
+                caption = "❌ LOSS — Proteção ativa. Aguarde próximo sinal."
+            
+            _enviar_imagem_telegram(img_url, caption)
+            print(f"Resultado: {'WIN' if won else 'LOSS'} gale={gale}")
+
+        except Exception as e:
+            print(f"Erro robo: {e}")
+        time.sleep(robo_master_intervalo)
+    print("Robo Mestre parado!")
+
+def robo_master_loop_OLD():
     global robo_master_ativo
     print("🤖 Robô Mestre iniciado!")
     while robo_master_ativo:
