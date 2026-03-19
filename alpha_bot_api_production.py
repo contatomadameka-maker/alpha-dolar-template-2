@@ -855,19 +855,12 @@ def robo_master_loop():
             
             # Enviar sinal
             texto_sinal = (
-                f"✅ ENTRADA CONFIRMADA
-
-"
-                f"ENTRAR NA COR {emoji_tipo} {nome_tipo}
-"
-                f"📊 Mercado: {mercado}
-"
-                f"🎯 Probabilidade: {prob}%
-"
-                f"🔄 ATÉ 3 GALES
-
-"
-                f"🤖 Alpha Dolar Signals"
+                "\u2705 ENTRADA CONFIRMADA\n\n"
+                "ENTRAR NA COR " + emoji_tipo + " " + nome_tipo + "\n"
+                "\U0001f4ca Mercado: " + mercado + "\n"
+                "\U0001f3af Probabilidade: " + str(prob) + "%\n"
+                "\U0001f504 AT\u00c9 3 GALES\n\n"
+                "\U0001f916 Alpha Dolar Signals"
             )
             sinal_manual(texto_sinal)
             print(f"Sinal enviado: {tipo} {mercado} {prob}%")
