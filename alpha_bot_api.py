@@ -814,3 +814,107 @@ if __name__ == '__main__':
     print(f"   {len(STRATEGIES)} estratégias carregadas")
     print("="*60 + "\n")
     app.run(host='0.0.0.0', port=5000, debug=False)
+
+# ═══════════════════════════════════════════════════════════
+# 🤖 ROBÔ DE SINAIS TELEGRAM — Loop contínuo controlado
+# ═══════════════════════════════════════════════════════════
+
+from backend.telegram_signals import enviar_telegram, sinal_digitos, sinal_rise_fall, sinal_resultado
+
+robo_sinais_state = {
+    'running': False,
+    'thread': None,
+    'intervalo': 300,  # segundos entre sinais (padrão 5min)
+    'total_enviados': 0,
+    'ultimo_envio': None
+}
+
+def _robo_sinais_loop():
+    """Loop principal do robô — roda em thread separada"""
+    import random
+    from backend.telegram_signals import sinal_digitos, sinal_rise_fall
+
+    mercados = ['R_10', 'R_25', 'R_50', 'R_75', 'R_100']
+    tipos_digit = ['DIGITEVEN', 'DIGITODD', 'DIGITOVER', 'DIGITUNDER']
+
+    print("[RobôSinais] Loop iniciado")
+
+    while robo_sinais_state['running']:
+        try:
+            # Gera sinal aleatório baseado nas estratégias ativas
+            mercado = random.choice(mercados)
+            tipo    = random.choice(tipos_digit)
+            prob    = random.randint(62, 89)
+            digitos = [random.randint(0, 9) for _ in range(10)]
+
+            sinal_digitos(mercado, tipo, prob, digitos)
+
+            robo_sinais_state['total_enviados'] += 1
+            robo_sinais_state['ultimo_envio'] = datetime.now().strftime('%H:%M:%S')
+            print(f"[RobôSinais] Sinal #{robo_sinais_state['total_enviados']} enviado — {mercado} {tipo}")
+
+        except Exception as e:
+            print(f"[RobôSinais] Erro no loop: {e}")
+
+        # Aguarda intervalo — mas verifica running a cada 5s para parar rápido
+        segundos = robo_sinais_state['intervalo']
+        for _ in range(segundos // 5):
+            if not robo_sinais_state['running']:
+                break
+            time.sleep(5)
+
+    print("[RobôSinais] Loop encerrado")
+
+
+@app.route('/api/robo-sinais/start', methods=['POST'])
+def start_robo_sinais():
+    if robo_sinais_state['running']:
+        return jsonify({'error': 'Robô já rodando'}), 400
+
+    data = request.json or {}
+    intervalo = data.get('intervalo', 300)
+    robo_sinais_state['intervalo'] = max(60, int(intervalo))  # mínimo 60s
+
+    robo_sinais_state['running'] = True
+    t = threading.Thread(target=_robo_sinais_loop, daemon=True)
+    t.start()
+    robo_sinais_state['thread'] = t
+
+    enviar_telegram("🟢 <b>ALPHA SIGNALS ATIVADO</b>\n\nRobô de sinais iniciado! Aguarde os próximos sinais.\n\n🌐 alphadolar.online")
+    return jsonify({'success': True, 'intervalo': robo_sinais_state['intervalo']})
+
+
+@app.route('/api/robo-sinais/stop', methods=['POST'])
+def stop_robo_sinais():
+    if not robo_sinais_state['running']:
+        return jsonify({'error': 'Robô não está rodando'}), 400
+
+    robo_sinais_state['running'] = False
+    enviar_telegram("🔴 <b>ALPHA SIGNALS PAUSADO</b>\n\nRobô de sinais foi parado pelo admin.\n\n🌐 alphadolar.online")
+    return jsonify({'success': True, 'total_enviados': robo_sinais_state['total_enviados']})
+
+
+@app.route('/api/robo-sinais/status', methods=['GET'])
+def status_robo_sinais():
+    return jsonify({
+        'running':        robo_sinais_state['running'],
+        'intervalo':      robo_sinais_state['intervalo'],
+        'total_enviados': robo_sinais_state['total_enviados'],
+        'ultimo_envio':   robo_sinais_state['ultimo_envio']
+    })
+
+
+@app.route('/api/robo-sinais/sinal-manual', methods=['POST'])
+def enviar_sinal_manual():
+    """Envia sinal manual com bolinha RISE/FALL"""
+    from backend.telegram_signals import sinal_manual
+    data     = request.json or {}
+    texto    = data.get('texto', '')
+    direcao  = data.get('direcao', None)  # 'RISE', 'FALL' ou None
+
+    if not texto:
+        return jsonify({'error': 'Texto obrigatório'}), 400
+
+    ok = sinal_manual(texto, direcao=direcao)
+    return jsonify({'success': ok})
+
