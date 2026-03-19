@@ -822,7 +822,7 @@ def api_robo_start():
 @app.route('/api/robo/stop', methods=['POST'])
 def api_robo_stop():
     global robo_master_ativo
-        robo_master_ativo = False
+    robo_master_ativo = False
     if STATE_MANAGER:
         STATE_MANAGER.set('robo_master_estado', {'ativo': False, 'intervalo': robo_master_intervalo})
     return jsonify({'ok': True, 'ativo': False})
