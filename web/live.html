@@ -3223,23 +3223,6 @@ body { overflow-x: hidden !important; }
 
         window.switchAccountType = function(type) {
             if (type === currentAccountType || isSwitching) return;
-            const contas = getContas();
-            if (!contas) return;
-            const temContaReal = contas.some(c => c.isDemo === false && c.token);
-            const temContaDemo = contas.some(c => c.isDemo === true  && c.token);
-            if (type === 'real' && !temContaReal) {
-                if (confirm('Para operar na conta Real, você precisa conectar sua conta Real da Deriv. Deseja fazer login agora?')) {
-                    localStorage.setItem('deriv_conta_ativa', 'real');
-                    window.location.href = '/login';
-                }
-                return;
-            }
-            if (type === 'demo' && !temContaDemo) {
-                if (confirm('Conta Demo não encontrada. Deseja fazer login novamente?')) {
-                    window.location.href = '/login';
-                }
-                return;
-            }
             currentAccountType = type;
             window.currentAccountType = type;
             localStorage.setItem('deriv_conta_ativa', type);
@@ -3762,10 +3745,6 @@ body { overflow-x: hidden !important; }
                                 longcode: c.longcode
                             });
                         }
-                        // Notifica FakeEngine para atualizar saldo do topo
-                        window.dispatchEvent(new CustomEvent('manualTradeRegistrado', {
-                            detail: { lucro: lucro, resultado: isWin ? 'WIN' : 'LOSS' }
-                        }));
 
                         delete pendingContracts[c.contract_id];
                     }
@@ -7670,102 +7649,6 @@ window.proAtualizarStatusVirtual = function() {
     else { statusEl.textContent = '✅ Entrando REAL!'; statusEl.style.color = '#22c55e'; }
 };
 </script>
-<script src="js/i18n.js"></script>
-
-
-
-<!-- Alpha Dolar Language Selector -->
-<div id="alpha-lang-widget" style="position:fixed;bottom:16px;right:16px;z-index:2147483647;">
-  <button onclick="var m=document.getElementById('alpha-lang-menu');m.style.display=m.style.display==='none'?'block':'none'" style="background:#13151a;border:1px solid #007bff;color:#fff;border-radius:24px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;box-shadow:0 4px 16px rgba(0,123,255,0.3);">
-    <span id="alw-flag">🌐</span>
-    <span id="alw-code" style="letter-spacing:1px;"></span>
-    <span style="color:#007bff;font-size:9px;">▲</span>
-  </button>
-  <div id="alpha-lang-menu" style="display:none;position:absolute;bottom:46px;right:0;background:#13151a;border:1px solid #1e2128;border-radius:14px;padding:6px;min-width:155px;box-shadow:0 8px 40px rgba(0,0,0,0.7);">
-    <div onclick="alwSet('pt','🇧🇷','PT')" class="alw-opt">🇧🇷 Português</div>
-    <div onclick="alwSet('en','🇺🇸','EN')" class="alw-opt">🇺🇸 English</div>
-    <div onclick="alwSet('es','🇪🇸','ES')" class="alw-opt">🇪🇸 Español</div>
-    <div onclick="alwSet('hi','🇮🇳','HI')" class="alw-opt">🇮🇳 हिन्दी</div>
-    <div onclick="alwSet('id','🇮🇩','ID')" class="alw-opt">🇮🇩 Indonesia</div>
-    <div onclick="alwSet('th','🇹🇭','TH')" class="alw-opt">🇹🇭 ภาษาไทย</div>
-    <div onclick="alwSet('vi','🇻🇳','VI')" class="alw-opt">🇻🇳 Tiếng Việt</div>
-    <div onclick="alwSet('ar','🇸🇦','AR')" class="alw-opt">🇸🇦 العربية</div>
-    <div onclick="alwSet('it','🇮🇹','IT')" class="alw-opt">🇮🇹 Italiano</div>
-    <div onclick="alwSet('fr','🇫🇷','FR')" class="alw-opt">🇫🇷 Français</div>
-    <div onclick="alwSet('de','🇩🇪','DE')" class="alw-opt">🇩🇪 Deutsch</div>
-  </div>
-</div>
-<style>
-.alw-opt{padding:7px 10px;cursor:pointer;border-radius:8px;font-size:12px;color:#aaa;transition:all .15s;}
-.alw-opt:hover{background:#1e2128;color:#fff;}
-</style>
-<script>
-(function(){
-  var FLAGS={pt:'🇧🇷',en:'🇺🇸',es:'🇪🇸',hi:'🇮🇳',id:'🇮🇩',th:'🇹🇭',vi:'🇻🇳',ar:'🇸🇦',it:'🇮🇹',fr:'🇫🇷',de:'🇩🇪'};
-  var CODES={pt:'PT',en:'EN',es:'ES',hi:'HI',id:'ID',th:'TH',vi:'VI',ar:'AR',it:'IT',fr:'FR',de:'DE'};
-
-  function updateBtn(lang){
-    var f=document.getElementById('alw-flag');
-    var c=document.getElementById('alw-code');
-    if(f)f.textContent=FLAGS[lang]||'🌐';
-    if(c)c.textContent=CODES[lang]||lang.toUpperCase();
-  }
-
-  window.alwSet=function(lang,flag,code){
-    document.getElementById('alpha-lang-menu').style.display='none';
-    localStorage.setItem('alpha_lang',lang);
-    updateBtn(lang);
-    // Aplica traducao
-    if(window.i18n && typeof window.i18n.apply==='function'){
-      window.i18n.apply(lang);
-    }
-    // Atualiza o trocarIdioma do dashboard se existir
-    if(typeof window.trocarIdioma==='function'){
-      var el=document.querySelector('[data-lang="'+lang+'"]');
-      window.trocarIdioma(lang,el||null);
-    }
-  };
-
-  // Fecha ao clicar fora
-  document.addEventListener('click',function(e){
-    var w=document.getElementById('alpha-lang-widget');
-    var m=document.getElementById('alpha-lang-menu');
-    if(w&&m&&!w.contains(e.target))m.style.display='none';
-  });
-
-  // Inicializa botao e aplica idioma salvo
-  function init(){
-    var saved=localStorage.getItem('alpha_lang')||'pt';
-    // Auto-detecta na primeira visita
-    if(!localStorage.getItem('alpha_lang')){
-      var bl=(navigator.language||'pt').split('-')[0].toLowerCase();
-      var sup=['pt','en','es','hi','id','th','vi','ar','it','fr','de'];
-      saved=sup.includes(bl)?bl:'pt';
-      if(saved!=='pt')localStorage.setItem('alpha_lang',saved);
-    }
-    updateBtn(saved);
-    // Aplica idioma com delay para dar tempo do i18n carregar
-    if(saved!=='pt'){
-      var tries=0;
-      var iv=setInterval(function(){
-        tries++;
-        if(window.i18n&&typeof window.i18n.apply==='function'){
-          clearInterval(iv);
-          window.i18n.apply(saved);
-        }
-        if(tries>20)clearInterval(iv);
-      },200);
-    }
-  }
-
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',init);
-  } else {
-    setTimeout(init,300);
-  }
-})();
-</script>
-
 </body>
   ╚══════════════════════════════════════════════════════════════════╝
 -->

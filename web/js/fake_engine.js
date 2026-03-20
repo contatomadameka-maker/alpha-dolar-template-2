@@ -1,6 +1,6 @@
 /**
- * ALPHA DOLAR — FakeEngine v2.0
- * Config via aba admin: alphadolar.online/live?key=alpha2026
+ * ALPHA DOLAR — FakeEngine v1.2
+ * Config via aba admin separada usando localStorage como ponte
  */
 (function() {
 'use strict';
@@ -9,15 +9,16 @@ const urlParams = new URLSearchParams(window.location.search);
 const SECRET_KEY = 'alpha2026';
 const isAdmin = urlParams.get('key') === SECRET_KEY;
 
+// Lê config do localStorage (ponte entre abas) ou URL
 function lerConfig() {
   try {
     const saved = JSON.parse(localStorage.getItem('fe_config') || '{}');
     return {
       saldo_inicial: parseFloat(urlParams.get('saldo') || saved.saldo || 10000),
-      spd_segundos:  parseFloat(saved.spd || urlParams.get('spd') || 15),
+      velocidade:    parseFloat(urlParams.get('spd')   || saved.spd   || 1),
     };
   } catch(e) {
-    return { saldo_inicial: 10000, spd_segundos: 15 };
+    return { saldo_inicial: 10000, velocidade: 1 };
   }
 }
 
@@ -25,55 +26,71 @@ const cfg0 = lerConfig();
 
 const CFG = {
   saldo_inicial:   cfg0.saldo_inicial,
+  velocidade:      cfg0.velocidade,
   win_rate_alvo:   0.65,
   max_loss_streak: 7,
+  max_win_streak:  7,
   tick_interval:   800,
-  trade_duration:  cfg0.spd_segundos * 1000,
+  trade_duration:  3500,
   mercados: ['Volatility 10 Index','Volatility 25 Index','Volatility 50 Index','Volatility 75 Index','Volatility 100 Index']
 };
 
 const STATE = {
-  running:false, saldo:cfg0.saldo_inicial, saldo_inicial:cfg0.saldo_inicial,
+  running:false, saldo:CFG.saldo_inicial, saldo_inicial:CFG.saldo_inicial,
   total_trades:0, vitorias:0, derrotas:0, lucro_liquido:0,
   win_streak:0, loss_streak:0, stake_atual:0.35, stake_base:0.35,
   trades:[], forcando_win:false, timer_id:null, tick_id:null, preco_atual:1234.56,
   seq_index:0, pos_index:0,
-  sequencias: [["W","W","L","L","L","L","L","W","W","W","L","W","L","W","W","L","L","W","W","W"],["W","L","L","W","W","L","L","L","W","L","W","W","L","L","W","W","L","W","W","L","W","L","W","W"],["L","W","L","L","W","L","L","W","W","L","W","L","L","W","L","W","W","W","L","L","W","W","W","L","W"],["L","W","W","L","W","L","L","L","L","L","W","W","W","L","W","W","L","W","W","L","W"],["W","L","W","W","L","L","L","L","L","W","L","W","W","W","L","W","W","L","W","W"],["L","L","W","W","L","W","L","L","W","L","W","L","L","W","W","W","L","W","L","W","W","L","W","W"],["L","W","L","L","L","W","W","L","W","L","L","L","L","W","W","W","L","W","L","W","W","L","L","W","W","W","L","W"],["W","L","L","L","L","W","L","W","L","L","W","W","W","W","W","W","W","L","W"],["W","W","W","L","L","L","L","L","L","W","W","L","W","W","L","W","W","L","W","W"],["W","L","W","W","W","W","L","W","L","L","L","W","W","W","W","W","L","W","L","W"],["W","W","L","L","L","L","L","L","L","W","W","W","W","L","W","W","L","W","W"],["L","W","L","L","W","W","L","L","L","W","L","W","W","L","L","L","W","W","W","L","W"],["L","L","W","L","L","L","W","W","L","W","L","L","W","W","W","L","L","W","W","L","W","W"],["L","W","L","W","W","L","L","W","L","L","W","L","W","W","L","L","L","W","W","W","L","W","W"],["W","W","W","L","L","L","W","W","W","L","L","L","W","W","W","L","L","W","W","L","W"],["L","W","W","L","L","L","L","L","L","L","W","W","W","W","W","L","W","L","W","W"],["W","L","L","W","L","W","L","L","L","W","W","L","W","L","L","W","W","W","L","W","W"],["W","L","L","W","L","L","L","W","W","L","W","L","L","L","W","W","L","W","W","L","L","W","W","W","L","W","W","L","W"],["L","L","W","L","L","L","W","L","W","W","W","W","W","W","W","L","W","W"],["L","W","W","L","L","L","W","L","W","W","L","L","L","W","W","L","W","W","L","W"],["W","L","W","L","L","W","L","W","L","L","L","W","W","L","W","W","L","W","L","W","W","L","W","W"],["L","L","L","L","L","W","W","W","L","W","W","L","L","W","W","W","L","W","W","L","W"],["W","L","W","L","L","L","L","W","W","L","W","W","L","L","L","W","W","W","L","W"],["L","L","L","L","L","L","W","W","W","W","L","W","L","W","W","L","W","W","L","W"],["W","W","L","L","L","W","W","L","W","W","L","L","L","L","W","W","W","L","W","W"],["W","L","L","W","L","L","L","L","L","L","L","W","W","W","W","W","L","W","W","L","W"],["L","W","W","W","W","W","L","L","W","L","W","W","W","W","W","L","W","L","W","W"],["W","W","L","L","W","L","W","L","L","W","L","L","W","W","L","W","W","L","L","W","W","W","L","W"],["L","L","L","W","W","W","L","L","L","L","W","W","W","W","L","L","W","W","L","W","W"],["L","W","W","L","W","L","L","L","L","L","L","W","W","W","W","L","W","W","L","W"]]
+  sequencias: [["L","L","W","L","W","W","L","W","W","L","W","L","W","L","W","W","W","L","W","L","W"],["L","W","L","L","W","L","W","L","W","W","L","W","W","L","W","W","L","W","L","W","W"],["W","L","W","W","L","W","L","W","L","L","W","W","L","W","W","L","W","L","W","W","L","W"],["L","L","W","W","L","W","L","L","L","W","W","W","L","W","L","W","W","L","W","W"],["W","L","W","W","L","W","L","L","W","W","L","W","L","W","L","W","W","L","W","W","L","W","L","W","W","L","W","W"],["W","W","L","W","L","W","L","L","W","W","L","W","W","L","W","L","W","W","L","W","W"],["W","L","L","W","W","L","W","L","W","L","W","L","L","W","W","L","W","W","L","W","L","W","L","W","W"],["W","L","W","W","L","L","W","L","W","L","W","W","L","W","L","L","W","W","L","W","W","L","W","L","W","W"],["L","W","W","L","W","L","L","W","L","W","L","W","W","L","W","W","L","W","L","L","W","W","L","W","W"],["W","L","L","W","L","W","W","L","W","L","W","L","W","W","L","W","W","L","W","L","W","W"],["L","W","W","L","W","L","W","W","L","L","W","W","L","W","L","W","L","W","W","L","W","W","L","W","W","L","W"],["L","W","W","L","L","W","L","W","W","L","W","W","L","L","W","W","L","W","W","L","W"],["L","W","L","W","W","L","W","L","L","W","W","L","W","W","L","W","W","W","L","W","L","W"],["L","L","W","L","L","W","W","L","W","W","L","W","W","L","W","L","W","W","L","W","W"],["W","L","W","L","W","L","L","W","W","L","W","W","L","W","L","L","W","W","L","W","W","L","W","L","W","W"],["W","W","L","W","L","L","L","W","L","W","W","L","W","W","L","L","W","W","W","L","W"],["W","L","W","L","W","L","W","W","L","L","W","L","W","W","L","W","W","L","W","W","L","W"],["W","L","W","L","L","L","L","W","W","L","W","W","L","W","L","W","W","L","W","W"],["L","L","W","W","L","W","W","L","L","W","L","W","W","L","W","L","W","W","L","W","L","W","W","L","W"],["L","W","W","L","W","L","L","W","W","L","W","W","L","W","L","W","W","L","W","W"],["L","W","W","L","L","L","W","W","L","W","L","L","W","W","W","L","W","W","L","W"],["L","W","L","W","W","L","W","L","L","W","W","L","W","W","L","W","L","W","W","L","W","L","W","W","L","W"],["W","W","L","L","L","W","L","W","W","L","W","L","L","L","W","W","W","L","W","W"],["L","L","L","W","L","W","W","L","W","W","L","W","L","W","W","L","W","W","L","W"],["L","W","L","W","W","L","L","W","W","L","W","L","W","L","W","W","L","L","W","W","L","W","W","L","W"],["W","L","W","L","L","W","W","L","W","W","L","W","L","L","W","W","L","W","W","L","W","L","W","W"],["L","W","L","W","L","W","W","L","W","L","L","W","W","L","W","L","W","W","L","W","L","W","W","L","W"],["W","L","W","W","L","L","W","L","W","W","L","W","L","W","W","L","W","L","W","W"],["W","W","L","L","W","L","W","L","W","W","L","L","W","W","L","W","L","W","L","W","W","L","W","W"],["L","W","L","L","W","W","L","W","L","W","W","L","W","W","L","W","L","W","W","L","W"]]
 };
 
 function injetarLoginFake() {
+  // Lê saldo salvo — persiste entre sessoes
   const saldoSalvo = parseFloat(localStorage.getItem('fe_saldo_atual') || 0);
-  const saldoUsar  = saldoSalvo > 0 ? saldoSalvo : cfg0.saldo_inicial;
+  const saldoUsar  = saldoSalvo > 0 ? saldoSalvo : CFG.saldo_inicial;
   STATE.saldo         = saldoUsar;
   STATE.saldo_inicial = saldoUsar;
-  CFG.saldo_inicial   = saldoUsar;
 
+  // ✅ ISOLAMENTO TOTAL — usa sessionStorage (só existe nessa aba)
+  // SessionStorage é completamente separado do localStorage
+  // Quando fechar a aba /live, some automaticamente
+  // Nunca vaza para o dashboard real
   sessionStorage.setItem('deriv_accounts', JSON.stringify([{
     token:'FAKE_LIVE_TOKEN', acct:'VRTC000001',
     loginid:'VRTC000001', isDemo:true, currency:'USD', balance:saldoUsar
   }]));
   sessionStorage.setItem('deriv_conta_ativa', 'demo');
+
+  // Saldo persistente fica so no fe_saldo_atual (chave unica nossa)
   localStorage.setItem('fe_saldo_atual', saldoUsar.toString());
 
-  const _getOrig = localStorage.getItem.bind(localStorage);
-  const _setOrig = localStorage.setItem.bind(localStorage);
+  // ✅ Intercepta localStorage.getItem para /live usar sessionStorage
+  // quando o dashboard pedir deriv_accounts
+  const _getItemOrig = localStorage.getItem.bind(localStorage);
+  const _setItemOrig = localStorage.setItem.bind(localStorage);
+
   localStorage.getItem = function(key) {
+    // Redireciona chaves sensiveis para sessionStorage
     if (key === 'deriv_accounts' || key === 'deriv_conta_ativa') {
-      return sessionStorage.getItem(key) || _getOrig(key);
+      return sessionStorage.getItem(key) || _getItemOrig(key);
     }
-    return _getOrig(key);
+    return _getItemOrig(key);
   };
+
   localStorage.setItem = function(key, value) {
+    // Intercepta tentativas de gravar conta fake no localStorage real
     if (key === 'deriv_accounts') {
+      // So permite gravar se for conta real (tem token real)
       try {
         const contas = JSON.parse(value);
-        if (contas.some(c => c.token && c.token.includes('FAKE'))) {
+        const temFake = contas.some(c => c.token && c.token.includes('FAKE'));
+        if (temFake) {
           sessionStorage.setItem(key, value);
           return;
         }
       } catch(e) {}
     }
-    _setOrig(key, value);
+    _setItemOrig(key, value);
   };
 }
 
@@ -98,35 +115,49 @@ function calcularLucro(resultado, stake) {
     : parseFloat((-stake).toFixed(2));
 }
 
-function atualizarSaldoUI() {
-  const saldoStr = '$' + STATE.saldo.toFixed(2) + ' USD';
-  ['balanceDisplay','saldoAtual','balance-value','demo-balance','proSaldoBox'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = saldoStr;
-  });
-  document.querySelectorAll('[data-balance],.balance-amount,.saldo-valor').forEach(el => {
-    el.textContent = saldoStr;
-  });
-  localStorage.setItem('deriv_balance_demo', STATE.saldo.toString());
-  localStorage.setItem('fe_saldo_atual', STATE.saldo.toString());
-}
-
+// Atualiza display de lucro no topo (funciona para todos os modos)
 function atualizarLucroTopo() {
   const lucro = STATE.lucro_liquido;
+  const saldo = STATE.saldo;
   const pct   = STATE.saldo_inicial > 0 ? ((lucro / STATE.saldo_inicial) * 100).toFixed(2) : 0;
   const cor   = lucro >= 0 ? '#4caf50' : '#f44336';
   const sinal = lucro >= 0 ? '+' : '';
-  const lucroStr = sinal + '$' + Math.abs(lucro).toFixed(2);
-  const pctStr   = '(' + sinal + pct + '%)';
-  ['botRunningProfit','lucroDisplay','profitDisplay','lucroAcumuladoDisplay'].forEach(id => {
+
+  // Tenta atualizar todos os displays de lucro/saldo do dashboard
+  const lucroStr = `${sinal}$${Math.abs(lucro).toFixed(2)}`;
+  const pctStr   = `(${sinal}${pct}%)`;
+
+  // Display principal de lucro (topo esquerdo)
+  const displays = [
+    'botRunningProfit','lucroDisplay','profitDisplay',
+    'lucroAcumuladoDisplay','totalProfitDisplay'
+  ];
+  displays.forEach(id => {
     const el = document.getElementById(id);
-    if (el) { el.innerText = lucroStr + ' ' + pctStr; el.style.color = cor; }
+    if (el) { el.innerText = `${lucroStr} ${pctStr}`; el.style.color = cor; }
   });
-  const saldoStr = '$' + STATE.saldo.toFixed(2);
-  ['saldoDisplay','balanceDisplay','topBalanceDisplay','contaDemoValor'].forEach(id => {
+
+  // Saldo no topo direito
+  const saldoStr = '$' + saldo.toFixed(2);
+  ['saldoDisplay','balanceDisplay','topBalanceDisplay','contaDemoValor','contaRealValor'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerText = saldoStr;
   });
+}
+
+// Intercepta registrarTrade para garantir stake correto
+function instalarInterceptorTrade() {
+  const _orig = window.registrarTrade;
+  if (!_orig || window._feInterceptado) return;
+  window._feInterceptado = true;
+  window.registrarTrade = function(p) {
+    // Garante que valor e stake sejam os do FakeEngine
+    if (p._fakeEngine) {
+      return _orig(p);
+    }
+    // Bloqueia chamadas externas que nao sejam do FakeEngine
+    return;
+  };
 }
 
 function gerarTrade() {
@@ -150,51 +181,76 @@ function gerarTrade() {
     if (STATE.stake_atual > STATE.stake_base * 128) STATE.stake_atual = STATE.stake_base;
   }
 
-  const winRateAtual = STATE.total_trades > 0 ? parseFloat(((STATE.vitorias/STATE.total_trades)*100).toFixed(1)) : 0;
+  // Calculo correto do Martingale para o dashboard
   const maxStep = CFG.max_loss_streak;
   const stepAtual = resultado === 'WIN' ? 0 : STATE.loss_streak;
   const proxStake = resultado === 'WIN' ? STATE.stake_base : STATE.stake_atual;
 
-  const trade = {
-    _fakeEngine:  true,
-    id:           STATE.total_trades,
-    trade_id:     STATE.total_trades,
-    tipo, mercado,
-    valor:        stake, stake: stake,
-    duracao:      '1 tick',
-    resultado, lucro, profit: lucro,
-    proximoStake: proxStake, next_stake: proxStake, proximo_stake: proxStake,
-    step:         stepAtual, max_step: maxStep, max_steps: maxStep, maxStep,
-    win_rate:     winRateAtual, winRate: winRateAtual,
-    total_trades: STATE.total_trades, totalTrades: STATE.total_trades,
-    timestamp:    new Date().toISOString()
-  };
+  const winRateAtual = STATE.total_trades > 0 ? parseFloat(((STATE.vitorias/STATE.total_trades)*100).toFixed(1)) : 0;
 
+  const trade = {
+    _fakeEngine: true, // marca para o interceptor
+    // IDs
+    id:          STATE.total_trades,
+    trade_id:    STATE.total_trades,
+    // Campos que o dashboard le
+    tipo,
+    mercado,
+    valor:       stake,   // registrarTrade le como 'valor'
+    stake:       stake,   // buscarTradesDoBackend le como 'stake'
+    duracao:     '1 tick',
+    resultado,
+    lucro,
+    profit:      lucro,   // alias
+    // Martingale — dashboard usa snake_case
+    proximoStake: proxStake,
+    next_stake:   proxStake,
+    proximo_stake:proxStake,
+    step:         stepAtual,
+    max_step:     CFG.max_loss_streak,  // dashboard le max_step
+    max_steps:    CFG.max_loss_streak,  // alias
+    maxStep:      CFG.max_loss_streak,  // camelCase tambem
+    // Stats
+    win_rate:    winRateAtual,
+    winRate:     winRateAtual,
+    total_trades:STATE.total_trades,
+    totalTrades: STATE.total_trades,
+    timestamp:   new Date().toISOString()
+  };
   STATE.trades.unshift(trade);
   if (STATE.trades.length > 100) STATE.trades.pop();
-
   if (typeof window.registrarTrade === 'function') window.registrarTrade(trade);
-
-  // Atualiza input stake para o dashboard
-  setTimeout(function() {
-    const inp = document.getElementById('initialStake');
-    if (inp) {
-      inp.value = proxStake.toFixed(2);
-      inp.dispatchEvent(new Event('input', {bubbles:true}));
-      inp.dispatchEvent(new Event('change', {bubbles:true}));
-    }
-    const disp = document.getElementById('botDisplayStake');
-    if (disp) disp.innerText = '$' + STATE.stake_base.toFixed(2);
-  }, 100);
-
-  atualizarSaldoUI();
   atualizarLucroTopo();
 
-  // Intervalo com variacao +-30%
-  const baseMs = CFG.trade_duration;
-  const varMs  = baseMs * 0.3;
-  const totalMs = baseMs + (Math.random() * varMs * 2 - varMs);
-  STATE.timer_id = setTimeout(gerarTrade, totalMs);
+  // Força o dashboard a usar o stake correto do FakeEngine
+  // Atualiza o input #initialStake para o proximo trade
+  setTimeout(function() {
+    const inputStake = document.getElementById('initialStake');
+    if (inputStake) {
+      inputStake.value = proxStake.toFixed(2);
+      // Dispara evento de change para o dashboard detectar
+      inputStake.dispatchEvent(new Event('input', {bubbles:true}));
+      inputStake.dispatchEvent(new Event('change', {bubbles:true}));
+    }
+    // Atualiza também o display de stake no modal do bot rodando
+    const displayStake = document.getElementById('botDisplayStake');
+    if (displayStake) displayStake.innerText = '$' + proxStake.toFixed(2);
+  }, 100);
+  atualizarSaldoUI();
+  STATE.timer_id = setTimeout(gerarTrade, (CFG.trade_duration + Math.random()*2500) / CFG.velocidade);
+}
+
+function atualizarSaldoUI() {
+  const saldoStr = '$' + STATE.saldo.toFixed(2) + ' USD';
+  ['balanceDisplay','saldoAtual','balance-value','demo-balance','proSaldoBox'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = saldoStr;
+  });
+  document.querySelectorAll('[data-balance],.balance-amount,.saldo-valor').forEach(el => {
+    el.textContent = saldoStr;
+  });
+  localStorage.setItem('deriv_balance_demo', STATE.saldo.toString());
+  localStorage.setItem('fe_saldo_atual', STATE.saldo.toString()); // persiste entre sessoes
 }
 
 function iniciarTicks() {
@@ -204,66 +260,24 @@ function iniciarTicks() {
       symbol: window.selectedMarketSymbol||'R_100',
       quote: STATE.preco_atual, epoch: Math.floor(Date.now()/1000)
     }}));
-  }, CFG.tick_interval);
+  }, CFG.tick_interval / CFG.velocidade);
 }
 
-// Interceptor — bloqueia chamadas externas ao registrarTrade
-function instalarInterceptorTrade() {
-  const _orig = window.registrarTrade;
-  if (!_orig || window._feInterceptado) return;
-  window._feInterceptado = true;
-  window.registrarTrade = function(p) {
-    if (p._fakeEngine || p._manual) {
-      if (p._manual) {
-        const lucro = parseFloat(p.lucro || 0);
-        STATE.lucro_liquido = parseFloat((STATE.lucro_liquido + lucro).toFixed(2));
-        STATE.saldo         = parseFloat((STATE.saldo + lucro).toFixed(2));
-        STATE.total_trades++;
-        if (lucro > 0) STATE.vitorias++; else STATE.derrotas++;
-        atualizarSaldoUI();
-        atualizarLucroTopo();
-      }
-      return _orig(p);
-    }
-    return; // bloqueia chamadas do polling
-  };
-}
-
-// Escuta evento do bot manual
-window.addEventListener('manualTradeRegistrado', function(e) {
-  const lucro = parseFloat(e.detail.lucro || 0);
-  STATE.lucro_liquido = parseFloat((STATE.lucro_liquido + lucro).toFixed(2));
-  STATE.saldo         = parseFloat((STATE.saldo + lucro).toFixed(2));
-  STATE.total_trades++;
-  if (lucro > 0) STATE.vitorias++; else STATE.derrotas++;
-  atualizarSaldoUI();
-  atualizarLucroTopo();
-  localStorage.setItem('fe_saldo_atual', STATE.saldo.toString());
-});
-
-// Escuta mudancas do painel admin (outra aba)
+// Escuta mudanças do painel admin em outra aba
 window.addEventListener('storage', function(e) {
   if (e.key === 'fe_config' && !isAdmin) {
-    try {
-      const cfg = JSON.parse(e.newValue || '{}');
-      if (cfg.saldo !== undefined) {
-        STATE.saldo         = parseFloat(cfg.saldo);
-        STATE.saldo_inicial = parseFloat(cfg.saldo);
-        CFG.saldo_inicial   = parseFloat(cfg.saldo);
-        localStorage.setItem('fe_saldo_atual', cfg.saldo.toString());
-        atualizarSaldoUI();
-        atualizarLucroTopo();
-      }
-      if (cfg.spd !== undefined) {
-        CFG.trade_duration = parseFloat(cfg.spd) * 1000;
-      }
-    } catch(e2) {}
+    const cfg = JSON.parse(e.newValue || '{}');
+    if (cfg.saldo !== undefined) {
+      STATE.saldo = parseFloat(cfg.saldo);
+      STATE.saldo_inicial = parseFloat(cfg.saldo);
+      atualizarSaldoUI();
+    }
+    if (cfg.spd !== undefined) CFG.velocidade = parseFloat(cfg.spd);
   }
+  // Comando start/stop da aba admin
   if (e.key === 'fe_cmd') {
-    try {
-      const cmd = JSON.parse(e.newValue || '{}');
-      if (cmd.action === 'reload') window.location.reload();
-    } catch(e2) {}
+    const cmd = JSON.parse(e.newValue || '{}');
+    if (cmd.action === 'reload') window.location.reload();
   }
 });
 
@@ -277,7 +291,7 @@ window.fetch = async function(url, options) {
       STATE.stake_atual = STATE.stake_base;
       STATE.running = true;
       iniciarTicks();
-      setTimeout(gerarTrade, 2000);
+      setTimeout(gerarTrade, 1500 / CFG.velocidade);
       return fakeResponse({success:true, bot_type:body.bot_type||'ia', strategy:'alpha_bot_1'});
     }
     if (u.includes('/bot/stop')) {
@@ -318,14 +332,14 @@ function criarFakeWS(url) {
         if(self.readyState!==1) return;
         STATE.preco_atual=parseFloat((STATE.preco_atual+(Math.random()-0.5)*0.3).toFixed(4));
         self._respond({msg_type:'tick',tick:{symbol,quote:STATE.preco_atual,epoch:Math.floor(Date.now()/1000)}});
-      }, CFG.tick_interval);
+      }, CFG.tick_interval/CFG.velocidade);
     },
     _handle(msg) {
       if (msg.authorize) {
         this._respond({msg_type:'authorize',authorize:{loginid:'VRTC000001',balance:STATE.saldo,currency:'USD',fullname:'Alpha Trader'}});
       } else if (msg.balance) {
         this._respondBalance();
-        setInterval(()=>{ if(this.readyState===1) this._respondBalance(); }, 5000);
+        setInterval(()=>{ if(this.readyState===1) this._respondBalance(); }, 3000/CFG.velocidade);
       } else if (msg.ticks) {
         this._startTicks(msg.ticks);
       } else if (msg.buy) {
@@ -338,7 +352,7 @@ function criarFakeWS(url) {
             profit:luc, sell_price:res==='WIN'?stake+luc:0,
             buy_price:stake, is_sold:1, is_expired:1, current_spot:STATE.preco_atual
           }});
-        }, CFG.trade_duration);
+        }, CFG.trade_duration/CFG.velocidade);
       } else if (msg.proposal) {
         const stake=parseFloat(msg.amount||0.35);
         this._respond({msg_type:'proposal',proposal:{id:'PROP-'+Date.now(),ask_price:stake,payout:parseFloat((stake*1.87).toFixed(2)),spot:STATE.preco_atual,spot_time:Math.floor(Date.now()/1000)}});
@@ -361,37 +375,34 @@ function getStats() {
 }
 
 function injetarBadge() {
+  if (isAdmin) return; // Admin não precisa do badge
   const b=document.createElement('div');
   b.innerHTML='&#9679; LIVE';
   b.style.cssText='position:fixed;bottom:12px;right:12px;background:rgba(0,200,80,0.12);color:#00c850;border:1px solid rgba(0,200,80,0.25);border-radius:6px;padding:4px 10px;font-size:11px;font-family:monospace;z-index:99999;letter-spacing:1px;pointer-events:none;';
   document.body.appendChild(b);
 }
 
+// Painel admin — só aparece com ?key=alpha2026
 function injetarPainelAdmin() {
   if (!isAdmin) return;
+
+  // Página vira painel de controle dedicado
   document.body.innerHTML = '';
   document.body.style.cssText = 'background:#0d0f14;color:#fff;font-family:monospace;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;';
 
-  const savedCfg = JSON.parse(localStorage.getItem('fe_config') || '{"saldo":10000,"spd":15}');
-  const saldoInicial = savedCfg.saldo || 10000;
-  const spdInicial   = savedCfg.spd   || 15;
-
-  // Determina qual botao de spd esta ativo
-  const spdMap = {5:1, 10:2, 15:3, 30:4, 45:5, 60:6};
-  const spdIdAtivo = spdMap[spdInicial] || 3;
-
   const painel = document.createElement('div');
-  painel.style.cssText = 'background:#1a1d24;border:1px solid #2a2d35;border-radius:16px;padding:32px;min-width:360px;max-width:420px;width:90%;';
+  painel.style.cssText = 'background:#1a1d24;border:1px solid #2a2d35;border-radius:16px;padding:32px;min-width:340px;';
   painel.innerHTML = `
     <div style="text-align:center;margin-bottom:24px;">
-      <div style="font-size:22px;font-weight:bold;color:#00c850;">&#9881; FakeEngine Admin</div>
+      <div style="font-size:22px;font-weight:bold;color:#00c850;">⚙ FakeEngine Admin</div>
       <div style="font-size:12px;color:#555;margin-top:4px;">Configurações aplicadas em tempo real no /live</div>
     </div>
+
     <div style="margin-bottom:18px;">
-      <div style="font-size:12px;color:#888;margin-bottom:6px;">&#128176; Saldo inicial</div>
+      <div style="font-size:12px;color:#888;margin-bottom:6px;">💰 Saldo inicial</div>
       <div style="display:flex;gap:8px;">
-        <input id="fe-saldo" type="number" value="${saldoInicial}" style="flex:1;padding:8px 12px;background:#0d0f14;border:1px solid #333;color:#fff;border-radius:8px;font-size:14px;">
-        <button onclick="aplicarSaldo()" style="padding:8px 16px;background:#00c850;border:none;color:#000;border-radius:8px;cursor:pointer;font-weight:bold;">OK</button>
+        <input id="fe-saldo" type="number" value="${CFG.saldo_inicial}" style="flex:1;padding:8px 12px;background:#0d0f14;border:1px solid #333;color:#fff;border-radius:8px;font-size:14px;">
+        <button onclick="aplicarSaldo()" style="padding:8px 16px;background:#00c850;border:none;color:#000;border-radius:8px;cursor:pointer;font-weight:bold;">Aplicar</button>
       </div>
       <div style="display:flex;gap:6px;margin-top:8px;">
         <button onclick="setSaldo(1000)"  style="flex:1;padding:5px;background:#1e2128;border:1px solid #333;color:#ccc;border-radius:6px;cursor:pointer;font-size:12px;">$1K</button>
@@ -400,97 +411,78 @@ function injetarPainelAdmin() {
         <button onclick="setSaldo(50000)" style="flex:1;padding:5px;background:#1e2128;border:1px solid #333;color:#ccc;border-radius:6px;cursor:pointer;font-size:12px;">$50K</button>
       </div>
     </div>
+
     <div style="margin-bottom:18px;">
-      <div style="font-size:12px;color:#888;margin-bottom:8px;">&#9201; Intervalo entre operações</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-        <button id="spd-1" onclick="setSpd(1,5)"  style="padding:10px 4px;background:#1e2128;border:1px solid #333;color:#ccc;border-radius:8px;cursor:pointer;font-size:13px;">5s</button>
-        <button id="spd-2" onclick="setSpd(2,10)" style="padding:10px 4px;background:#1e2128;border:1px solid #333;color:#ccc;border-radius:8px;cursor:pointer;font-size:13px;">10s</button>
-        <button id="spd-3" onclick="setSpd(3,15)" style="padding:10px 4px;background:#1e2128;border:1px solid #333;color:#ccc;border-radius:8px;cursor:pointer;font-size:13px;">15s</button>
-        <button id="spd-4" onclick="setSpd(4,30)" style="padding:10px 4px;background:#1e2128;border:1px solid #333;color:#ccc;border-radius:8px;cursor:pointer;font-size:13px;">30s</button>
-        <button id="spd-5" onclick="setSpd(5,45)" style="padding:10px 4px;background:#1e2128;border:1px solid #333;color:#ccc;border-radius:8px;cursor:pointer;font-size:13px;">45s</button>
-        <button id="spd-6" onclick="setSpd(6,60)" style="padding:10px 4px;background:#1e2128;border:1px solid #333;color:#ccc;border-radius:8px;cursor:pointer;font-size:13px;">60s</button>
+      <div style="font-size:12px;color:#888;margin-bottom:6px;">⚡ Velocidade das operações</div>
+      <div style="display:flex;gap:8px;">
+        <button id="spd-1" onclick="setSpd(1)" style="flex:1;padding:8px;background:#007bff;border:none;color:#fff;border-radius:8px;cursor:pointer;font-weight:bold;">1× Normal</button>
+        <button id="spd-2" onclick="setSpd(2)" style="flex:1;padding:8px;background:#1e2128;border:1px solid #333;color:#ccc;border-radius:8px;cursor:pointer;">2× Rápido</button>
+        <button id="spd-3" onclick="setSpd(3)" style="flex:1;padding:8px;background:#1e2128;border:1px solid #333;color:#ccc;border-radius:8px;cursor:pointer;">3× Turbo</button>
       </div>
     </div>
-    <div style="margin-bottom:18px;">
-      <div style="font-size:12px;color:#888;margin-bottom:6px;">&#128279; URL para gravar</div>
+
+    <div style="margin-bottom:24px;">
+      <div style="font-size:12px;color:#888;margin-bottom:6px;">🔗 URL para gravar</div>
       <div id="url-preview" style="padding:8px 12px;background:#0d0f14;border:1px solid #333;border-radius:8px;font-size:12px;color:#00c850;word-break:break-all;">alphadolar.online/live</div>
     </div>
-    <button onclick="recarregarLive()" style="width:100%;padding:10px;background:#1e2128;border:1px solid #333;color:#888;border-radius:8px;cursor:pointer;font-size:12px;margin-bottom:8px;">
-      &#128260; Recarregar aba /live com novas configs
+
+    <button onclick="recarregarLive()" style="width:100%;padding:10px;background:#1e2128;border:1px solid #333;color:#888;border-radius:8px;cursor:pointer;font-size:12px;">
+      🔄 Recarregar aba /live com novas configs
     </button>
-    <div id="status-msg" style="text-align:center;font-size:12px;color:#555;min-height:20px;"></div>
+
+    <div id="status-msg" style="text-align:center;margin-top:12px;font-size:12px;color:#555;"></div>
   `;
   document.body.appendChild(painel);
 
-  // Marca botao ativo inicial
-  setTimeout(()=>{
-    const bAtivo = document.getElementById('spd-'+spdIdAtivo);
-    if (bAtivo) { bAtivo.style.background='#007bff'; bAtivo.style.color='#fff'; bAtivo.style.border='none'; }
-  }, 50);
-
-  let saldoAtual = saldoInicial;
-  let spdAtual   = spdInicial;
+  let saldoAtual = CFG.saldo_inicial;
+  let spdAtual   = CFG.velocidade;
 
   function salvarConfig() {
     localStorage.setItem('fe_config', JSON.stringify({saldo: saldoAtual, spd: spdAtual}));
     document.getElementById('url-preview').textContent = 'alphadolar.online/live?saldo='+saldoAtual+'&spd='+spdAtual;
-    const msg = document.getElementById('status-msg');
-    if (msg) { msg.textContent = '✅ Salvo! Aba /live atualizada automaticamente.'; setTimeout(()=>{ msg.textContent=''; }, 3000); }
+    document.getElementById('status-msg').textContent = '✅ Config salva! Aba /live atualizada automaticamente.';
+    setTimeout(()=>{ document.getElementById('status-msg').textContent=''; }, 3000);
   }
 
-  window.setSaldo = function(v) { saldoAtual=v; document.getElementById('fe-saldo').value=v; salvarConfig(); };
-  window.aplicarSaldo = function() { saldoAtual=parseFloat(document.getElementById('fe-saldo').value)||10000; salvarConfig(); };
-
-  window.setSpd = function(id, segundos) {
-    spdAtual = segundos;
-    [1,2,3,4,5,6].forEach(n => {
+  window.setSaldo = function(v) {
+    saldoAtual = v;
+    document.getElementById('fe-saldo').value = v;
+    salvarConfig();
+  };
+  window.aplicarSaldo = function() {
+    saldoAtual = parseFloat(document.getElementById('fe-saldo').value) || 10000;
+    salvarConfig();
+  };
+  window.setSpd = function(v) {
+    spdAtual = v;
+    [1,2,3].forEach(n => {
       const b = document.getElementById('spd-'+n);
-      if (!b) return;
-      b.style.background = n===id ? '#007bff' : '#1e2128';
-      b.style.color      = n===id ? '#fff'    : '#ccc';
-      b.style.border     = n===id ? 'none'    : '1px solid #333';
-      b.style.fontWeight = n===id ? 'bold'    : 'normal';
+      if(b) b.style.cssText = n===v
+        ? 'flex:1;padding:8px;background:#007bff;border:none;color:#fff;border-radius:8px;cursor:pointer;font-weight:bold;'
+        : 'flex:1;padding:8px;background:#1e2128;border:1px solid #333;color:#ccc;border-radius:8px;cursor:pointer;';
     });
     salvarConfig();
   };
-
   window.recarregarLive = function() {
     localStorage.setItem('fe_cmd', JSON.stringify({action:'reload', t:Date.now()}));
-    const msg = document.getElementById('status-msg');
-    if (msg) msg.textContent = '&#128260; Comando enviado para aba /live...';
+    document.getElementById('status-msg').textContent = '🔄 Comando enviado para aba /live...';
   };
 }
 
-window.FakeEngine = {
-  getStats,
-  getState: () => STATE,
-  setCFG: function(obj) {
-    if (obj.trade_duration !== undefined) CFG.trade_duration = obj.trade_duration;
-    if (obj.saldo !== undefined) {
-      STATE.saldo = obj.saldo; STATE.saldo_inicial = obj.saldo;
-      atualizarSaldoUI(); atualizarLucroTopo();
-    }
-  }
-};
+window.FakeEngine = { getStats, getState:()=>STATE };
 
 function init() {
-  if (isAdmin) { injetarPainelAdmin(); return; }
+  if (isAdmin) {
+    injetarPainelAdmin();
+    return;
+  }
   injetarLoginFake();
   injetarBadge();
+  // Instala interceptor — tenta agora e novamente após 1s (espera dashboard carregar)
+  instalarInterceptorTrade();
   setTimeout(instalarInterceptorTrade, 500);
   setTimeout(instalarInterceptorTrade, 1500);
   setTimeout(instalarInterceptorTrade, 3000);
-  setTimeout(function() {
-    window.addEventListener('manualTradeRegistrado', function(e) {
-      const lucro = parseFloat(e.detail.lucro || 0);
-      STATE.lucro_liquido = parseFloat((STATE.lucro_liquido + lucro).toFixed(2));
-      STATE.saldo         = parseFloat((STATE.saldo + lucro).toFixed(2));
-      STATE.total_trades++;
-      if (lucro > 0) STATE.vitorias++; else STATE.derrotas++;
-      atualizarSaldoUI(); atualizarLucroTopo();
-      localStorage.setItem('fe_saldo_atual', STATE.saldo.toString());
-    });
-  }, 2000);
 }
 
 if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
