@@ -7,7 +7,7 @@
  *   ✅ Símbolo enviado como código Deriv (R_100) não nome longo
  */
 
-const API_BASE_URL = 'https://alpha-dolar-backend.onrender.com';
+const API_BASE_URL = 'https://alpha-dolar-template-2.onrender.com';
 
 window.SystemState = {
     accountType: 'demo',

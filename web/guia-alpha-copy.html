@@ -148,51 +148,96 @@ footer{padding:32px 24px;text-align:center;border-top:1px solid var(--border);co
 <script src="js/i18n.js"></script>
 
 
-<!-- Botão de idioma no topo -->
-<div id="lang-float-btn" style="position:fixed;top:12px;right:60px;z-index:999999;font-family:sans-serif;">
-  <button id="lang-toggle" onclick="document.getElementById('lang-float-menu').classList.toggle('show')" style="background:linear-gradient(135deg,#1a1d24,#2a2d35);border:1px solid #3a3d45;color:#fff;border-radius:20px;padding:6px 12px;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:5px;box-shadow:0 2px 12px rgba(0,0,0,0.4);transition:all 0.2s;" onmouseover="this.style.borderColor='#007bff'" onmouseout="this.style.borderColor='#3a3d45'">
-    <span id="lang-current-flag" style="font-size:14px;">🌐</span>
-    <span id="lang-current-name" style="font-size:11px;font-weight:500;letter-spacing:0.5px;">PT</span>
-    <span style="font-size:8px;opacity:0.5;">▼</span>
+
+<!-- Alpha Dolar Language Selector -->
+<div id="alpha-lang-widget" style="position:fixed;bottom:16px;right:16px;z-index:2147483647;">
+  <button onclick="var m=document.getElementById('alpha-lang-menu');m.style.display=m.style.display==='none'?'block':'none'" style="background:#13151a;border:1px solid #007bff;color:#fff;border-radius:24px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;box-shadow:0 4px 16px rgba(0,123,255,0.3);">
+    <span id="alw-flag">🌐</span>
+    <span id="alw-code" style="letter-spacing:1px;"></span>
+    <span style="color:#007bff;font-size:9px;">▲</span>
   </button>
-  <div id="lang-float-menu" style="display:none;position:absolute;top:38px;right:0;background:rgba(15,17,23,0.98);border:1px solid #2a2d35;border-radius:12px;padding:6px;min-width:160px;box-shadow:0 8px 32px rgba(0,0,0,0.6);backdrop-filter:blur(10px);">
-    <div onclick="escolherIdioma('pt','🇧🇷','PT')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇧🇷 <span>Português</span></div>
-    <div onclick="escolherIdioma('en','🇺🇸','EN')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇺🇸 <span>English</span></div>
-    <div onclick="escolherIdioma('es','🇪🇸','ES')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇪🇸 <span>Español</span></div>
-    <div onclick="escolherIdioma('hi','🇮🇳','HI')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇮🇳 <span>हिन्दी</span></div>
-    <div onclick="escolherIdioma('id','🇮🇩','ID')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇮🇩 <span>Indonesia</span></div>
-    <div onclick="escolherIdioma('th','🇹🇭','TH')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇹🇭 <span>ภาษาไทย</span></div>
-    <div onclick="escolherIdioma('vi','🇻🇳','VI')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇻🇳 <span>Tiếng Việt</span></div>
-    <div onclick="escolherIdioma('ar','🇸🇦','AR')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇸🇦 <span>العربية</span></div>
-    <div onclick="escolherIdioma('it','🇮🇹','IT')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇮🇹 <span>Italiano</span></div>
-    <div onclick="escolherIdioma('fr','🇫🇷','FR')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇫🇷 <span>Français</span></div>
-    <div onclick="escolherIdioma('de','🇩🇪','DE')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇩🇪 <span>Deutsch</span></div>
+  <div id="alpha-lang-menu" style="display:none;position:absolute;bottom:46px;right:0;background:#13151a;border:1px solid #1e2128;border-radius:14px;padding:6px;min-width:155px;box-shadow:0 8px 40px rgba(0,0,0,0.7);">
+    <div onclick="alwSet('pt','🇧🇷','PT')" class="alw-opt">🇧🇷 Português</div>
+    <div onclick="alwSet('en','🇺🇸','EN')" class="alw-opt">🇺🇸 English</div>
+    <div onclick="alwSet('es','🇪🇸','ES')" class="alw-opt">🇪🇸 Español</div>
+    <div onclick="alwSet('hi','🇮🇳','HI')" class="alw-opt">🇮🇳 हिन्दी</div>
+    <div onclick="alwSet('id','🇮🇩','ID')" class="alw-opt">🇮🇩 Indonesia</div>
+    <div onclick="alwSet('th','🇹🇭','TH')" class="alw-opt">🇹🇭 ภาษาไทย</div>
+    <div onclick="alwSet('vi','🇻🇳','VI')" class="alw-opt">🇻🇳 Tiếng Việt</div>
+    <div onclick="alwSet('ar','🇸🇦','AR')" class="alw-opt">🇸🇦 العربية</div>
+    <div onclick="alwSet('it','🇮🇹','IT')" class="alw-opt">🇮🇹 Italiano</div>
+    <div onclick="alwSet('fr','🇫🇷','FR')" class="alw-opt">🇫🇷 Français</div>
+    <div onclick="alwSet('de','🇩🇪','DE')" class="alw-opt">🇩🇪 Deutsch</div>
   </div>
 </div>
 <style>
-#lang-float-menu.show{display:block!important;}
-#lang-float-btn button:hover{transform:scale(1.02);}
+.alw-opt{padding:7px 10px;cursor:pointer;border-radius:8px;font-size:12px;color:#aaa;transition:all .15s;}
+.alw-opt:hover{background:#1e2128;color:#fff;}
 </style>
 <script>
-document.addEventListener('click',function(e){var b=document.getElementById('lang-float-btn');if(b&&!b.contains(e.target)){var m=document.getElementById('lang-float-menu');if(m)m.classList.remove('show');}});
-var LANG_FLAGS={pt:'🇧🇷',en:'🇺🇸',es:'🇪🇸',hi:'🇮🇳',id:'🇮🇩',th:'🇹🇭',vi:'🇻🇳',ar:'🇸🇦',it:'🇮🇹',fr:'🇫🇷',de:'🇩🇪'};
-var LANG_CODES={pt:'PT',en:'EN',es:'ES',hi:'HI',id:'ID',th:'TH',vi:'VI',ar:'AR',it:'IT',fr:'FR',de:'DE'};
-function escolherIdioma(lang,flag,code){
-  document.getElementById('lang-float-menu').classList.remove('show');
-  document.getElementById('lang-current-flag').textContent=flag;
-  document.getElementById('lang-current-name').textContent=code;
-  localStorage.setItem('alpha_lang',lang);
-  if(window.i18n){window.i18n.apply(lang);if(typeof window.trocarIdioma==='function'){var el=document.querySelector('[data-lang="'+lang+'"]');window.trocarIdioma(lang,el);}}
-  else{location.reload();}
-}
 (function(){
-  var saved=localStorage.getItem('alpha_lang');
-  function setBtn(lang){var f=LANG_FLAGS[lang]||'🌐';var c=LANG_CODES[lang]||lang.toUpperCase();setTimeout(function(){var fe=document.getElementById('lang-current-flag');var ne=document.getElementById('lang-current-name');if(fe)fe.textContent=f;if(ne)ne.textContent=c;},100);}
-  if(saved){setBtn(saved);return;}
-  var bl=(navigator.language||'pt').toLowerCase().split('-')[0];
-  var sup=['pt','en','es','hi','id','th','vi','ar','it','fr','de'];
-  var det=sup.includes(bl)?bl:'pt';
-  if(det!=='pt'){localStorage.setItem('alpha_lang',det);setTimeout(function(){setBtn(det);if(window.i18n)window.i18n.apply(det);},800);}
+  var FLAGS={pt:'🇧🇷',en:'🇺🇸',es:'🇪🇸',hi:'🇮🇳',id:'🇮🇩',th:'🇹🇭',vi:'🇻🇳',ar:'🇸🇦',it:'🇮🇹',fr:'🇫🇷',de:'🇩🇪'};
+  var CODES={pt:'PT',en:'EN',es:'ES',hi:'HI',id:'ID',th:'TH',vi:'VI',ar:'AR',it:'IT',fr:'FR',de:'DE'};
+
+  function updateBtn(lang){
+    var f=document.getElementById('alw-flag');
+    var c=document.getElementById('alw-code');
+    if(f)f.textContent=FLAGS[lang]||'🌐';
+    if(c)c.textContent=CODES[lang]||lang.toUpperCase();
+  }
+
+  window.alwSet=function(lang,flag,code){
+    document.getElementById('alpha-lang-menu').style.display='none';
+    localStorage.setItem('alpha_lang',lang);
+    updateBtn(lang);
+    // Aplica traducao
+    if(window.i18n && typeof window.i18n.apply==='function'){
+      window.i18n.apply(lang);
+    }
+    // Atualiza o trocarIdioma do dashboard se existir
+    if(typeof window.trocarIdioma==='function'){
+      var el=document.querySelector('[data-lang="'+lang+'"]');
+      window.trocarIdioma(lang,el||null);
+    }
+  };
+
+  // Fecha ao clicar fora
+  document.addEventListener('click',function(e){
+    var w=document.getElementById('alpha-lang-widget');
+    var m=document.getElementById('alpha-lang-menu');
+    if(w&&m&&!w.contains(e.target))m.style.display='none';
+  });
+
+  // Inicializa botao e aplica idioma salvo
+  function init(){
+    var saved=localStorage.getItem('alpha_lang')||'pt';
+    // Auto-detecta na primeira visita
+    if(!localStorage.getItem('alpha_lang')){
+      var bl=(navigator.language||'pt').split('-')[0].toLowerCase();
+      var sup=['pt','en','es','hi','id','th','vi','ar','it','fr','de'];
+      saved=sup.includes(bl)?bl:'pt';
+      if(saved!=='pt')localStorage.setItem('alpha_lang',saved);
+    }
+    updateBtn(saved);
+    // Aplica idioma com delay para dar tempo do i18n carregar
+    if(saved!=='pt'){
+      var tries=0;
+      var iv=setInterval(function(){
+        tries++;
+        if(window.i18n&&typeof window.i18n.apply==='function'){
+          clearInterval(iv);
+          window.i18n.apply(saved);
+        }
+        if(tries>20)clearInterval(iv);
+      },200);
+    }
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',init);
+  } else {
+    setTimeout(init,300);
+  }
 })();
 </script>
 
