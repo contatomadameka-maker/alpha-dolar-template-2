@@ -261,7 +261,7 @@ window.BOT_NAME = "BOT Dirlei 01";
 // ══════════════════════════════════════
 
 const APP_ID  = '128988';
-const BACKEND = 'https://alpha-dolar-template-2.onrender.com';
+const BACKEND = 'https://alpha-dolar-backend.onrender.com';
 const OAUTH_URL = `https://oauth.deriv.com/oauth2/authorize?app_id=${APP_ID}&l=PT&brand=deriv`;
 
 // ── CIRCUIT CANVAS BACKGROUND ──
@@ -443,7 +443,7 @@ window.entrar = async () => {
         const deriv_id = conta.acct || conta.loginid || '';
         const nome = conta.fullname || '';
         const email = conta.email || '';
-        const BACKEND = 'https://alpha-dolar-template-2.onrender.com';
+        const BACKEND = 'https://alpha-dolar-backend.onrender.com';
         const res = await fetch(`${BACKEND}/api/usuario/verificar`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},

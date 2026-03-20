@@ -805,7 +805,7 @@ body { overflow-x: hidden !important; }
   var s1='%c';
   var s2='%c ALPHA DOLAR TRADING BOT 2.0 ';
   var s3='%c CÓDIGO PROTEGIDO — USO NÃO AUTORIZADO É CRIME ';
-  var s4='%c https://alpha-dolar-template-2.vercel.app ';
+  var s4='%c https://alphadolar.online ';
   console.log(s1+s2+s3+s4,
     'background:#0d1117;padding:4px',
     'background:linear-gradient(90deg,#00d2ff,#0ea5e9);color:#000;font-weight:900;font-size:14px;padding:6px 12px;border-radius:4px 0 0 4px',
@@ -2421,7 +2421,7 @@ body { overflow-x: hidden !important; }
          ============================================================ -->
     <script>
     (() => {
-        const API_BASE = 'https://alpha-dolar-template-2.onrender.com/api';
+        const API_BASE = 'https://alpha-dolar-backend.onrender.com/api';
 
         let botRunning      = false;
         let statusInterval  = null;
@@ -3118,7 +3118,7 @@ body { overflow-x: hidden !important; }
                 // Busca stats finais antes de mostrar modal
                 let statsFinal = { total_trades: 0, win_rate: 0, lucro_liquido: 0 };
                 try {
-                    const r = await fetch('https://alpha-dolar-template-2.onrender.com/api/bot/stats/ia?deriv_id='+getDerivId());
+                    const r = await fetch('https://alpha-dolar-backend.onrender.com/api/bot/stats/ia?deriv_id='+getDerivId());
                     if (r.ok) { const d = await r.json(); if (d && !d.error) statsFinal = d; }
                 } catch(e) {}
                 // Para o motor IA avançado
@@ -4202,7 +4202,7 @@ body { overflow-x: hidden !important; }
         }
 
         window.digExecutar = function(dir) {
-            fetch('https://alpha-dolar-template-2.onrender.com/api/bot/start', {
+            fetch('https://alpha-dolar-backend.onrender.com/api/bot/start', {
                 method:'POST', headers:{'Content-Type':'application/json'},
                 body: JSON.stringify({bot_type:'ia', direction:dir, source:'digits', deriv_id:getDerivId()})
             }).catch(()=>{});
@@ -6518,7 +6518,7 @@ let _clockDinamico = false;
 
 async function carregarScoresDinamicos() {
     try {
-        const r = await fetch('https://alpha-dolar-template-2.onrender.com/api/clock/scores');
+        const r = await fetch('https://alpha-dolar-backend.onrender.com/api/clock/scores');
         const d = await r.json();
         if (d.ok && d.scores && d.scores.length === 12) {
             _clockScores = d.scores.map(s => ({
@@ -6789,7 +6789,7 @@ function clockRenderGrid() {
 
 <script>
 // ═══ ALPHA COPY ═══
-const API_COPY = 'https://alpha-dolar-template-2.onrender.com/api';
+const API_COPY = 'https://alpha-dolar-backend.onrender.com/api';
 let _copyAtivo = false;
 let _copyAuto = false;
 let _copyMult = 1.0;
@@ -7035,7 +7035,7 @@ function copyAddLog(msg) {
 
 
 <script>
-const API_BASE = 'https://alpha-dolar-template-2.onrender.com/api';
+const API_BASE = 'https://alpha-dolar-backend.onrender.com/api';
 window._autoSinais = false;
 
 function abrirPainelSignals() {
@@ -7195,7 +7195,7 @@ window.abrirPainelSignals = abrirPainelSignals;
 
 
 <script>
-const API_BASE2 = 'https://alpha-dolar-template-2.onrender.com/api';
+const API_BASE2 = 'https://alpha-dolar-backend.onrender.com/api';
 
 function abrirPainelAssinantes() {
   document.getElementById('painel-assinantes').style.display = 'flex';
@@ -7602,7 +7602,7 @@ async function carregarAnalytics() {
   const el = document.getElementById("analytics-content");
   el.innerHTML = '<div style="text-align:center;padding:20px;color:#fbbf24;">⏳ Carregando analytics...</div>';
   try {
-    const res = await fetch("https://alpha-dolar-template-2.onrender.com/api/ia/analytics");
+    const res = await fetch("https://alpha-dolar-backend.onrender.com/api/ia/analytics");
     const data = await res.json();
     if (!data || !data.por_tipo) throw new Error("sem dados");
     const tipos = data.por_tipo.map(t => [t.tipo, t]).sort((a,b) => b[1].win_rate - a[1].win_rate);
@@ -8536,7 +8536,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     try {
-      const res = await fetch('https://alpha-dolar-template-2.onrender.com/api/bot/start', {
+      const res = await fetch('https://alpha-dolar-backend.onrender.com/api/bot/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -8612,7 +8612,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (st.wsDigits) { try { st.wsDigits.close(); } catch(e){} st.wsDigits = null; }
 
     try {
-      await fetch('https://alpha-dolar-template-2.onrender.com/api/bot/stop', {
+      await fetch('https://alpha-dolar-backend.onrender.com/api/bot/stop', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bot_type: 'ia', deriv_id: getDerivId() })
       });
@@ -8845,7 +8845,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const st = window._iaAdv;
     if (!st.running) return;
     try {
-      const res = await fetch('https://alpha-dolar-template-2.onrender.com/api/bot/stats/ia?deriv_id='+getDerivId());
+      const res = await fetch('https://alpha-dolar-backend.onrender.com/api/bot/stats/ia?deriv_id='+getDerivId());
       if (!res.ok) return;
       const data = await res.json();
 
@@ -8891,7 +8891,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // FIX 2: Busca trades e registra WIN/LOSS nos REGISTROS
       try {
-        const resT = await fetch('https://alpha-dolar-template-2.onrender.com/api/bot/trades/ia?deriv_id='+getDerivId());
+        const resT = await fetch('https://alpha-dolar-backend.onrender.com/api/bot/trades/ia?deriv_id='+getDerivId());
         if (resT.ok) {
           const dataT = await resT.json();
           const tradesList = dataT.trades || dataT.data || dataT.results || [];
@@ -9611,7 +9611,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // ── Sync estado ──
   window.iaAlphaSyncEstado = async function() {
     try {
-      const res=await fetch('https://alpha-dolar-template-2.onrender.com/api/bot/stats/ia?deriv_id='+getDerivId());
+      const res=await fetch('https://alpha-dolar-backend.onrender.com/api/bot/stats/ia?deriv_id='+getDerivId());
       if(!res.ok)return;
       const data=await res.json();
       const tipo=localStorage.getItem('deriv_conta_ativa')||'demo';
