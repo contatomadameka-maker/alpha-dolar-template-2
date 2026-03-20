@@ -41,6 +41,35 @@ window.addEventListener('load', function() {
   } catch(e) {}
   // Desativa polling de trades
   window.buscarTradesDoBackend = async function() { return; };
+
+  // Sincroniza saldo do IA Pro com FakeEngine apos cada contrato
+  setTimeout(function() {
+    const _origProOnContract = window.proOnContract;
+    if (typeof _origProOnContract === 'function' && !window._feProHook) {
+      window._feProHook = true;
+      window.proOnContract = function(c) {
+        _origProOnContract(c);
+        if (!window.FakeEngine) return;
+        if (!c || !['won','lost'].includes(c.status)) return;
+        const profit = parseFloat(c.sell_price||0) - parseFloat(c.buy_price||0);
+        const fe = window.FakeEngine.getState ? window.FakeEngine.getState() : null;
+        if (fe) {
+          fe.saldo = parseFloat((fe.saldo + profit).toFixed(2));
+          fe.lucro_liquido = parseFloat((fe.lucro_liquido + profit).toFixed(2));
+          fe.total_trades++;
+          if (c.status === 'won') fe.vitorias++; else fe.derrotas++;
+          // Atualiza proSaldoBox com novo saldo
+          const sb = document.getElementById('proSaldoBox');
+          const t = (window._proState && window._proState.contaTipo) || 'demo';
+          if (sb) sb.textContent = t.toUpperCase() + ': $' + fe.saldo.toFixed(2) + ' USD';
+          // Salva saldo atualizado
+          localStorage.setItem('fe_saldo_atual', fe.saldo.toString());
+          localStorage.setItem('deriv_balance_demo', fe.saldo.toString());
+        }
+      };
+      console.log('[FakeEngine] proOnContract hook instalado!');
+    }
+  }, 3000);
   window.atualizarStatusBot = async function() {
     if (!window.FakeEngine) return;
     const s = window.FakeEngine.getStats();
