@@ -184,7 +184,7 @@ function gerarTrade() {
       inp.dispatchEvent(new Event('change', {bubbles:true}));
     }
     const disp = document.getElementById('botDisplayStake');
-    if (disp) disp.innerText = '$' + proxStake.toFixed(2);
+    if (disp) disp.innerText = '$' + STATE.stake_base.toFixed(2);
   }, 100);
 
   atualizarSaldoUI();

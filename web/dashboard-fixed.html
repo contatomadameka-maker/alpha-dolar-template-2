@@ -8574,7 +8574,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (modal) modal.classList.add('active');
 
     // Atualiza config display no modal
-    document.getElementById('botDisplayStake').innerText  = '$' + st.stakeAtual;
+    document.getElementById('botDisplayStake').innerText  = '$' + st.stakeBase;
     document.getElementById('botDisplayTarget').innerText = '$' + (document.getElementById('advTarget')?.value || 2);
     document.getElementById('botDisplayStop').innerText   = '$' + (document.getElementById('advStop')?.value || 1000);
     document.getElementById('botDisplayMarket').innerText = window.selectedMarketName || 'Volatility 100 Index';
