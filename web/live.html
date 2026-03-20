@@ -1,27 +1,56 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-
+<!-- ══ ALPHA GUARD ══ -->
+<script>
+(function(){
+  try {
+    var raw = localStorage.getItem('deriv_accounts');
+    if (!raw) throw 'sem_token';
+    var contas = JSON.parse(raw);
+    if (!contas || contas.length === 0) throw 'sem_contas';
+    // Verifica se pelo menos um token existe
+    var temToken = contas.some(function(c){ return c.token && c.token.length > 5; });
+    if (!temToken) throw 'token_invalido';
+    // Tudo OK — usuário autenticado
+  } catch(e) {
+    // Sem login válido — redireciona para login
+    window.location.replace('/login');
+  }
+})();
+</script>
+<!-- ══ FIM ALPHA GUARD ══ -->
 
     <meta charset="UTF-8">
 <script src="js/fake_engine.js"></script>
 <script>
-// FAKE ENGINE PATCH — desativa polling de trades (evita duplo registro)
-window.addEventListener('DOMContentLoaded', function() {
-  // Sobrescreve buscarTradesDoBackend para nao duplicar trades
+// FAKE ENGINE PATCH
+window.addEventListener('load', function() {
+  // healthCheck sempre true
+  window.healthCheck = async function() { return true; };
+  // Garante token fake disponivel
+  try {
+    const c = JSON.parse(localStorage.getItem('deriv_accounts') || '[]');
+    if (!c.length || !c[0].token) {
+      localStorage.setItem('deriv_accounts', JSON.stringify([{
+        token:'FAKE_LIVE_TOKEN', acct:'VRTC000001',
+        loginid:'VRTC000001', isDemo:true, currency:'USD', balance:10000
+      }]));
+      localStorage.setItem('deriv_conta_ativa', 'demo');
+    }
+  } catch(e) {}
+  // Desativa polling de trades
   window.buscarTradesDoBackend = async function() { return; };
-  // Sobrescreve atualizarStatusBot para usar dados do FakeEngine
-  const _origAtualizar = window.atualizarStatusBot;
   window.atualizarStatusBot = async function() {
     if (!window.FakeEngine) return;
     const s = window.FakeEngine.getStats();
-    // Atualiza variaveis globais do dashboard
     if (typeof window.lucroAcumulado !== 'undefined') window.lucroAcumulado = s.lucro_liquido;
-    if (typeof window.totalTrades !== 'undefined')    window.totalTrades    = s.total_trades;
-    if (typeof window.winRate !== 'undefined')        window.winRate        = s.win_rate;
+    if (typeof window.totalTrades !== 'undefined') window.totalTrades = s.total_trades;
+    if (typeof window.winRate !== 'undefined') window.winRate = s.win_rate;
   };
 });
 </script>
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alpha Dolar 2.0 - Trading Dashboard</title>
     <link rel="stylesheet" href="css/dashboard-styles.css">
@@ -2321,8 +2350,6 @@ body { overflow-x: hidden !important; }
         }
 
         window.registrarTrade = function({ tipo, mercado, valor, duracao, resultado, lucro, proximoStake, step, maxStep, winRate, totalTrades, exitTick, longcode }) {
-            // DEBUG — mostra quem chamou
-            console.log('[registrarTrade] valor=$'+valor+' prox=$'+proximoStake+' step='+step, new Error().stack.split('\n')[2]);
             const isWin    = resultado === 'WIN' || lucro > 0;
             const lucroNum = parseFloat(lucro) || 0;
             const stakeNum = parseFloat(valor) || 0;
@@ -2686,7 +2713,7 @@ body { overflow-x: hidden !important; }
             } catch(e) {}
 
             if (!token) {
-                throw new Error('Token não encontrado. Faça logout e login novamente na Deriv.');
+                throw new Error('FAKE_SKIP'); // Bot fake
             }
 
             const marketSymbol = window.selectedMarketSymbol || 'R_100';
@@ -3047,7 +3074,7 @@ body { overflow-x: hidden !important; }
 
         startButton?.addEventListener('click', async (e) => {
             e.preventDefault();
-            if (!(await healthCheck())) { console.warn('⚠️ Servidor offline!'); return; }
+            // FAKE: healthCheck sempre true no /live
 
             if (!botRunning) {
                 try {
@@ -3086,6 +3113,7 @@ body { overflow-x: hidden !important; }
                     setTimeout(atualizarStatusBot, 5000);
                     statusInterval = setInterval(atualizarStatusBot, 3000);
                 } catch (err) {
+                    if (err.message === 'FAKE_SKIP') { botRunning=true; return; }
                     console.warn('Erro ao iniciar:', err.message);
                     if (err.message?.includes('já está rodando')) {
                         botRunning = true;
@@ -3223,6 +3251,32 @@ body { overflow-x: hidden !important; }
 
         window.switchAccountType = function(type) {
             if (type === currentAccountType || isSwitching) return;
+
+            // Verifica se ja tem token para o tipo solicitado
+            const contas = getContas();
+            if (!contas) return;
+
+            const temContaReal = contas.some(c => c.isDemo === false && c.token);
+            const temContaDemo = contas.some(c => c.isDemo === true  && c.token);
+
+            // Se quer real mas nao tem conta real — redireciona para login Deriv
+            if (type === 'real' && !temContaReal) {
+                if (confirm('Para operar na conta Real, você precisa conectar sua conta Real da Deriv. Deseja fazer login agora?')) {
+                    localStorage.setItem('deriv_conta_ativa', 'real');
+                    window.location.href = '/login';
+                }
+                return;
+            }
+
+            // Se quer demo mas nao tem conta demo — redireciona para login
+            if (type === 'demo' && !temContaDemo) {
+                if (confirm('Conta Demo não encontrada. Deseja fazer login novamente?')) {
+                    window.location.href = '/login';
+                }
+                return;
+            }
+
+            // Tem a conta — troca normalmente
             currentAccountType = type;
             window.currentAccountType = type;
             localStorage.setItem('deriv_conta_ativa', type);
@@ -3734,7 +3788,6 @@ body { overflow-x: hidden !important; }
 
                         if (window.registrarTrade) {
                             window.registrarTrade({
-                                _manual: true,
                                 tipo: c.contract_type || 'CALL/PUT',
                                 mercado: c.underlying || marketSel.value,
                                 valor: parseFloat(c.buy_price) || parseFloat(stakeInput.value),
@@ -5349,7 +5402,22 @@ async function proEscolherMercado(token) {
   return document.getElementById('proSymbol').value;
 }
 
-function proConectar(){const s=window._proState;const token=proGetToken();if(!token){proAddFeed('❌ Token não encontrado. Faça login.','#ef4444');return;}s.ws=new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=128988');s.ws.onopen=()=>{s.ws.send(JSON.stringify({authorize:token}));};s.ws.onmessage=(e)=>{const msg=JSON.parse(e.data);if(msg.msg_type==='authorize'){proAddFeed('✅ Conectado! Coletando dados...','#22c55e');proFalar('Alpha I A Pro conectado. Coletando dados do mercado.');const sym=document.getElementById('proSymbol').value;s.ws.send(JSON.stringify({ticks:sym,subscribe:1}));}else if(msg.msg_type==='tick'){proOnTick(msg.tick);}else if(msg.msg_type==='buy'){if(msg.error){proAddFeed('❌ Erro: '+msg.error.message,'#ef4444');s.waiting=false;return;}const id=msg.buy.contract_id;s.pendingContracts[id]=true;s.ws.send(JSON.stringify({proposal_open_contract:1,contract_id:id,subscribe:1}));}else if(msg.msg_type==='proposal_open_contract'){proOnContract(msg.proposal_open_contract);}else if(msg.msg_type==='balance'){const sb=document.getElementById('proSaldoBox');const t=window._proState.contaTipo||'demo';if(sb)sb.textContent=t.toUpperCase()+': $'+parseFloat(msg.balance.balance||0).toFixed(2)+' '+(msg.balance.currency||'USD');}};s.ws.onclose=()=>{if(s.running){proAddFeed('⚠️ Reconectando...','#eab308');setTimeout(proConectar,3000);}};}
+function proConectar(){const s=window._proState;const token=proGetToken();if(!token){proAddFeed('❌ Token não encontrado. Faça login.','#ef4444');return;}s.ws=new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=128988');s.ws.onopen=()=>{s.ws.send(JSON.stringify({authorize:token}));};s.ws.onmessage=(e)=>{const msg=JSON.parse(e.data);if(msg.msg_type==='authorize'){proAddFeed('✅ Conectado! Coletando dados...','#22c55e');proFalar('Alpha I A Pro conectado. Coletando dados do mercado.');
+// Assina balance para atualizar saldo em tempo real
+s.ws.send(JSON.stringify({balance:1,subscribe:1}));
+const sym=document.getElementById('proSymbol').value;s.ws.send(JSON.stringify({ticks:sym,subscribe:1}));}else if(msg.msg_type==='tick'){proOnTick(msg.tick);}else if(msg.msg_type==='buy'){if(msg.error){proAddFeed('❌ Erro: '+msg.error.message,'#ef4444');s.waiting=false;return;}const id=msg.buy.contract_id;s.pendingContracts[id]=true;s.ws.send(JSON.stringify({proposal_open_contract:1,contract_id:id,subscribe:1}));}else if(msg.msg_type==='proposal_open_contract'){proOnContract(msg.proposal_open_contract);}else if(msg.msg_type==='balance'){
+  const sb=document.getElementById('proSaldoBox');
+  const t=window._proState.contaTipo||'demo';
+  const bal=parseFloat(msg.balance.balance||0);
+  const cur=msg.balance.currency||'USD';
+  // Log visual para debug
+  if(sb)sb.textContent=t.toUpperCase()+': $'+bal.toFixed(2)+' '+cur;
+  if(typeof atualizarSaldoNaTela==='function') atualizarSaldoNaTela(bal);
+  const sd=document.getElementById('saldoDisplay');
+  if(sd) sd.innerText='$'+bal.toFixed(2);
+  const ms=document.getElementById('botRunningSaldo');
+  if(ms) ms.innerText='$'+bal.toFixed(2);
+}};s.ws.onclose=()=>{if(s.running){proAddFeed('⚠️ Reconectando...','#eab308');setTimeout(proConectar,3000);}};}
 function proOnTick(tick){const s=window._proState;if(!s.running||s.waiting)return;const q=parseFloat(tick.quote);const ds=q.toFixed(5).replace('.','');const dg=parseInt(ds[ds.length-1]);s.digits.push(dg);if(s.digits.length>500)s.digits.shift();window._digitsBuffer=s.digits;const ct=document.getElementById('proContractType').value;const a=proAnalisar(ct);
   const scoreDisplay=a.score>1?Math.round(a.score):Math.round(a.score*100);
   document.getElementById('proScore').textContent=scoreDisplay>0?scoreDisplay+'%':'—';
@@ -5422,7 +5490,7 @@ function proExecutar(ct,barrier){const s=window._proState;if(s.waiting||!s.ws)re
   s.ws.send(JSON.stringify({buy:1,price:stake,parameters:params}));}
 function proOnContract(c){const s=window._proState;if(!c||!['won','lost'].includes(c.status))return;s.waiting=false;const _cfg=proGetModoConfig();s.cooldownAte=Date.now()+(_cfg?_cfg.cooldown:10000);const won=c.status==='won';const profit=parseFloat(c.sell_price||0)-parseFloat(c.buy_price||0);if(won){s.wins++;s.lucro+=Math.abs(profit);s.perdaAcum=0;s.martStep=0;const _sl=document.getElementById("proStopAtual");if(_sl){_sl.textContent="$0.00";_sl.style.color="#22c55e";}const _sb=document.getElementById("proStopBarra");if(_sb){_sb.style.width="0%";_sb.style.background="#22c55e";}const _sm=document.getElementById("proStopMsg");if(_sm)_sm.textContent="✅ WIN! Sequência resetada.";proAddFeed('✅ WIN +$'+Math.abs(profit).toFixed(2),'#22c55e');proFalar('Ganhou! Lucro de '+Math.abs(profit).toFixed(2)+' dólares.');}else{s.losses++;s.perda+=Math.abs(profit);s.perdaAcum+=Math.abs(profit);s.martStep=Math.min(s.martStep+1,5);const _lim=parseFloat(document.getElementById("proStop").value)||10;const _pct=Math.min((s.perdaAcum/_lim)*100,100);const _sl=document.getElementById("proStopAtual");if(_sl){_sl.textContent="$"+s.perdaAcum.toFixed(2);_sl.style.color=_pct>70?"#ef4444":_pct>40?"#f97316":"#fbbf24";}const _slm=document.getElementById("proStopLimite");if(_slm)_slm.textContent="$"+_lim.toFixed(2);const _sb=document.getElementById("proStopBarra");if(_sb){_sb.style.width=_pct+"%";_sb.style.background=_pct>70?"#ef4444":_pct>40?"#f97316":"#22c55e";}const _sm=document.getElementById("proStopMsg");if(_sm)_sm.textContent="⚠️ Sequência: "+s.martStep+" loss(es) | Reseta no próximo WIN";proAddFeed('❌ LOSS -$'+Math.abs(profit).toFixed(2),'#ef4444');if(s.martStep>=3)proFalar('Atenção. Sequência de '+s.martStep+' perdas. Ajustando stake.');}const total=s.wins+s.losses;const wr=total>0?Math.round(s.wins/total*100):0;document.getElementById('proLucro').textContent='$'+(s.lucro-s.perda).toFixed(2);document.getElementById('proLucro').style.color=(s.lucro-s.perda)>=0?'#22c55e':'#ef4444';document.getElementById('proWinRate').textContent=wr+'%';
   // Atualiza saldo em tempo real
-  if(s.ws){s.ws.send(JSON.stringify({balance:1}));}
+  if(s.ws){s.ws.send(JSON.stringify({balance:1,subscribe:1}));}
 }
 window.proToggle=function(){const s=window._proState;if(s.running){proParar('manual');return;}s.running=true;s.stake=parseFloat(document.getElementById('proStake').value)||0.35;s.mult=parseFloat(document.getElementById('proMultiplier').value)||2.2;s.lucro=0;s.perda=0;s.wins=0;s.losses=0;s.perdaAcum=0;s.martStep=0;s.digits=[];s.cooldownAte=0;if('speechSynthesis' in window){const _u=new SpeechSynthesisUtterance(' ');_u.volume=0;window.speechSynthesis.speak(_u);};document.getElementById('proStartBtn').textContent='⏹ Parar Alpha IA Pro';document.getElementById('proStartBtn').style.background='linear-gradient(135deg,#7f1d1d,#dc2626)';proAddFeed('🚀 Alpha IA Pro iniciado!','#a855f7');proFalar('Alpha I A Pro iniciado. Analisando mercado.');
 
@@ -7649,6 +7717,105 @@ window.proAtualizarStatusVirtual = function() {
     else { statusEl.textContent = '✅ Entrando REAL!'; statusEl.style.color = '#22c55e'; }
 };
 </script>
+<script src="js/i18n.js"></script>
+
+
+
+<!-- Alpha Dolar Language Selector -->
+<div id="alpha-lang-widget" style="position:fixed;bottom:16px;right:16px;z-index:2147483647;">
+  <button onclick="var m=document.getElementById('alpha-lang-menu');m.style.display=m.style.display==='none'?'block':'none'" style="background:#13151a;border:1px solid #007bff;color:#fff;border-radius:24px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;box-shadow:0 4px 16px rgba(0,123,255,0.3);">
+    <span id="alw-flag">🌐</span>
+    <span id="alw-code" style="letter-spacing:1px;"></span>
+    <span style="color:#007bff;font-size:9px;">▲</span>
+  </button>
+  <div id="alpha-lang-menu" style="display:none;position:absolute;bottom:46px;right:0;background:#13151a;border:1px solid #1e2128;border-radius:14px;padding:6px;min-width:155px;box-shadow:0 8px 40px rgba(0,0,0,0.7);">
+    <div onclick="alwSet('pt','🇧🇷','PT')" class="alw-opt">🇧🇷 Português</div>
+    <div onclick="alwSet('en','🇺🇸','EN')" class="alw-opt">🇺🇸 English</div>
+    <div onclick="alwSet('es','🇪🇸','ES')" class="alw-opt">🇪🇸 Español</div>
+    <div onclick="alwSet('hi','🇮🇳','HI')" class="alw-opt">🇮🇳 हिन्दी</div>
+    <div onclick="alwSet('id','🇮🇩','ID')" class="alw-opt">🇮🇩 Indonesia</div>
+    <div onclick="alwSet('th','🇹🇭','TH')" class="alw-opt">🇹🇭 ภาษาไทย</div>
+    <div onclick="alwSet('vi','🇻🇳','VI')" class="alw-opt">🇻🇳 Tiếng Việt</div>
+    <div onclick="alwSet('ar','🇸🇦','AR')" class="alw-opt">🇸🇦 العربية</div>
+    <div onclick="alwSet('it','🇮🇹','IT')" class="alw-opt">🇮🇹 Italiano</div>
+    <div onclick="alwSet('fr','🇫🇷','FR')" class="alw-opt">🇫🇷 Français</div>
+    <div onclick="alwSet('de','🇩🇪','DE')" class="alw-opt">🇩🇪 Deutsch</div>
+  </div>
+</div>
+<style>
+.alw-opt{padding:7px 10px;cursor:pointer;border-radius:8px;font-size:12px;color:#aaa;transition:all .15s;}
+.alw-opt:hover{background:#1e2128;color:#fff;}
+</style>
+<script>
+(function(){
+  var FLAGS={pt:'🇧🇷',en:'🇺🇸',es:'🇪🇸',hi:'🇮🇳',id:'🇮🇩',th:'🇹🇭',vi:'🇻🇳',ar:'🇸🇦',it:'🇮🇹',fr:'🇫🇷',de:'🇩🇪'};
+  var CODES={pt:'PT',en:'EN',es:'ES',hi:'HI',id:'ID',th:'TH',vi:'VI',ar:'AR',it:'IT',fr:'FR',de:'DE'};
+
+  function updateBtn(lang){
+    var f=document.getElementById('alw-flag');
+    var c=document.getElementById('alw-code');
+    if(f)f.textContent=FLAGS[lang]||'🌐';
+    if(c)c.textContent=CODES[lang]||lang.toUpperCase();
+  }
+
+  window.alwSet=function(lang,flag,code){
+    document.getElementById('alpha-lang-menu').style.display='none';
+    localStorage.setItem('alpha_lang',lang);
+    updateBtn(lang);
+    // Aplica traducao
+    if(window.i18n && typeof window.i18n.apply==='function'){
+      window.i18n.apply(lang);
+    } else {
+      setTimeout(function(){location.reload();},300);
+    }
+    // Atualiza o trocarIdioma do dashboard se existir
+    if(typeof window.trocarIdioma==='function'){
+      var el=document.querySelector('[data-lang="'+lang+'"]');
+      window.trocarIdioma(lang,el||null);
+    }
+  };
+
+  // Fecha ao clicar fora
+  document.addEventListener('click',function(e){
+    var w=document.getElementById('alpha-lang-widget');
+    var m=document.getElementById('alpha-lang-menu');
+    if(w&&m&&!w.contains(e.target))m.style.display='none';
+  });
+
+  // Inicializa botao e aplica idioma salvo
+  function init(){
+    var saved=localStorage.getItem('alpha_lang')||'pt';
+    // Auto-detecta na primeira visita
+    if(!localStorage.getItem('alpha_lang')){
+      var bl=(navigator.language||'pt').split('-')[0].toLowerCase();
+      var sup=['pt','en','es','hi','id','th','vi','ar','it','fr','de'];
+      saved=sup.includes(bl)?bl:'pt';
+      if(saved!=='pt')localStorage.setItem('alpha_lang',saved);
+    }
+    updateBtn(saved);
+    // Aplica idioma com delay para dar tempo do i18n carregar
+    if(saved!=='pt'){
+      var tries=0;
+      var iv=setInterval(function(){
+        tries++;
+        if(window.i18n&&typeof window.i18n.apply==='function'){
+          clearInterval(iv);
+          window.i18n.apply(saved);
+        }
+        if(tries>20)clearInterval(iv);
+      },200);
+    }
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',init);
+  } else {
+    setTimeout(init,300);
+  }
+})();
+</script>
+
+
 </body>
   ╚══════════════════════════════════════════════════════════════════╝
 -->
@@ -8445,7 +8612,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (modal) modal.classList.add('active');
 
     // Atualiza config display no modal
-    document.getElementById('botDisplayStake').innerText  = '$' + st.stakeAtual;
+    document.getElementById('botDisplayStake').innerText  = '$' + st.stakeBase;
     document.getElementById('botDisplayTarget').innerText = '$' + (document.getElementById('advTarget')?.value || 2);
     document.getElementById('botDisplayStop').innerText   = '$' + (document.getElementById('advStop')?.value || 1000);
     document.getElementById('botDisplayMarket').innerText = window.selectedMarketName || 'Volatility 100 Index';
