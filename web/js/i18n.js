@@ -140,10 +140,9 @@ var T = {
     'Trader ativo': 'Active trader',
     'VER DETALHES \u2192': 'VIEW DETAILS \u2192',
     'MELHORES TRADERS': 'TOP TRADERS',
-    'N\u00e3o mostrar novamente': "Don't show again",
+    "N\u00e3o mostrar novamente": "Dont show again",
     'Fechar e operar agora': 'Close and trade now',
     'Antes de operar,': 'Before trading,',
-    'conhe\u00e7a a plataforma \ud83d\ude80': 'get to know the platform \ud83d\ude80',
     'Ver V\u00eddeos & Tutoriais': 'Watch Videos & Tutorials',
     'Guia Visual de D\u00edgitos': 'Visual Digits Guide',
     'Como Depositar e Sacar': 'How to Deposit and Withdraw',
@@ -220,8 +219,7 @@ var T = {
     'MODO MANUAL': 'MANUAL MODE',
     'PAINEL DE DÍGITOS': 'DIGITS PANEL',
     'MODO IA AVANÇADO': 'ADVANCED AI MODE',
-    'Não mostrar novamente': "Don't show again",
-    'conheça a plataforma 🚀': 'get to know the platform 🚀',
+    "N\u00e3o mostrar novamente": "Dont show again",
     'BEM-VINDO AO ALPHA DOLAR 2.0': 'WELCOME TO ALPHA DOLAR 2.0',
     'Temos tutoriais em vídeo e guias visuais para você começar com segurança e confiança.': 'We have video tutorials and visual guides to help you start safely.',
     'Ver Vídeos & Tutoriais': 'Watch Videos & Tutorials',
@@ -229,7 +227,7 @@ var T = {
     'Guia Visual de Dígitos': 'Visual Digits Guide',
     'Aprenda a interpretar os indicadores': 'Learn to interpret the indicators',
     'Tutorial completo passo a passo': 'Complete step-by-step tutorial',
-    'Você ainda não tem um plano ativo. Entre em contato para assinar.': "You don't have an active plan. Contact us to subscribe.",
+    "Voc\u00ea ainda n\u00e3o tem um plano ativo. Entre em contato para assinar.": "No active plan. Contact us.",
     'A Deriv oferece produtos de alto risco. Negocie apenas com recursos que pode perder.': 'Deriv offers high-risk products. Trade only with funds you can afford to lose.',
     '71% WIN RATE': '71% WIN RATE',
     'LIVE STATUS': 'LIVE STATUS',
@@ -375,7 +373,7 @@ var T = {
     'PLANO VIP': 'PLAN VIP',
     'Traders Ativos': 'Traders Actifs',
     'Robôs Rodando': 'Bots en cours',
-    'Lucro Acumulado Hoje': "Profit accumulé aujourd'hui",
+    "Lucro Acumulado Hoje": "Profit accumule aujourd hui",
     'Win Rate Médio': 'Taux de victoire moyen',
     'Vídeos & Tutoriais': 'Vidéos et Tutoriels',
     'Como Ler os Dígitos e Escolher o Bot Certo': 'Comment lire les Chiffres et choisir le bon Bot',
@@ -664,6 +662,7 @@ var T = {
   }
 };
 
+
 var RTL = ['ar'];
 var _lang = localStorage.getItem('alpha_lang') || 'pt';
 var _obs = null;
@@ -751,15 +750,7 @@ window.addEventListener('load', function() {
       window._i18nH2 = true;
       var _o2 = window.trocarIdioma;
       window.trocarIdioma = function(lang, el) { _o2(lang, el); aplicarIdioma(lang); };
-    },
-    'Libere o potencial com AI Signals': 'أطلق العنان لإشارات الذكاء الاصطناعي',
-    'Seja Nosso Parceiro': 'كن شريكنا',
-    'Tutoriais': 'دروس',
-    'Indicadores Secretos': 'مؤشرات سرية',
-    'Melhores Traders': 'أفضل المتداولين',
-    'Traders Ativos': 'المتداولون النشطون',
-    'Vídeos & Tutoriais': 'مقاطع ودروس',
-    'Não mostrar novamente': 'لا تظهر مجدداً',
+    }
   }, 2000);
 });
 
