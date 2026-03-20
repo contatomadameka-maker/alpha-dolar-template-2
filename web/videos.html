@@ -683,5 +683,52 @@ function filtrar(cat){
   }
 }
 </script>
+<script src="js/i18n.js"></script>
+
+<!-- Botão flutuante de idioma -->
+<div id="lang-float-btn" style="position:fixed;bottom:20px;left:20px;z-index:99998;font-family:sans-serif;">
+  <button id="lang-toggle" onclick="document.getElementById('lang-float-menu').classList.toggle('show')" style="background:rgba(30,33,40,0.95);border:1px solid #2a2d35;color:#fff;border-radius:50px;padding:8px 14px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;box-shadow:0 4px 20px rgba(0,0,0,0.4);">
+    <span id="lang-current-flag">🌐</span>
+    <span id="lang-current-name">Idioma</span>
+    <span style="font-size:10px;opacity:0.6;">▲</span>
+  </button>
+  <div id="lang-float-menu" style="display:none;position:absolute;bottom:48px;left:0;background:rgba(20,22,28,0.98);border:1px solid #2a2d35;border-radius:12px;padding:8px;min-width:180px;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+    <div onclick="escolherIdioma('pt','🇧🇷','Português')"   style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇧🇷 Português</div>
+    <div onclick="escolherIdioma('en','🇺🇸','English')"     style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇺🇸 English</div>
+    <div onclick="escolherIdioma('es','🇪🇸','Español')"     style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇪🇸 Español</div>
+    <div onclick="escolherIdioma('hi','🇮🇳','हिन्दी')"      style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇮🇳 हिन्दी</div>
+    <div onclick="escolherIdioma('id','🇮🇩','Indonesia')"   style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇮🇩 Indonesia</div>
+    <div onclick="escolherIdioma('th','🇹🇭','ภาษาไทย')"    style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇹🇭 ภาษาไทย</div>
+    <div onclick="escolherIdioma('vi','🇻🇳','Tiếng Việt')" style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇻🇳 Tiếng Việt</div>
+    <div onclick="escolherIdioma('ar','🇸🇦','العربية')"    style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇸🇦 العربية</div>
+    <div onclick="escolherIdioma('it','🇮🇹','Italiano')"   style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇮🇹 Italiano</div>
+    <div onclick="escolherIdioma('fr','🇫🇷','Français')"   style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇫🇷 Français</div>
+    <div onclick="escolherIdioma('de','🇩🇪','Deutsch')"    style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇩🇪 Deutsch</div>
+  </div>
+</div>
+<style>#lang-float-menu.show{display:block!important;}</style>
+<script>
+document.addEventListener('click',function(e){var b=document.getElementById('lang-float-btn');if(b&&!b.contains(e.target)){var m=document.getElementById('lang-float-menu');if(m)m.classList.remove('show');}});
+var LANG_FLAGS={pt:'🇧🇷',en:'🇺🇸',es:'🇪🇸',hi:'🇮🇳',id:'🇮🇩',th:'🇹🇭',vi:'🇻🇳',ar:'🇸🇦',it:'🇮🇹',fr:'🇫🇷',de:'🇩🇪'};
+var LANG_NAMES={pt:'Português',en:'English',es:'Español',hi:'हिन्दी',id:'Indonesia',th:'ภาษาไทย',vi:'Tiếng Việt',ar:'العربية',it:'Italiano',fr:'Français',de:'Deutsch'};
+function escolherIdioma(lang,flag,name){
+  document.getElementById('lang-float-menu').classList.remove('show');
+  document.getElementById('lang-current-flag').textContent=flag;
+  document.getElementById('lang-current-name').textContent=name;
+  localStorage.setItem('alpha_lang',lang);
+  if(window.i18n){window.i18n.apply(lang);if(typeof window.trocarIdioma==='function'){var el=document.querySelector('[data-lang="'+lang+'"]');window.trocarIdioma(lang,el);}}
+  else{location.reload();}
+}
+(function(){
+  var saved=localStorage.getItem('alpha_lang');
+  function setBtn(lang){var f=LANG_FLAGS[lang]||'🌐';var n=LANG_NAMES[lang]||lang;var fe=document.getElementById('lang-current-flag');var ne=document.getElementById('lang-current-name');if(fe)fe.textContent=f;if(ne)ne.textContent=n;}
+  if(saved){setBtn(saved);return;}
+  var bl=(navigator.language||'pt').toLowerCase().split('-')[0];
+  var sup=['pt','en','es','hi','id','th','vi','ar','it','fr','de'];
+  var det=sup.includes(bl)?bl:'pt';
+  if(det!=='pt'){localStorage.setItem('alpha_lang',det);setTimeout(function(){setBtn(det);if(window.i18n)window.i18n.apply(det);},800);}
+})();
+</script>
+
 </body>
 </html>
