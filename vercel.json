@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "public": true,
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/", "destination": "/web/index.html" },
+    { "source": "/home", "destination": "/web/index.html" },
+    { "source": "/dashboard", "destination": "/web/dashboard-fixed.html" },
+    { "source": "/login", "destination": "/web/login.html" },
+    { "source": "/admin", "destination": "/web/admin.html" },
+    { "source": "/videos", "destination": "/web/videos.html" },
+    { "source": "/landing", "destination": "/web/landing.html" },
+    { "source": "/parceiro", "destination": "/web/parceiro.html" },
+    { "source": "/live", "destination": "/web/live.html" },
+    { "source": "/trader", "destination": "/web/trader-admin.html" },
+    { "source": "/(.*)", "destination": "/web/$1" }
+  ]
+}
