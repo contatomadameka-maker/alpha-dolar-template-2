@@ -6,43 +6,47 @@ sessionStorage.setItem('abrirModal','sinais');
 window.location.replace('/home');
 </script><script src="js/i18n.js"></script>
 
-<!-- Botão flutuante de idioma -->
-<div id="lang-float-btn" style="position:fixed;bottom:20px;left:20px;z-index:99998;font-family:sans-serif;">
-  <button id="lang-toggle" onclick="document.getElementById('lang-float-menu').classList.toggle('show')" style="background:rgba(30,33,40,0.95);border:1px solid #2a2d35;color:#fff;border-radius:50px;padding:8px 14px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;box-shadow:0 4px 20px rgba(0,0,0,0.4);">
-    <span id="lang-current-flag">🌐</span>
-    <span id="lang-current-name">Idioma</span>
-    <span style="font-size:10px;opacity:0.6;">▲</span>
+
+<!-- Botão de idioma no topo -->
+<div id="lang-float-btn" style="position:fixed;top:12px;right:60px;z-index:999999;font-family:sans-serif;">
+  <button id="lang-toggle" onclick="document.getElementById('lang-float-menu').classList.toggle('show')" style="background:linear-gradient(135deg,#1a1d24,#2a2d35);border:1px solid #3a3d45;color:#fff;border-radius:20px;padding:6px 12px;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:5px;box-shadow:0 2px 12px rgba(0,0,0,0.4);transition:all 0.2s;" onmouseover="this.style.borderColor='#007bff'" onmouseout="this.style.borderColor='#3a3d45'">
+    <span id="lang-current-flag" style="font-size:14px;">🌐</span>
+    <span id="lang-current-name" style="font-size:11px;font-weight:500;letter-spacing:0.5px;">PT</span>
+    <span style="font-size:8px;opacity:0.5;">▼</span>
   </button>
-  <div id="lang-float-menu" style="display:none;position:absolute;bottom:48px;left:0;background:rgba(20,22,28,0.98);border:1px solid #2a2d35;border-radius:12px;padding:8px;min-width:180px;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
-    <div onclick="escolherIdioma('pt','🇧🇷','Português')"   style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇧🇷 Português</div>
-    <div onclick="escolherIdioma('en','🇺🇸','English')"     style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇺🇸 English</div>
-    <div onclick="escolherIdioma('es','🇪🇸','Español')"     style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇪🇸 Español</div>
-    <div onclick="escolherIdioma('hi','🇮🇳','हिन्दी')"      style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇮🇳 हिन्दी</div>
-    <div onclick="escolherIdioma('id','🇮🇩','Indonesia')"   style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇮🇩 Indonesia</div>
-    <div onclick="escolherIdioma('th','🇹🇭','ภาษาไทย')"    style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇹🇭 ภาษาไทย</div>
-    <div onclick="escolherIdioma('vi','🇻🇳','Tiếng Việt')" style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇻🇳 Tiếng Việt</div>
-    <div onclick="escolherIdioma('ar','🇸🇦','العربية')"    style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇸🇦 العربية</div>
-    <div onclick="escolherIdioma('it','🇮🇹','Italiano')"   style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇮🇹 Italiano</div>
-    <div onclick="escolherIdioma('fr','🇫🇷','Français')"   style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇫🇷 Français</div>
-    <div onclick="escolherIdioma('de','🇩🇪','Deutsch')"    style="padding:8px 12px;cursor:pointer;border-radius:8px;font-size:13px;color:#fff;" onmouseover="this.style.background='#1e2128'" onmouseout="this.style.background='transparent'">🇩🇪 Deutsch</div>
+  <div id="lang-float-menu" style="display:none;position:absolute;top:38px;right:0;background:rgba(15,17,23,0.98);border:1px solid #2a2d35;border-radius:12px;padding:6px;min-width:160px;box-shadow:0 8px 32px rgba(0,0,0,0.6);backdrop-filter:blur(10px);">
+    <div onclick="escolherIdioma('pt','🇧🇷','PT')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇧🇷 <span>Português</span></div>
+    <div onclick="escolherIdioma('en','🇺🇸','EN')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇺🇸 <span>English</span></div>
+    <div onclick="escolherIdioma('es','🇪🇸','ES')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇪🇸 <span>Español</span></div>
+    <div onclick="escolherIdioma('hi','🇮🇳','HI')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇮🇳 <span>हिन्दी</span></div>
+    <div onclick="escolherIdioma('id','🇮🇩','ID')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇮🇩 <span>Indonesia</span></div>
+    <div onclick="escolherIdioma('th','🇹🇭','TH')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇹🇭 <span>ภาษาไทย</span></div>
+    <div onclick="escolherIdioma('vi','🇻🇳','VI')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇻🇳 <span>Tiếng Việt</span></div>
+    <div onclick="escolherIdioma('ar','🇸🇦','AR')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇸🇦 <span>العربية</span></div>
+    <div onclick="escolherIdioma('it','🇮🇹','IT')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇮🇹 <span>Italiano</span></div>
+    <div onclick="escolherIdioma('fr','🇫🇷','FR')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇫🇷 <span>Français</span></div>
+    <div onclick="escolherIdioma('de','🇩🇪','DE')"  style="padding:7px 10px;cursor:pointer;border-radius:7px;font-size:12px;color:#ccc;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#1e2128';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ccc'">🇩🇪 <span>Deutsch</span></div>
   </div>
 </div>
-<style>#lang-float-menu.show{display:block!important;}</style>
+<style>
+#lang-float-menu.show{display:block!important;}
+#lang-float-btn button:hover{transform:scale(1.02);}
+</style>
 <script>
 document.addEventListener('click',function(e){var b=document.getElementById('lang-float-btn');if(b&&!b.contains(e.target)){var m=document.getElementById('lang-float-menu');if(m)m.classList.remove('show');}});
 var LANG_FLAGS={pt:'🇧🇷',en:'🇺🇸',es:'🇪🇸',hi:'🇮🇳',id:'🇮🇩',th:'🇹🇭',vi:'🇻🇳',ar:'🇸🇦',it:'🇮🇹',fr:'🇫🇷',de:'🇩🇪'};
-var LANG_NAMES={pt:'Português',en:'English',es:'Español',hi:'हिन्दी',id:'Indonesia',th:'ภาษาไทย',vi:'Tiếng Việt',ar:'العربية',it:'Italiano',fr:'Français',de:'Deutsch'};
-function escolherIdioma(lang,flag,name){
+var LANG_CODES={pt:'PT',en:'EN',es:'ES',hi:'HI',id:'ID',th:'TH',vi:'VI',ar:'AR',it:'IT',fr:'FR',de:'DE'};
+function escolherIdioma(lang,flag,code){
   document.getElementById('lang-float-menu').classList.remove('show');
   document.getElementById('lang-current-flag').textContent=flag;
-  document.getElementById('lang-current-name').textContent=name;
+  document.getElementById('lang-current-name').textContent=code;
   localStorage.setItem('alpha_lang',lang);
   if(window.i18n){window.i18n.apply(lang);if(typeof window.trocarIdioma==='function'){var el=document.querySelector('[data-lang="'+lang+'"]');window.trocarIdioma(lang,el);}}
   else{location.reload();}
 }
 (function(){
   var saved=localStorage.getItem('alpha_lang');
-  function setBtn(lang){var f=LANG_FLAGS[lang]||'🌐';var n=LANG_NAMES[lang]||lang;var fe=document.getElementById('lang-current-flag');var ne=document.getElementById('lang-current-name');if(fe)fe.textContent=f;if(ne)ne.textContent=n;}
+  function setBtn(lang){var f=LANG_FLAGS[lang]||'🌐';var c=LANG_CODES[lang]||lang.toUpperCase();setTimeout(function(){var fe=document.getElementById('lang-current-flag');var ne=document.getElementById('lang-current-name');if(fe)fe.textContent=f;if(ne)ne.textContent=c;},100);}
   if(saved){setBtn(saved);return;}
   var bl=(navigator.language||'pt').toLowerCase().split('-')[0];
   var sup=['pt','en','es','hi','id','th','vi','ar','it','fr','de'];
