@@ -42,6 +42,17 @@ window.addEventListener('load', function() {
   // Desativa polling de trades
   window.buscarTradesDoBackend = async function() { return; };
 
+  // Bloqueia gravacao de deriv_balance_* para nao vazar para home real
+  const _lsSetOrig = localStorage.setItem.bind(localStorage);
+  localStorage.setItem = function(key, value) {
+    if (key === 'deriv_balance_demo' || key === 'deriv_balance_real') {
+      // Redireciona para chave fe_ isolada
+      _lsSetOrig('fe_saldo_atual', value);
+      return;
+    }
+    _lsSetOrig(key, value);
+  };
+
   // Sincroniza saldo do IA Pro com FakeEngine apos cada contrato
   setTimeout(function() {
     const _origProOnContract = window.proOnContract;
