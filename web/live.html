@@ -42,6 +42,39 @@ window.addEventListener('load', function() {
   // Desativa polling de trades
   window.buscarTradesDoBackend = async function() { return; };
 
+  // DEMO/REAL — troca apenas visual no /live, nao conecta na Deriv
+  setTimeout(function() {
+    window.switchAccountType = function(type) {
+      // Atualiza botoes visuais
+      const demoBtn = document.getElementById('demoBtnSwitch');
+      const realBtn = document.getElementById('realBtnSwitch');
+      if (demoBtn) demoBtn.classList.toggle('active', type === 'demo');
+      if (realBtn) realBtn.classList.toggle('active', type === 'real');
+
+      // Atualiza display do saldo — mostra DEMO ou REAL com saldo fake
+      const saldo = window.FakeEngine ? window.FakeEngine.getState().saldo : 0;
+      const saldoStr = '$' + saldo.toFixed(2);
+      const contaDemo = document.getElementById('contaDemoValor');
+      const contaReal = document.getElementById('contaRealValor');
+      const saldoDisplay = document.getElementById('saldoDisplay');
+      if (saldoDisplay) saldoDisplay.innerText = saldoStr;
+
+      // Topbar DEMO/REAL
+      const topDemo = document.getElementById('btnDemo');
+      const topReal = document.getElementById('btnReal');
+      if (topDemo) topDemo.classList.toggle('active', type === 'demo');
+      if (topReal) topReal.classList.toggle('active', type === 'real');
+
+      // Atualiza label da conta no topo
+      const contaLabel = document.querySelector('.conta-tipo-label, .account-label, #contaTipoLabel');
+      if (contaLabel) contaLabel.textContent = type === 'real' ? 'Conta Real' : 'Conta Demo';
+
+      window.currentAccountType = type;
+      localStorage.setItem('deriv_conta_ativa', type);
+      console.log('[FAKE] Conta trocada visualmente para:', type);
+    };
+  }, 1000);
+
   // ISOLAMENTO TOTAL
   // 1. Faz backup das contas REAIS antes de qualquer coisa
   const _feBackupAccounts = localStorage.getItem('deriv_accounts');
