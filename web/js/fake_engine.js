@@ -110,7 +110,7 @@ function atualizarSaldoUI() {
   document.querySelectorAll('[data-balance],.balance-amount,.saldo-valor').forEach(el => {
     el.textContent = saldoStr;
   });
-  localStorage.setItem('deriv_balance_demo', STATE.saldo.toString());
+  // NAO salva deriv_balance_demo para nao vazar para home real
   localStorage.setItem('fe_saldo_atual', STATE.saldo.toString());
 }
 
