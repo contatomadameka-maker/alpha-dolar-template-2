@@ -42,32 +42,46 @@ window.addEventListener('load', function() {
   // Desativa polling de trades
   window.buscarTradesDoBackend = async function() { return; };
 
-  // Salva saldo real antes de qualquer operacao fake
-  const _feRealBalDemo = localStorage.getItem('deriv_balance_demo');
-  const _feRealBalReal = localStorage.getItem('deriv_balance_real');
+  // ISOLAMENTO TOTAL
+  // 1. Faz backup das contas REAIS antes de qualquer coisa
+  const _feBackupAccounts = localStorage.getItem('deriv_accounts');
+  const _feBackupContaAtiva = localStorage.getItem('deriv_conta_ativa');
 
-  // Bloqueia gravacao de deriv_balance_* para nao vazar para home real
+  // 2. Remove saldos para nao vazar
+  localStorage.removeItem('deriv_balance_demo');
+  localStorage.removeItem('deriv_balance_real');
+
+  // 3. Bloqueia gravacao de saldos durante /live
   const _lsSetOrig = localStorage.setItem.bind(localStorage);
   localStorage.setItem = function(key, value) {
     if (key === 'deriv_balance_demo' || key === 'deriv_balance_real') {
-      // Redireciona para chave fe_ isolada — nao toca no saldo real
       _lsSetOrig('fe_saldo_atual', value);
       return;
+    }
+    // Protege deriv_accounts de ser sobrescrito com dados fake
+    if (key === 'deriv_accounts') {
+      try {
+        const contas = JSON.parse(value);
+        const temFake = contas.some(c => c.token && c.token.includes('FAKE'));
+        if (temFake) {
+          sessionStorage.setItem('deriv_accounts', value);
+          return;
+        }
+      } catch(e) {}
     }
     _lsSetOrig(key, value);
   };
 
-  // Restaura saldo real quando sair do /live
-  window.addEventListener('beforeunload', function() {
-    if (_feRealBalDemo) localStorage.setItem('deriv_balance_demo', _feRealBalDemo);
-    if (_feRealBalReal) localStorage.setItem('deriv_balance_real', _feRealBalReal);
-  });
-  // Restaura tambem ao trocar de aba
+  // 4. Restaura contas reais ao sair do /live
+  function _feRestaurar() {
+    if (_feBackupAccounts) _lsSetOrig('deriv_accounts', _feBackupAccounts);
+    if (_feBackupContaAtiva) _lsSetOrig('deriv_conta_ativa', _feBackupContaAtiva);
+    localStorage.removeItem('deriv_balance_demo');
+    localStorage.removeItem('deriv_balance_real');
+  }
+  window.addEventListener('beforeunload', _feRestaurar);
   document.addEventListener('visibilitychange', function() {
-    if (document.hidden) {
-      if (_feRealBalDemo) _lsSetOrig('deriv_balance_demo', _feRealBalDemo);
-      if (_feRealBalReal) _lsSetOrig('deriv_balance_real', _feRealBalReal);
-    }
+    if (document.hidden) _feRestaurar();
   });
 
   // Sincroniza saldo do IA Pro com FakeEngine apos cada contrato
