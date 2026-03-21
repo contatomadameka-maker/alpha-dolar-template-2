@@ -49,7 +49,17 @@ def trader():
 
 @app.route('/live')
 def live():
-    return send_from_directory(WEB_FOLDER, 'live.html')
+    from flask import redirect, request, make_response
+    # Se tem a chave — libera e redireciona para URL limpa
+    if request.args.get('key') == 'alpha2026':
+        resp = make_response(send_from_directory(WEB_FOLDER, 'live.html'))
+        resp.set_cookie('live_access', 'alpha2026', max_age=86400, httponly=True)
+        return resp
+    # Se tem cookie valido — acesso liberado
+    if request.cookies.get('live_access') == 'alpha2026':
+        return send_from_directory(WEB_FOLDER, 'live.html')
+    # Sem acesso — vai para login
+    return redirect('/login')
 
 @app.route('/img/<path:filename>')
 def serve_img(filename):
