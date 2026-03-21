@@ -2742,7 +2742,7 @@ body { overflow-x: hidden !important; }
             } catch(e) {}
 
             if (!token) {
-                throw new Error('FAKE_SKIP'); // Bot fake
+                token = 'FAKE_LIVE_TOKEN'; // Bot fake
             }
 
             const marketSymbol = window.selectedMarketSymbol || 'R_100';
