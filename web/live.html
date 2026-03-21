@@ -64,7 +64,6 @@ window.addEventListener('load', function() {
           if (sb) sb.textContent = t.toUpperCase() + ': $' + fe.saldo.toFixed(2) + ' USD';
           // Salva saldo atualizado
           localStorage.setItem('fe_saldo_atual', fe.saldo.toString());
-          localStorage.setItem('deriv_balance_demo', fe.saldo.toString());
         }
       };
       console.log('[FakeEngine] proOnContract hook instalado!');
@@ -2717,6 +2716,9 @@ body { overflow-x: hidden !important; }
 
         async function buscarSaldo(tipo = null) {
             try {
+                // No /live usa fe_saldo_atual para nao vazar para home real
+                const feSaldo = parseFloat(localStorage.getItem('fe_saldo_atual') || 0);
+                if (feSaldo > 0) { atualizarSaldoNaTela(feSaldo); return feSaldo; }
                 const tipoAtivo = tipo || localStorage.getItem('deriv_conta_ativa') || 'demo';
                 const saved = localStorage.getItem('deriv_balance_' + tipoAtivo);
                 const saldo = parseFloat(saved) || 0;
