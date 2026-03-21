@@ -4883,13 +4883,13 @@ window._MKT_DATA = {
   ╔══════════════════════════════════════════════════════════════════╗
   ║  ALPHA DOLAR 2.0 — PATCH: MODO AVANÇADO IA (DC Bot style)       ║
   ║  Instruções: Cole este bloco ANTES de <!-- ALPHA IA PRO MODAL -->
-<div id="alphaIaProModal" style="display:none;position:fixed;top:0;left:0;width:min(480px,100vw);height:100vh;z-index:9999;background:linear-gradient(135deg,#0d0614,#130820);border-right:1px solid rgba(168,85,247,0.3);overflow-y:auto;box-shadow:4px 0 40px rgba(168,85,247,0.15);">
-  <div style="padding:24px;">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;">
+<div id="alphaIaProModal" style="display:none;position:fixed;top:0;left:0;width:min(420px,100vw);height:100vh;z-index:9999;background:linear-gradient(135deg,#0d0614,#130820);border-right:1px solid rgba(168,85,247,0.3);overflow-y:auto;box-shadow:4px 0 40px rgba(168,85,247,0.15);">
+  <div style="padding:14px 16px;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:8px;">
       <div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
           <span style="font-size:22px;">✨</span>
-          <span style="font-size:20px;font-weight:900;background:linear-gradient(135deg,#d4a8ff,#f0abfc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Alpha IA Pro</span>
+          <span style="font-size:17px;font-weight:900;background:linear-gradient(135deg,#d4a8ff,#f0abfc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Alpha IA Pro</span>
           <span style="background:linear-gradient(135deg,#a855f7,#ec4899);color:#fff;font-size:9px;font-weight:900;padding:2px 7px;border-radius:20px;letter-spacing:1px;">PREMIUM</span>
         </div>
         <div style="font-size:11px;color:#94a3b8;">3 modelos combinados · Voz IA · Score máximo</div>
@@ -4902,10 +4902,10 @@ window._MKT_DATA = {
       <button id="proBtnReal" onclick="proSetConta('real',this)" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(100,116,139,0.3);background:transparent;color:#64748b;font-size:12px;font-weight:700;cursor:pointer;">REAL</button>
       <div id="proSaldoBox" style="flex:2;padding:8px;border-radius:8px;border:1px solid rgba(168,85,247,0.2);background:rgba(168,85,247,0.05);color:#d4a8ff;font-size:12px;font-weight:700;text-align:center;">Saldo: —</div>
     </div>
-    <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:#c4b5fd;">
+    <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#c4b5fd;">
       🧠 Motor IA Pro: <span id="proMlFase" style="color:#d4a8ff;font-weight:700;">Aguardando início...</span>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;">
       <div style="background:#0a0614;border:1px solid rgba(168,85,247,0.2);border-radius:10px;padding:10px;text-align:center;">
         <div style="font-size:9px;color:#64748b;font-weight:700;letter-spacing:1px;margin-bottom:3px;">SCORE</div>
         <div id="proScore" style="font-size:20px;font-weight:900;color:#a855f7;">—</div>
@@ -5380,12 +5380,11 @@ const sym=document.getElementById('proSymbol').value;s.ws.send(JSON.stringify({t
   const t=window._proState.contaTipo||'demo';
   const bal=parseFloat(msg.balance.balance||0);
   const cur=msg.balance.currency||'USD';
+  // Log visual para debug
   if(sb)sb.textContent=t.toUpperCase()+': $'+bal.toFixed(2)+' '+cur;
-  // Atualiza saldo no dashboard principal tambem
   if(typeof atualizarSaldoNaTela==='function') atualizarSaldoNaTela(bal);
   const sd=document.getElementById('saldoDisplay');
   if(sd) sd.innerText='$'+bal.toFixed(2);
-  // Atualiza modal running se aberto
   const ms=document.getElementById('botRunningSaldo');
   if(ms) ms.innerText='$'+bal.toFixed(2);
 }};s.ws.onclose=()=>{if(s.running){proAddFeed('⚠️ Reconectando...','#eab308');setTimeout(proConectar,3000);}};}
@@ -7733,13 +7732,6 @@ window.proAtualizarStatusVirtual = function() {
     document.getElementById('alpha-lang-menu').style.display='none';
     localStorage.setItem('alpha_lang',lang);
     updateBtn(lang);
-    // Debug visual
-    var dbg=document.createElement('div');
-    dbg.style.cssText='position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#000;color:#0f0;padding:8px 16px;border-radius:8px;z-index:999999;font-size:11px;font-family:monospace;text-align:center;';
-    var i18nOk = (window.i18n && typeof window.i18n.apply==='function');
-    dbg.textContent = 'i18n='+typeof window.i18n+' | apply='+typeof(window.i18n&&window.i18n.apply)+' | lang='+lang;
-    document.body.appendChild(dbg);
-    setTimeout(function(){dbg.remove();},4000);
     // Aplica traducao
     if(window.i18n && typeof window.i18n.apply==='function'){
       window.i18n.apply(lang);
@@ -7811,10 +7803,10 @@ window.proAtualizarStatusVirtual = function() {
 
 /* ── Wrapper geral do painel avançado ── */
 .adv-panel {
-  padding: 0 14px 16px;
+  padding: 0 10px 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 7px;
 }
 
 /* ── Grupo de campo ── */
@@ -7824,7 +7816,7 @@ window.proAtualizarStatusVirtual = function() {
   gap: 5px;
 }
 .adv-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: #6b7280;
   text-transform: uppercase;
@@ -7837,9 +7829,9 @@ window.proAtualizarStatusVirtual = function() {
   background: #111418;
   border: 1px solid #23262e;
   border-radius: 12px;
-  padding: 10px 14px;
+  padding: 8px 12px;
   color: #e0e0e0;
-  font-size: 13px;
+  font-size: 12px;
   font-family: inherit;
   cursor: pointer;
   outline: none;
