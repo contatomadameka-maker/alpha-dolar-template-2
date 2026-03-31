@@ -7,3 +7,4 @@ gunicorn==21.2.0
 websocket-client==1.6.4
 pytz
 redis
+psutil

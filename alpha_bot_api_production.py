@@ -3,6 +3,7 @@ import os
 import threading
 import time
 import traceback as _tb
+from webhook_cakto import register_cakto_webhook
 from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory, redirect
 try:
@@ -20,8 +21,13 @@ if backend_path not in sys.path:
 
 app = Flask(__name__, static_folder='web', static_url_path='')
 CORS(app)
+register_cakto_webhook(app)
 
-# ==================== IMPORTAR BOTS ====================
+# ==================== IMPORTAR BOTS REAIS ====================
+
+print(f"📁 project_path: {project_path}")
+print(f"📁 backend_path: {backend_path}")
+print(f"📁 sys.path: {sys.path[:3]}")
 
 try:
     try:
@@ -303,9 +309,9 @@ def start_bot():
         deriv_id     = data.get('deriv_id', '') or data.get('loginid', '')
 
         symbol        = resolve_symbol(config.get('symbol', 'R_100'))
-        stake_inicial = float(config.get('stake_inicial', 0.35))
-        lucro_alvo    = float(config.get('lucro_alvo', 2.0))
-        limite_perda  = float(config.get('limite_perda', 5.0))
+        stake_inicial = float(config.get('stake') or config.get('stake_inicial') or 0.35)
+        lucro_alvo    = float(config.get('target') or config.get('lucro_alvo') or 2.0)
+        limite_perda  = float(config.get('stop') or config.get('limite_perda') or 1000.0)
 
         print(f"\n{'='*60}")
         print(f"📥 Iniciar bot: {bot_type} | conta: {account_type.upper()}")
@@ -376,6 +382,8 @@ def start_bot():
             trading_mode   = config.get('trading_mode', 'faster')
             risk_mode      = config.get('risk_mode', 'conservative')
             strategy_id    = config.get('strategy', 'alpha_bot_1')
+            multi_strategies = config.get('multi_strategies', [])
+            is_multi = strategy_id == 'multi' and multi_strategies
             stop_loss_type = config.get('stop_loss_type', 'value')
             max_losses     = int(config.get('max_losses', 5))
 
@@ -386,8 +394,26 @@ def start_bot():
             BotConfig.LIMITE_PERDA  = float(config.get('stop') or config.get('limite_perda') or 1000.0)
 
             try:
-                factory  = STRATEGY_MAP.get(strategy_id, STRATEGY_MAP['alpha_bot_1'])
-                strategy = factory(trading_mode, risk_mode)
+                if is_multi:
+                    _multi_lista = list(multi_strategies)
+                    import random
+                    random.shuffle(_multi_lista)
+                    _multi_idx = [0]  # lista mutável para closure
+                    def _get_next_strategy():
+                        idx = _multi_idx[0] % len(_multi_lista)
+                        sid = _multi_lista[idx]
+                        _multi_idx[0] = (idx + 1) % len(_multi_lista)
+                        # Sorteia próxima aleatória diferente da atual
+                        if len(_multi_lista) > 1:
+                            opcoes = [s for s in _multi_lista if s != sid]
+                            return STRATEGY_MAP.get(random.choice(opcoes), STRATEGY_MAP['alpha_bot_1'])(trading_mode, risk_mode)
+                        return STRATEGY_MAP.get(sid, STRATEGY_MAP['alpha_bot_1'])(trading_mode, risk_mode)
+                    strategy = _get_next_strategy()
+                    get_user_state(deriv_id, bot_type)['strategy_name'] = type(strategy).__name__
+                else:
+                    _get_next_strategy = None
+                    factory  = STRATEGY_MAP.get(strategy_id, STRATEGY_MAP['alpha_bot_1'])
+                    strategy = factory(trading_mode, risk_mode)
             except Exception as e:
                 return jsonify({'success': False, 'error': f'Erro estratégia: {str(e)}'}), 500
 
@@ -412,6 +438,8 @@ def start_bot():
 
             get_user_state(deriv_id, bot_type)['_perda_desde_ultimo_ganho'] = 0.0
             get_user_state(deriv_id, bot_type)['_lucro_desde_ultimo_reset'] = 0.0
+            get_user_state(deriv_id, bot_type)['_limite_perda'] = BotConfig.LIMITE_PERDA
+            get_user_state(deriv_id, bot_type)['_lucro_sessao'] = 0.0
 
             def on_trade_completed(direction, won, profit, stake, symbol_used, exit_tick=None):
                 print(f"🔔 on_trade_completed CHAMADO! won={won} profit={profit} step_antes={get_user_state(deriv_id, bot_type).get('mart_step',0)}")
@@ -429,6 +457,27 @@ def start_bot():
                 wr    = round((wins / total) * 100, 1) if total > 0 else 0
 
                 if hasattr(bot, "atualizar_apos_trade"): bot.atualizar_apos_trade(won, profit)
+                # Multi-estratégia: troca após perda
+                if not won and is_multi and _get_next_strategy and get_user_state(deriv_id, bot_type).get('running'):
+                    try:
+                        nova_strategy = _get_next_strategy()
+                        bot.strategy = nova_strategy
+                        nome_nova = type(nova_strategy).__name__
+                        get_user_state(deriv_id, bot_type)['strategy_name'] = nome_nova
+                        # Reseta lucro sessao ao trocar estrategia
+                        # NAO reseta lucro_sessao ao trocar — acumula toda sessao
+                        get_user_state(deriv_id, bot_type)['mart_step'] = 0
+                        print(f"⚡ Multi-estratégia: trocando para {nome_nova}")
+                        # Adiciona ao feed de logs visível no frontend
+                        _trades = get_user_state(deriv_id, bot_type).get('trades', [])
+                        _trades.append({
+                            'type'   : 'log',
+                            'message': f'⚡ Multi-Estratégia: trocando para {nome_nova}',
+                            'level'  : 'multi',
+                            'time'   : datetime.now().strftime('%H:%M:%S'),
+                        })
+                    except Exception as _me:
+                        print(f"Erro troca estratégia: {_me}")
                 # Atualiza mart_step de forma genérica para qualquer estratégia
                 _max = get_user_state(deriv_id, bot_type).get('mart_max', 3)
                 _step = get_user_state(deriv_id, bot_type).get('mart_step', 0)
@@ -454,7 +503,7 @@ def start_bot():
                         get_user_state(deriv_id, bot_type)['_perda_desde_ultimo_ganho'] + abs(profit), 2)
 
                 perda_dc = get_user_state(deriv_id, bot_type)['_perda_desde_ultimo_ganho']
-                limite   = BotConfig.LIMITE_PERDA
+                limite   = get_user_state(deriv_id, bot_type).get('_limite_perda', BotConfig.LIMITE_PERDA)
 
                 if perda_dc >= limite and get_user_state(deriv_id, bot_type).get('running'):
                     get_user_state(deriv_id, bot_type)['stop_reason']  = 'stop_loss'
@@ -712,6 +761,7 @@ def get_bot_stats(bot_type):
         'stats': stats, 'stop_reason': stop_reason, 'stop_message': stop_message,
         'bot_running': is_running, 'waiting_signal': waiting_signal,
         'mart_step': mart_step, 'mart_max': mart_max,
+         'strategy_name': get_user_state(deriv_id, bot_type).get('strategy_name', ''),
         'saldo_atual': stats.get('balance', 0), 'lucro_liquido': stats.get('saldo_liquido', 0),
         'total_trades': stats.get('total_trades', 0), 'win_rate': stats.get('win_rate', 0),
         'vitorias': stats.get('vitorias', 0), 'derrotas': stats.get('derrotas', 0),
@@ -1514,3 +1564,374 @@ def enviar_sinal_manual_prod():
     ok = sinal_manual(texto, direcao=direcao)
     return jsonify({'success': ok})
 
+
+
+# ==================== TRIAL 24H ====================
+@app.route('/api/trial/ativar', methods=['POST'])
+def ativar_trial():
+    import requests as req
+    from datetime import datetime, timedelta, timezone
+
+    dados = request.get_json(silent=True) or {}
+    email = dados.get('email', '').strip().lower()
+    produto = dados.get('produto', '').strip()
+
+    if not email or not produto:
+        return jsonify({'erro': 'Email e produto obrigatorios'}), 400
+
+    SUPABASE_URL = 'https://urlthgicnomfbyklesou.supabase.co'
+    SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVybHRoZ2ljbm9tZmJ5a2xlc291Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzA2NzIwNiwiZXhwIjoyMDg4NjQzMjA2fQ.ZcPJry5CAxteeM2x-vymjXTFQ3EWZast0SHw-YRh1vo'
+    HEADERS = {
+        'apikey': SUPABASE_KEY,
+        'Authorization': f'Bearer {SUPABASE_KEY}',
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation',
+    }
+
+    # Verifica se ja usou trial neste produto
+    check = req.get(
+        f"{SUPABASE_URL}/rest/v1/produtos_liberados?email=eq.{email}&produto=eq.{produto}&tipo=eq.trial&select=id",
+        headers=HEADERS, timeout=10
+    )
+    if check.json():
+        return jsonify({'erro': 'Trial ja utilizado para este produto'}), 403
+
+    # Ativa trial 24h
+    expiracao = (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat()
+    insert = req.post(
+        f"{SUPABASE_URL}/rest/v1/produtos_liberados",
+        headers=HEADERS,
+        json={
+            'email'         : email,
+            'produto'       : produto,
+            'tipo'          : 'trial',
+            'ativo'         : True,
+            'origem'        : 'trial',
+            'data_expiracao': expiracao,
+        },
+        timeout=10
+    )
+
+    if insert.status_code in (200, 201):
+        return jsonify({'status': 'ok', 'expiracao': expiracao}), 200
+    else:
+        return jsonify({'erro': 'Erro ao ativar trial'}), 500
+
+
+# ==================== MARKUP DERIV ====================
+@app.route('/api/markup/stats', methods=['GET'])
+def get_markup_stats():
+    import websocket
+    import json
+    import threading
+
+    token = os.environ.get('DERIV_ADMIN_TOKEN', '')
+    app_id = os.environ.get('DERIV_APP_ID', '128988')
+
+    if not token:
+        return jsonify({'erro': 'DERIV_ADMIN_TOKEN não configurado'}), 500
+
+    resultado = {'dados': None, 'erro': None}
+    evento = threading.Event()
+
+    def on_message(ws, message):
+        data = json.loads(message)
+        if data.get('msg_type') == 'authorize':
+            ws.send(json.dumps({
+                'app_markup_statistics': 1,
+                'date_from': '2026-01-01',
+                'date_to':   '2026-12-31',
+            }))
+        elif data.get('msg_type') == 'app_markup_statistics':
+            resultado['dados'] = data.get('app_markup_statistics', {})
+            ws.close()
+            evento.set()
+        elif 'error' in data:
+            resultado['erro'] = data['error'].get('message', 'Erro desconhecido')
+            ws.close()
+            evento.set()
+
+    def on_error(ws, error):
+        resultado['erro'] = str(error)
+        evento.set()
+
+    ws = websocket.WebSocketApp(
+        f'wss://ws.derivws.com/websockets/v3?app_id={app_id}',
+        on_message=on_message,
+        on_error=on_error,
+    )
+    ws.send = lambda msg: ws.sock.send(msg) if ws.sock else None
+
+    def on_open(ws):
+        ws.send(json.dumps({'authorize': token}))
+
+    ws.on_open = on_open
+    t = threading.Thread(target=ws.run_forever)
+    t.daemon = True
+    t.start()
+    evento.wait(timeout=15)
+
+    if resultado['erro']:
+        return jsonify({'erro': resultado['erro']}), 500
+    if not resultado['dados']:
+        return jsonify({'erro': 'Timeout ou sem dados'}), 504
+
+    stats = resultado['dados']
+    return jsonify({
+        'status': 'ok',
+        'markup_usd': stats.get('markup_usd', 0),
+        'markup_transactions_count': stats.get('markup_transactions_count', 0),
+        'app_id': app_id,
+    }), 200
+
+
+# ==================== REVENUE SHARE REAL + MARKUP ====================
+@app.route('/api/admin/financeiro', methods=['GET'])
+def get_financeiro_admin():
+    """Retorna dados financeiros reais para o painel admin principal"""
+    import requests as req
+    from datetime import datetime
+
+    SUPA_URL = os.environ.get('SUPABASE_URL', '')
+    SUPA_KEY = os.environ.get('SUPABASE_KEY', '')
+    headers  = {'apikey': SUPA_KEY, 'Authorization': f'Bearer {SUPA_KEY}'}
+
+    # 1. Busca todos os bots
+    bots_r = req.get(f"{SUPA_URL}/rest/v1/bots?status=eq.ativo", headers=headers)
+    bots   = bots_r.json() if bots_r.status_code == 200 else []
+
+    # 2. Busca clientes via afiliado
+    cli_r  = req.get(f"{SUPA_URL}/rest/v1/clientes?via_afiliado=eq.true&select=deriv_id,bot_afiliado,bot_name", headers=headers)
+    clientes_afiliado = cli_r.json() if cli_r.status_code == 200 else []
+
+    # IDs dos clientes afiliados
+    ids_afiliados = {c['deriv_id'] for c in clientes_afiliado}
+
+    # 3. Aceita filtro de data via query params
+    date_from = request.args.get('date_from', datetime.utcnow().strftime('%Y-%m-01'))
+    date_to   = request.args.get('date_to',   datetime.utcnow().strftime('%Y-%m-%d') + 'T23:59:59')
+    mes_inicio = date_from
+    ops_r = req.get(
+        f"{SUPA_URL}/rest/v1/operacoes?select=cliente_id,resultado,lucro,bot_name,stake&criado_em=gte.{date_from}&limit=5000",
+        headers=headers
+    )
+    operacoes = ops_r.json() if ops_r.status_code == 200 else []
+
+    # 4. Calcula por bot
+    resultado_bots = []
+    total_ganhos_afiliado = 0
+    total_perdas_afiliado = 0
+
+    for bot in bots:
+        bot_nome = bot.get('nome', '')
+        markup_pct = float(bot.get('markup_pct', 2.0))
+
+        # Clientes deste bot via afiliado
+        ids_bot_afiliado = {c['deriv_id'] for c in clientes_afiliado if c.get('bot_afiliado') == bot_nome or c.get('bot_name') == bot_nome}
+
+        # Operacoes do bot
+        ops_bot = [o for o in operacoes if o.get('bot_name') == bot_nome]
+
+        # Total geral do bot
+        ganhos_total = sum(abs(o['lucro']) for o in ops_bot if o.get('resultado') == 'win')
+        perdas_total = sum(abs(o['lucro']) for o in ops_bot if o.get('resultado') == 'loss')
+
+        # Somente clientes afiliados
+        ops_afiliado = [o for o in ops_bot if o.get('cliente_id') in ids_bot_afiliado]
+        ganhos_af = sum(abs(o['lucro']) for o in ops_afiliado if o.get('resultado') == 'win')
+        perdas_af = sum(abs(o['lucro']) for o in ops_afiliado if o.get('resultado') == 'loss')
+        net_af    = round(perdas_af - ganhos_af, 2)
+        rev_share = round(net_af * 0.30, 2)
+
+        total_ganhos_afiliado += ganhos_af
+        total_perdas_afiliado += perdas_af
+
+        # Markup estimado por bot
+        total_stakes_bot = sum(float(o.get('stake', 0)) for o in ops_bot)
+        markup_est_bot   = round(total_stakes_bot * (markup_pct / 100), 2)
+        markup_alpha_bot = round(markup_est_bot * 0.20, 2)
+
+        resultado_bots.append({
+            'nome'              : bot_nome,
+            'dono'              : bot.get('dono', ''),
+            'ganhos_total'      : round(ganhos_total, 2),
+            'perdas_total'      : round(perdas_total, 2),
+            'ganhos_afiliado'   : round(ganhos_af, 2),
+            'perdas_afiliado'   : round(perdas_af, 2),
+            'net_revenue'       : net_af,
+            'revenue_share_30'  : rev_share,
+            'markup_pct'        : markup_pct,
+            'markup_estimado'   : markup_est_bot,
+            'markup_alpha_20'   : markup_alpha_bot,
+            'total_stakes'      : round(total_stakes_bot, 2),
+            'clientes_afiliado' : len(ids_bot_afiliado),
+        })
+
+    net_total   = round(total_perdas_afiliado - total_ganhos_afiliado, 2)
+    rev_total   = round(net_total * 0.30, 2)
+    sua_comissao = round(rev_total * 0.20, 2)
+
+    # 5. Busca markup real da Deriv
+    markup_deriv = _buscar_markup_deriv()
+
+    return jsonify({
+        'status'              : 'ok',
+        'mes'                 : mes_inicio,
+        'total_ganhos_af'     : round(total_ganhos_afiliado, 2),
+        'total_perdas_af'     : round(total_perdas_afiliado, 2),
+        'net_revenue_total'   : net_total,
+        'revenue_share_total' : rev_total,
+        'sua_comissao_20'     : sua_comissao,
+        'markup_deriv_usd'    : markup_deriv.get('markup_usd', 0),
+        'markup_trades'       : markup_deriv.get('markup_transactions_count', 0),
+        'bots'                : resultado_bots,
+    })
+
+
+@app.route('/api/admin/financeiro/<bot_nome>', methods=['GET'])
+def get_financeiro_bot(bot_nome):
+    """Retorna dados financeiros para o painel do trader"""
+    import requests as req
+    from datetime import datetime
+
+    SUPA_URL = os.environ.get('SUPABASE_URL', '')
+    SUPA_KEY = os.environ.get('SUPABASE_KEY', '')
+    headers  = {'apikey': SUPA_KEY, 'Authorization': f'Bearer {SUPA_KEY}'}
+
+    # Aceita filtro de data via query params
+    date_from = request.args.get('date_from', datetime.utcnow().strftime('%Y-%m-01'))
+    date_to   = request.args.get('date_to',   datetime.utcnow().strftime('%Y-%m-%d') + 'T23:59:59')
+    mes_inicio = date_from
+
+    # Clientes afiliados deste bot — busca por bot_name OU bot_afiliado
+    cli_r = req.get(
+        f"{SUPA_URL}/rest/v1/clientes?via_afiliado=eq.true&select=deriv_id,bot_name,bot_afiliado",
+        headers=headers
+    )
+    todos_clientes_af = cli_r.json() if cli_r.status_code == 200 else []
+    # Filtra por bot_name OU bot_afiliado (case insensitive)
+    ids_af = {
+        c['deriv_id'] for c in todos_clientes_af
+        if (c.get('bot_name','').lower() == bot_nome.lower() or
+            c.get('bot_afiliado','').lower() == bot_nome.lower())
+    }
+
+    # Operacoes do bot
+    ops_r = req.get(
+        f"{SUPA_URL}/rest/v1/operacoes?bot_name=eq.{bot_nome}&select=cliente_id,resultado,lucro,stake&criado_em=gte.{date_from}&limit=2000",
+        headers=headers
+    )
+    operacoes = ops_r.json() if ops_r.status_code == 200 else []
+
+    # Total geral
+    ganhos_total = sum(abs(o['lucro']) for o in operacoes if o.get('resultado') == 'win')
+    perdas_total = sum(abs(o['lucro']) for o in operacoes if o.get('resultado') == 'loss')
+
+    # Somente afiliados
+    ops_af   = [o for o in operacoes if o.get('cliente_id') in ids_af]
+    ganhos_af = sum(abs(o['lucro']) for o in ops_af if o.get('resultado') == 'win')
+    perdas_af = sum(abs(o['lucro']) for o in ops_af if o.get('resultado') == 'loss')
+    net_af    = round(perdas_af - ganhos_af, 2)
+    rev_share = round(net_af * 0.30, 2)
+    pagar_alpha = round(rev_share * 0.20, 2)
+    seu_lucro   = round(rev_share * 0.80, 2)
+
+    # Markup estimado (2% das stakes)
+    markup_pct = 0.02
+    total_stakes = sum(float(o.get('stake', 0)) for o in operacoes)
+    markup_estimado = round(total_stakes * markup_pct, 2)
+    markup_alpha_20 = round(markup_estimado * 0.20, 2)
+    markup_trader_80 = round(markup_estimado * 0.80, 2)
+
+    # Total a pagar para Alpha Dolar
+    total_pagar_alpha = round(pagar_alpha + markup_alpha_20, 2)
+    total_lucro_trader = round(seu_lucro + markup_trader_80, 2)
+
+    return jsonify({
+        'status'              : 'ok',
+        'bot_nome'            : bot_nome,
+        'mes'                 : mes_inicio,
+        'ganhos_total'        : round(ganhos_total, 2),
+        'perdas_total'        : round(perdas_total, 2),
+        'ganhos_afiliado'     : round(ganhos_af, 2),
+        'perdas_afiliado'     : round(perdas_af, 2),
+        'net_revenue'         : net_af,
+        'revenue_share_30'    : rev_share,
+        'pagar_alpha_20'      : pagar_alpha,
+        'seu_lucro_80'        : seu_lucro,
+        'markup_estimado'     : markup_estimado,
+        'markup_alpha_20'     : markup_alpha_20,
+        'markup_trader_80'    : markup_trader_80,
+        'total_pagar_alpha'   : total_pagar_alpha,
+        'total_lucro_trader'  : total_lucro_trader,
+        'total_stakes'        : round(total_stakes, 2),
+        'clientes_afiliado'   : len(ids_af),
+        'clientes_total'      : len(set(o.get('cliente_id') for o in operacoes)),
+    })
+
+
+def _buscar_markup_deriv():
+    """Busca markup real da Deriv via WebSocket"""
+    import websocket, json, threading
+    from datetime import datetime
+
+    token  = os.environ.get('DERIV_ADMIN_TOKEN', '')
+    app_id = os.environ.get('DERIV_APP_ID', '128988')
+    if not token:
+        return {'markup_usd': 0, 'markup_transactions_count': 0}
+
+    resultado = {}
+    evento = threading.Event()
+
+    def on_message(ws, message):
+        data = json.loads(message)
+        if data.get('msg_type') == 'authorize':
+            ano = datetime.utcnow().year
+            ws.send(json.dumps({
+                'app_markup_statistics': 1,
+                'date_from': f'{ano}-01-01',
+                'date_to'  : f'{ano}-12-31',
+            }))
+        elif data.get('msg_type') == 'app_markup_statistics':
+            resultado.update(data.get('app_markup_statistics', {}))
+            ws.close()
+            evento.set()
+        elif 'error' in data:
+            ws.close()
+            evento.set()
+
+    def on_open(ws):
+        ws.send(json.dumps({'authorize': token}))
+
+    def on_error(ws, err):
+        evento.set()
+
+    ws = websocket.WebSocketApp(
+        f'wss://ws.derivws.com/websockets/v3?app_id={app_id}',
+        on_message=on_message,
+        on_error=on_error,
+        on_open=on_open,
+    )
+    t = threading.Thread(target=ws.run_forever)
+    t.daemon = True
+    t.start()
+    evento.wait(timeout=10)
+    return {
+        'markup_usd': resultado.get('markup_usd', 0),
+        'markup_transactions_count': resultado.get('markup_transactions_count', 0),
+    }
+
+@app.route('/api/admin/status', methods=['GET'])
+def get_admin_status():
+    try:
+        import os, resource
+        mem_mb = round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024, 1)
+    except:
+        mem_mb = -1
+    try:
+        bots_rodando = sum(1 for k,v in USER_STATES.items() if isinstance(v, dict) and v.get('running'))
+        users = len(USER_STATES)
+    except:
+        bots_rodando = -1
+        users = -1
+    return jsonify({'status':'ok','memoria_mb':mem_mb,'bots_rodando':bots_rodando,'users_em_memoria':users})
