@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Checkout — Alpha Dolar</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#060a0f;color:#e2e8f0;font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.back{position:fixed;top:20px;left:20px;display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);font-size:13px;text-decoration:none;transition:all 0.2s}
+.back:hover{background:rgba(255,255,255,0.1);color:#fff}
+.card{background:#0d1117;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:40px;max-width:480px;width:100%;text-align:center}
+.icon{font-size:64px;margin-bottom:16px}
+.badge{display:inline-block;padding:4px 14px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px}
+.nome{font-family:'Syne',sans-serif;font-size:32px;font-weight:900;margin-bottom:10px}
+.desc{font-size:14px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:24px;max-width:360px;margin-left:auto;margin-right:auto}
+.toggle-plano{display:flex;gap:8px;justify-content:center;margin-bottom:24px}
+.btn-plano{padding:8px 24px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s}
+.btn-plano.ativo{background:rgba(14,165,233,0.15);border-color:#0ea5e9;color:#0ea5e9}
+.melhor{background:#22c55e;color:#000;font-size:8px;padding:2px 5px;border-radius:3px;margin-left:4px;font-weight:800}
+.preco-wrap{margin-bottom:8px}
+.preco{font-family:'Syne',sans-serif;font-size:48px;font-weight:900;line-height:1}
+.preco-label{font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:24px}
+.feats{list-style:none;text-align:left;margin-bottom:28px;display:flex;flex-direction:column;gap:10px}
+.feats li{display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,0.7)}
+.feats li::before{content:'✓';font-weight:700;font-size:12px;min-width:20px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:50%}
+.btn-comprar{display:block;width:100%;padding:16px;border-radius:12px;border:none;font-family:'Syne',sans-serif;font-size:16px;font-weight:800;letter-spacing:0.5px;cursor:pointer;text-decoration:none;transition:all 0.2s;margin-bottom:12px}
+.btn-comprar:hover{transform:translateY(-2px);filter:brightness(1.1)}
+.garantia{font-size:12px;color:rgba(255,255,255,0.3)}
+.not-found{text-align:center;padding:40px}
+.not-found h2{font-size:24px;margin-bottom:10px}
+</style>
+</head>
+<body>
+<a href="javascript:history.back()" class="back">← Voltar</a>
+<div class="card" id="checkout-card">
+  <div class="not-found">
+    <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+    <h2>Produto não encontrado</h2>
+    <p style="color:rgba(255,255,255,0.4);margin-top:8px">Verifique o link e tente novamente.</p>
+  </div>
+</div>
+<script>
+const PRODUTOS = {
+  'alpha-bank': {
+    icon: '🏦', nome: 'Alpha Bank', cor: '#22c55e', corBg: 'rgba(34,197,94,0.15)',
+    badge: 'GESTÃO DE BANCA', badgeCor: '#22c55e',
+    desc: 'Gestão inteligente de banca. Calcula automaticamente stake ideal, stop loss diário e meta de lucro baseados no seu saldo atual.',
+    planos: [{ label: 'Vitalício', preco: 'R$ 19,90', periodo: 'pagamento único', link: 'https://pay.cakto.com.br/qktokbt_813127', melhor: true }],
+    feats: ['Stake automático por saldo','Stop loss diário','Meta de lucro diária','3 perfis de risco','Aplicação 1 clique no robô'],
+    produto: 'alpha-bank'
+  },
+  'ia-avancado': {
+    icon: '🧠', nome: 'IA Avançado', cor: '#a855f7', corBg: 'rgba(168,85,247,0.15)',
+    badge: 'MOTOR DE IA', badgeCor: '#a855f7',
+    desc: 'Machine Learning em tempo real. Analisa tiques, detecta padrões e só entra quando o score de confiança é favorável.',
+    planos: [{ label: 'Vitalício', preco: 'R$ 97,00', periodo: 'pagamento único', link: 'https://pay.cakto.com.br/ibgkwkz_813185', melhor: true }],
+    feats: ['Análise de frequência de dígitos','Ratio par/ímpar em tempo real','Detecção de sequências','Perdas virtuais antes de entrar','Multiplicador configurável'],
+    produto: 'ia-avancado'
+  },
+  'alpha-pattern': {
+    icon: '🔮', nome: 'Alpha Pattern', cor: '#06b6d4', corBg: 'rgba(6,182,212,0.15)',
+    badge: 'DETECÇÃO DE PADRÕES', badgeCor: '#06b6d4',
+    desc: 'Analisa os últimos 20 dígitos em tempo real e detecta sequências raras de alta probabilidade.',
+    planos: [{ label: 'Vitalício', preco: 'R$ 19,90', periodo: 'pagamento único', link: 'https://pay.cakto.com.br/jxjyuf3_813214', melhor: true }],
+    feats: ['Últimos 20 dígitos coloridos','4 tipos de padrão detectados','Probabilidade calculada por streak','Sugestão de contrato','Histórico de sinais da sessão'],
+    produto: 'alpha-pattern'
+  },
+  'alpha-clock': {
+    icon: '⏰', nome: 'Alpha Clock', cor: '#f59e0b', corBg: 'rgba(245,158,11,0.15)',
+    badge: 'HORÁRIOS', badgeCor: '#f59e0b',
+    desc: 'Exibe o score de cada faixa de horário do dia. Saiba exatamente quando o mercado está mais favorável.',
+    planos: [{ label: 'Mensal', preco: 'R$ 19,90', periodo: '/mês', link: 'https://pay.cakto.com.br/37ipd77_813220', melhor: false }],
+    feats: ['Relógio ao vivo horário Brasília','Score por faixa de 2 horas','Card AGORA destacado','Melhor horário: 14h-16h (88%)','Sem ativação — abre automático'],
+    produto: 'alpha-clock'
+  },
+  'alpha-copy': {
+    icon: '📡', nome: 'Alpha Copy', cor: '#ec4899', corBg: 'rgba(236,72,153,0.15)',
+    badge: 'COPY TRADE', badgeCor: '#ec4899',
+    desc: 'Copie automaticamente os trades do Alpha Master em tempo real. Lucre mesmo sem saber operar.',
+    planos: [{ label: 'Mensal', preco: 'R$ 19,90', periodo: '/mês', link: 'https://pay.cakto.com.br/3f3bxtb_813224', melhor: false }],
+    feats: ['Cópia automática de trades','Multiplicador 0.25× até 5×','Feed ao vivo do master','Toggle liga/desliga instantâneo','Execução via WebSocket Deriv'],
+    produto: 'alpha-copy'
+  },
+  'estrategias-vip': {
+    icon: '💎', nome: 'Estratégias VIP', cor: '#0ea5e9', corBg: 'rgba(14,165,233,0.15)',
+    badge: 'PLANO VIP', badgeCor: '#0ea5e9',
+    desc: '7 IAs exclusivas com análise neural e scalping inteligente. Win Rate até 82%.',
+    planos: [{ label: 'Vitalício', preco: 'R$ 97,00', periodo: 'pagamento único', link: 'https://pay.cakto.com.br/pauv7gm_813237', melhor: true }],
+    feats: ['7 estratégias exclusivas','Análise neural avançada','Scalping inteligente','Win Rate até 82%','Suporte prioritário'],
+    produto: 'estrategias-vip'
+  },
+  'premium-elite': {
+    icon: '⭐', nome: 'Premium Elite', cor: '#f59e0b', corBg: 'rgba(245,158,11,0.15)',
+    badge: 'PLANO PREMIUM', badgeCor: '#f59e0b',
+    desc: 'IAs Premium com deep learning e taxa de acerto acima de 84%. O pacote mais completo da plataforma.',
+    planos: [{ label: 'Vitalício', preco: 'R$ 147,00', periodo: 'pagamento único', link: 'https://pay.cakto.com.br/u2d43xb_813246', melhor: true }],
+    feats: ['Acesso a todas as IAs Premium','Deep learning em tempo real','Taxa de acerto acima de 84%','Suporte VIP','Atualizações vitalícias'],
+    produto: 'premium-elite'
+  },
+  'ai-signals': {
+    icon: '📊', nome: 'Alpha AI Signals', cor: '#22c55e', corBg: 'rgba(34,197,94,0.15)',
+    badge: 'SINAIS IA', badgeCor: '#22c55e',
+    desc: 'Sinais gerados por IA com taxa de acerto acima de 80%. Alertas em tempo real direto no seu dispositivo.',
+    planos: [
+      { label: 'Mensal', preco: 'R$ 97,00', periodo: '/mês', link: 'https://pay.cakto.com.br/uyfphav_813256', melhor: false },
+    ],
+    feats: ['Sinais em tempo real','Análise de mercado IA','Aba Vídeos completa','Suporte prioritário','Alertas instantâneos'],
+    produto: 'ai-signals'
+  },
+  'ia-pro': {
+    icon: '✨', nome: 'Alpha IA Pro', cor: '#a855f7', corBg: 'rgba(168,85,247,0.15)',
+    badge: 'IA PRO', badgeCor: '#a855f7',
+    desc: 'O robô mais avançado da plataforma com deep learning e taxa de acerto premium.',
+    planos: [
+      { label: 'Mensal', preco: 'R$ 97,00', periodo: '/mês', link: 'https://pay.cakto.com.br/gxjw4sk_813198', melhor: false },
+    ],
+    feats: ['Deep learning em tempo real','Taxa de acerto premium','Gestão automática de banca','Sinais de alta precisão','Suporte prioritário'],
+    produto: 'ia-pro'
+  }
+};
+
+let planoAtivo = 0;
+
+function renderCheckout() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('produto');
+  const p = PRODUTOS[id];
+  if (!p) return;
+
+  const card = document.getElementById('checkout-card');
+  card.style.borderColor = p.cor.replace(')', ',0.3)').replace('rgb', 'rgba');
+
+  card.innerHTML = `
+    <div class="icon">${p.icon}</div>
+    <div class="badge" style="background:${p.corBg};color:${p.badgeCor}">${p.badge}</div>
+    <div class="nome" style="color:${p.cor}">${p.nome}</div>
+    <div class="desc">${p.desc}</div>
+    ${p.planos.length > 1 ? `
+    <div class="toggle-plano">
+      ${p.planos.map((pl,i) => `<button class="btn-plano ${i===0?'ativo':''}" onclick="trocarPlano(${i})">${pl.label}${pl.melhor?'<span class="melhor">MELHOR</span>':''}</button>`).join('')}
+    </div>` : ''}
+    <div class="preco-wrap">
+      <div class="preco" id="preco-val" style="color:${p.cor}">${p.planos[0].preco}</div>
+    </div>
+    <div class="preco-label" id="preco-label">${p.planos[0].periodo}</div>
+    <ul class="feats">
+      ${p.feats.map(f => `<li style="--cor:${p.cor}"><span style="background:${p.corBg};color:${p.cor};min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-size:11px">✓</span>${f}</li>`).join('')}
+    </ul>
+    <a id="btn-comprar" href="${p.planos[0].link}" target="_blank" class="btn-comprar" style="background:linear-gradient(135deg,${p.cor},${p.cor});color:#fff">
+      🛒 COMPRAR AGORA
+    </a>
+    <div class="garantia">🔒 Garantia de 7 dias • Pagamento seguro</div>
+  `;
+
+  window._produtoAtual = p;
+}
+
+function trocarPlano(i) {
+  const p = window._produtoAtual;
+  planoAtivo = i;
+  document.getElementById('preco-val').textContent = p.planos[i].preco;
+  document.getElementById('preco-label').textContent = p.planos[i].periodo;
+  document.getElementById('btn-comprar').href = p.planos[i].link;
+  document.querySelectorAll('.btn-plano').forEach((b,j) => b.classList.toggle('ativo', j===i));
+}
+
+renderCheckout();
+</script>
+</body>
+</html>

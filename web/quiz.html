@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Descubra seu Potencial — Alpha Dolar</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#03050d;--s1:#080c18;--s2:#0c1220;--blue:#0ea5e9;--cyan:#22d3ee;--purple:#a855f7;--green:#22c55e;--gold:#f59e0b;--pink:#ec4899;--red:#ef4444;--text:#e2e8f0;--muted:#64748b;--border:rgba(255,255,255,0.07)}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* PARTICLES BG */
+#particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.particle{position:absolute;border-radius:50%;animation:floatUp linear infinite;opacity:0}
+@keyframes floatUp{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:1}90%{opacity:0.3}100%{transform:translateY(-20vh) scale(1);opacity:0}}
+
+/* HEADER */
+.hdr{position:fixed;top:0;left:0;right:0;z-index:200;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;background:rgba(3,5,13,0.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.logo{font-family:'Syne',sans-serif;font-size:14px;font-weight:900;letter-spacing:1px;background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.coins{display:flex;align-items:center;gap:6px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:20px;padding:5px 14px;font-size:13px;font-weight:700;color:var(--gold);transition:all 0.3s}
+
+/* PROGRESS */
+.pbar{position:fixed;top:49px;left:0;right:0;height:2px;background:rgba(255,255,255,0.04);z-index:200}
+.pfill{height:100%;background:linear-gradient(90deg,var(--blue),var(--purple),var(--pink));transition:width 0.7s cubic-bezier(0.4,0,0.2,1);box-shadow:0 0 8px rgba(14,165,233,0.5)}
+
+/* SLIDE SYSTEM */
+.quiz-stage{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:70px 20px 40px;position:relative;z-index:1}
+.slide{width:100%;max-width:600px;display:none;animation:slideIn 0.5s cubic-bezier(0.4,0,0.2,1)}
+.slide.active{display:block}
+@keyframes slideIn{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+/* CINEMATIC SLIDES */
+.cin-slide{text-align:center;padding:20px 0}
+.cin-icon{font-size:72px;margin-bottom:20px;filter:drop-shadow(0 0 40px currentColor);animation:iconPulse 2s ease-in-out infinite}
+@keyframes iconPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.cin-tag{display:inline-block;padding:5px 16px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px}
+.cin-title{font-family:'Syne',sans-serif;font-size:clamp(26px,5vw,40px);font-weight:900;line-height:1.2;margin-bottom:14px;color:#fff}
+.cin-title .hl{background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.cin-sub{font-size:16px;color:var(--muted);line-height:1.7;max-width:480px;margin:0 auto 28px}
+
+/* ROBOT ANIMATION SLIDE */
+.robot-slide{background:linear-gradient(135deg,rgba(14,165,233,0.05),rgba(168,85,247,0.05));border:1px solid rgba(14,165,233,0.15);border-radius:24px;padding:32px 24px;text-align:center;margin-bottom:0}
+.robot-screen{background:#050810;border:1px solid rgba(14,165,233,0.2);border-radius:16px;padding:20px;margin:20px 0;font-family:'DM Sans',monospace;font-size:13px;text-align:left;position:relative;overflow:hidden}
+.robot-screen::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--blue),transparent);animation:scanLine 3s linear infinite}
+@keyframes scanLine{0%{top:0}100%{top:100%}}
+.log-line{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+.log-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.log-dot.green{background:var(--green);box-shadow:0 0 6px var(--green)}
+.log-dot.blue{background:var(--blue);box-shadow:0 0 6px var(--blue)}
+.log-dot.gold{background:var(--gold);box-shadow:0 0 6px var(--gold)}
+.log-text{font-size:12px;color:var(--muted)}
+.log-val{margin-left:auto;font-size:12px;font-weight:700}
+.trade-result{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding:10px 14px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:10px}
+.trade-win{color:var(--green);font-weight:800;font-size:15px}
+.trade-info{font-size:11px;color:var(--muted)}
+
+/* QUESTION SLIDES */
+.q-tag{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:18px}
+.q-title{font-family:'Syne',sans-serif;font-size:clamp(20px,4vw,28px);font-weight:900;line-height:1.25;margin-bottom:8px;color:#fff}
+.q-sub{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.6}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{background:var(--s1);border:1.5px solid var(--border);border-radius:14px;padding:14px 18px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:12px;text-align:left;position:relative;overflow:hidden}
+.opt::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(14,165,233,0.06),transparent);opacity:0;transition:opacity 0.2s}
+.opt:hover{border-color:rgba(14,165,233,0.35);transform:translateX(4px)}
+.opt:hover::before{opacity:1}
+.opt.sel{border-color:var(--blue);background:rgba(14,165,233,0.07)}
+.opt.sel::before{opacity:1}
+.opt-ic{font-size:20px;width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s}
+.opt:hover .opt-ic,.opt.sel .opt-ic{background:rgba(14,165,233,0.1)}
+.opt-t{font-size:14px;font-weight:600;color:var(--text)}
+.opt-s{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* REVEAL CARDS */
+.rev{background:linear-gradient(135deg,rgba(14,165,233,0.06),rgba(168,85,247,0.06));border:1px solid rgba(14,165,233,0.18);border-radius:18px;padding:24px;margin-bottom:20px}
+.rev-icon{font-size:40px;margin-bottom:12px}
+.rev-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#fff;margin-bottom:10px}
+.rev-text{font-size:14px;color:var(--muted);line-height:1.75}
+.rev-text strong{color:#fff}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px}
+.stat-box{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center}
+.stat-num{font-family:'Syne',sans-serif;font-size:26px;font-weight:900;margin-bottom:2px}
+.stat-label{font-size:11px;color:var(--muted)}
+
+/* MILESTONE */
+.ms{text-align:center;padding:10px 0 20px}
+.ms-badge{font-size:64px;margin-bottom:16px;display:block;animation:badgePop 0.6s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes badgePop{from{transform:scale(0) rotate(-15deg)}to{transform:scale(1) rotate(0)}}
+.ms-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:900;color:#fff;margin-bottom:8px}
+.ms-coins{display:inline-flex;align-items:center;gap:8px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:20px;padding:8px 20px;font-size:15px;font-weight:800;color:var(--gold);margin-bottom:14px}
+.ms-text{font-size:14px;color:var(--muted);max-width:380px;margin:0 auto 24px;line-height:1.7}
+
+/* BUTTONS */
+.btn{width:100%;padding:16px;border-radius:14px;border:none;font-family:'Syne',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:all 0.25s;margin-top:18px;letter-spacing:0.3px;position:relative;overflow:hidden}
+.btn-primary{background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff}
+.btn-primary::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.1),transparent);opacity:0;transition:opacity 0.2s}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(14,165,233,0.4)}
+.btn-primary:hover::after{opacity:1}
+.btn-primary:disabled{opacity:0.35;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-green{background:linear-gradient(135deg,#16a34a,var(--green));color:#fff}
+.btn-green:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(34,197,94,0.4)}
+
+/* FINAL PAGE */
+.final-wrap{max-width:680px;margin:0 auto;padding:0 0 60px}
+.final-hero{text-align:center;padding:30px 20px 40px;background:linear-gradient(180deg,rgba(14,165,233,0.08),transparent);border-bottom:1px solid var(--border);margin-bottom:32px}
+.final-coins-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:20px;padding:7px 18px;font-size:14px;font-weight:800;color:var(--gold);margin-bottom:20px}
+.profile-card{background:linear-gradient(135deg,rgba(14,165,233,0.1),rgba(168,85,247,0.08));border:2px solid rgba(14,165,233,0.25);border-radius:24px;padding:28px;margin-bottom:28px}
+.profile-emoji{font-size:56px;margin-bottom:12px;display:block}
+.profile-name{font-family:'Syne',sans-serif;font-size:22px;font-weight:900;color:#fff;margin-bottom:8px}
+.profile-desc{font-size:14px;color:var(--muted);line-height:1.75}
+.prediction-box{background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(14,165,233,0.06));border:1px solid rgba(34,197,94,0.2);border-radius:18px;padding:24px;margin-bottom:28px}
+.pred-title{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:16px}
+.pred-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.pred-item:last-child{border-bottom:none}
+.pred-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.pred-label{font-size:12px;color:var(--muted)}
+.pred-val{font-size:14px;font-weight:700;color:#fff;margin-top:2px}
+.sec-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:#fff;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.rec-list{display:flex;flex-direction:column;gap:12px;margin-bottom:28px}
+.rec-item{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.2s;text-decoration:none;position:relative;overflow:hidden}
+.rec-item::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity 0.2s}
+.rec-item:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,0.4)}
+.rec-item:hover::before{opacity:1}
+.rec-ic{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.rec-nome{font-size:15px;font-weight:700;color:#fff}
+.rec-desc{font-size:12px;color:var(--muted);margin-top:3px}
+.rec-price{font-size:14px;font-weight:800;margin-top:4px}
+.rec-cta{margin-left:auto;padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.objecoes{margin-bottom:28px}
+.obj-item{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.obj-item:last-child{border-bottom:none}
+.obj-check{width:24px;height:24px;border-radius:6px;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:2px}
+.obj-q{font-size:13px;font-weight:700;color:#fff;margin-bottom:4px}
+.obj-a{font-size:13px;color:var(--muted);line-height:1.6}
+.depos{display:flex;flex-direction:column;gap:12px;margin-bottom:28px}
+.depo{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;gap:12px}
+.depo-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.depo-nome{font-size:13px;font-weight:700;color:#fff;margin-bottom:4px}
+.depo-text{font-size:13px;color:var(--muted);line-height:1.6}
+.depo-stars{color:var(--gold);font-size:11px;margin-top:4px}
+.urgency{background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(239,68,68,0.06));border:1px solid rgba(245,158,11,0.25);border-radius:16px;padding:20px;text-align:center;margin-bottom:24px}
+.urg-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--gold);margin-bottom:6px}
+.urg-text{font-size:13px;color:var(--muted)}
+.btn-final{display:block;width:100%;padding:18px;border-radius:16px;border:none;background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;font-family:'Syne',sans-serif;font-size:17px;font-weight:900;cursor:pointer;transition:all 0.25s;text-decoration:none;text-align:center;margin-bottom:12px;letter-spacing:0.3px}
+.btn-final:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(14,165,233,0.45)}
+.btn-free{display:block;width:100%;padding:15px;border-radius:14px;border:1.5px solid rgba(34,197,94,0.35);background:transparent;color:var(--green);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;text-decoration:none;text-align:center;margin-bottom:20px}
+.btn-free:hover{background:rgba(34,197,94,0.08)}
+.guarantee{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;color:var(--muted)}
+.guarantee svg{flex-shrink:0}
+
+/* CONFETTI */
+.conf{position:fixed;pointer-events:none;z-index:999;animation:confFall 2.5s ease forwards}
+@keyframes confFall{0%{transform:translateY(-10px) rotate(0);opacity:1}100%{transform:translateY(105vh) rotate(540deg);opacity:0}}
+
+/* COIN POP */
+.cpop{position:fixed;pointer-events:none;z-index:999;font-size:15px;font-weight:800;color:var(--gold);animation:cpopAnim 1s ease forwards}
+@keyframes cpopAnim{0%{transform:translateY(0) scale(0.8);opacity:1}100%{transform:translateY(-70px) scale(1.1);opacity:0}}
+
+@media(max-width:480px){.cin-title{font-size:22px}.q-title{font-size:20px}.opts .opt{padding:12px 14px}}
+</style>
+</head>
+<body>
+
+<div id="particles"></div>
+
+<div class="hdr">
+  <div class="logo">⚡ ALPHA DOLAR</div>
+  <div class="coins" id="coinsEl">🪙 <span id="coinsNum">0</span></div>
+</div>
+<div class="pbar"><div class="pfill" id="pfill" style="width:0%"></div></div>
+
+<div class="quiz-stage">
+<div style="width:100%;max-width:600px">
+
+<!-- S1: CINEMATIC HOOK -->
+<div class="slide active" id="s1">
+  <div class="cin-slide">
+    <div class="cin-tag" style="background:rgba(14,165,233,0.1);color:var(--blue);border:1px solid rgba(14,165,233,0.2)">⚡ 2 minutos · resultado personalizado</div>
+    <div class="cin-icon" style="color:var(--gold)">💸</div>
+    <div class="cin-title">Você merece ter uma <span class="hl">renda que trabalha</span> por você</div>
+    <div class="cin-sub">Imagine acordar amanhã e ver que seu dinheiro cresceu enquanto você dormia — sem estresse, sem tela, sem depender de ninguém.</div>
+    <div class="opts">
+      <div class="opt" onclick="pick(this,1,'extra')"><div class="opt-ic">💼</div><div><div class="opt-t">Quero uma renda extra além do salário</div><div class="opt-s">Complementar o que já ganho</div></div></div>
+      <div class="opt" onclick="pick(this,1,'principal')"><div class="opt-ic">🚀</div><div><div class="opt-t">Quero que essa renda se torne minha principal</div><div class="opt-s">Independência financeira de verdade</div></div></div>
+      <div class="opt" onclick="pick(this,1,'trader')"><div class="opt-ic">📊</div><div><div class="opt-t">Já faço trading e quero automatizar</div><div class="opt-s">Cansei de operar no emocional</div></div></div>
+      <div class="opt" onclick="pick(this,1,'curioso')"><div class="opt-ic">🔍</div><div><div class="opt-t">Tenho curiosidade, quero entender</div><div class="opt-s">Nunca tentei mas me interessa</div></div></div>
+    </div>
+    <button class="btn btn-primary" id="b1" disabled onclick="go(2,10)">Começar minha análise →</button>
+  </div>
+</div>
+
+<!-- S2: SONHO -->
+<div class="slide" id="s2">
+  <div class="cin-slide">
+    <div class="cin-tag" style="background:rgba(168,85,247,0.1);color:var(--purple);border:1px solid rgba(168,85,247,0.2)">✦ Pergunta 2 de 11</div>
+    <div class="cin-icon" style="color:var(--purple)">✈️</div>
+    <div class="cin-title">O que <span class="hl">liberdade financeira</span> significa pra você?</div>
+    <div class="cin-sub">Essa resposta vai personalizar completamente sua experiência.</div>
+    <div class="opts">
+      <div class="opt" onclick="pick(this,2,'viagem')"><div class="opt-ic">🌍</div><div><div class="opt-t">Trabalhar de qualquer lugar do mundo</div><div class="opt-s">Laptop + praia + café. Onde eu quiser</div></div></div>
+      <div class="opt" onclick="pick(this,2,'tempo')"><div class="opt-ic">⏰</div><div><div class="opt-t">Ter tempo de qualidade com a família</div><div class="opt-s">Nunca mais perder momentos por causa de dinheiro</div></div></div>
+      <div class="opt" onclick="pick(this,2,'dividas')"><div class="opt-ic">🧾</div><div><div class="opt-t">Quitar dívidas e dormir tranquilo</div><div class="opt-s">Parar de se preocupar com o fim do mês</div></div></div>
+      <div class="opt" onclick="pick(this,2,'patrimonio')"><div class="opt-ic">🏗️</div><div><div class="opt-t">Construir patrimônio e investir mais</div><div class="opt-s">Multiplicar o dinheiro de forma consistente</div></div></div>
+    </div>
+    <button class="btn btn-primary" id="b2" disabled onclick="go(3,15)">Continuar →</button>
+  </div>
+</div>
+
+<!-- S3: OBSTÁCULO -->
+<div class="slide" id="s3">
+  <div>
+    <div class="q-tag" style="background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2)">✦ Pergunta 3 de 11</div>
+    <div class="q-title">O que te impede hoje de ter essa renda extra?</div>
+    <div class="q-sub">Quanto mais honesto você for, melhor a recomendação no final.</div>
+    <div class="opts">
+      <div class="opt" onclick="pick(this,3,'tempo')"><div class="opt-ic">⏳</div><div><div class="opt-t">Falta de tempo</div><div class="opt-s">Meu dia é lotado demais</div></div></div>
+      <div class="opt" onclick="pick(this,3,'capital')"><div class="opt-ic">💰</div><div><div class="opt-t">Não tenho capital para investir</div><div class="opt-s">A grana mal fecha o mês</div></div></div>
+      <div class="opt" onclick="pick(this,3,'conhecimento')"><div class="opt-ic">🧠</div><div><div class="opt-t">Não sei como começar</div><div class="opt-s">Parece complicado demais</div></div></div>
+      <div class="opt" onclick="pick(this,3,'medo')"><div class="opt-ic">😰</div><div><div class="opt-t">Medo de perder dinheiro</div><div class="opt-s">Já tentei antes e não funcionou</div></div></div>
+    </div>
+    <button class="btn btn-primary" id="b3" disabled onclick="go(4,10)">Continuar →</button>
+  </div>
+</div>
+
+<!-- S4: REVEAL ROBÔ -->
+<div class="slide" id="s4">
+  <div class="cin-slide">
+    <div class="cin-tag" style="background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.2)">✦ Revelação importante</div>
+    <div class="robot-slide">
+      <div style="font-size:36px;margin-bottom:12px">🤖</div>
+      <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#fff;margin-bottom:16px">O robô resolve tudo isso</div>
+      <div class="robot-screen">
+        <div class="log-line"><div class="log-dot green"></div><div class="log-text">Sistema iniciado</div><div class="log-val" style="color:var(--green)">ATIVO</div></div>
+        <div class="log-line"><div class="log-dot blue"></div><div class="log-text">Analisando mercado...</div><div class="log-val" style="color:var(--blue)">R_100</div></div>
+        <div class="log-line"><div class="log-dot gold"></div><div class="log-text">Score de confiança</div><div class="log-val" style="color:var(--gold)">78%</div></div>
+        <div class="log-line"><div class="log-dot green"></div><div class="log-text">Entrada detectada</div><div class="log-val" style="color:var(--green)">PAR</div></div>
+        <div class="log-line"><div class="log-dot blue"></div><div class="log-text">Stake calculado (Alpha Bank)</div><div class="log-val" style="color:var(--blue)">$0.42</div></div>
+        <div class="trade-result">
+          <div><div class="trade-win">✓ WIN +$0.38</div><div class="trade-info">Contrato encerrado · 1 tique</div></div>
+          <div style="font-size:22px">🏆</div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7;text-align:left">
+        <strong style="color:#fff">Sem tempo?</strong> Opera enquanto você dorme. &nbsp;
+        <strong style="color:#fff">Sem capital?</strong> Começa com R$30 na demo. &nbsp;
+        <strong style="color:#fff">Sem conhecimento?</strong> Configura sozinho. &nbsp;
+        <strong style="color:#fff">Medo de perder?</strong> Stop loss automático.
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="go(5,20)">Isso é o que eu preciso! →</button>
+  </div>
+</div>
+
+<!-- S5: TEMPO -->
+<div class="slide" id="s5">
+  <div>
+    <div class="q-tag" style="background:rgba(245,158,11,0.1);color:var(--gold);border:1px solid rgba(245,158,11,0.2)">✦ Pergunta 5 de 11</div>
+    <div class="q-title">Quanto tempo por dia você pode dedicar?</div>
+    <div class="q-sub">Só para acompanhar os resultados — o robô opera sozinho.</div>
+    <div class="opts">
+      <div class="opt" onclick="pick(this,5,'zero')"><div class="opt-ic">😴</div><div><div class="opt-t">Quase zero — quero tudo automático</div><div class="opt-s">Configure e esqueça</div></div></div>
+      <div class="opt" onclick="pick(this,5,'pouco')"><div class="opt-ic">📱</div><div><div class="opt-t">5 a 15 minutos por dia</div><div class="opt-s">Verifico pelo celular de manhã e à noite</div></div></div>
+      <div class="opt" onclick="pick(this,5,'medio')"><div class="opt-ic">💻</div><div><div class="opt-t">30 minutos a 1 hora</div><div class="opt-s">Consigo acompanhar quando quero</div></div></div>
+      <div class="opt" onclick="pick(this,5,'muito')"><div class="opt-ic">🎯</div><div><div class="opt-t">Tenho bastante tempo disponível</div><div class="opt-s">Quero explorar tudo da plataforma</div></div></div>
+    </div>
+    <button class="btn btn-primary" id="b5" disabled onclick="go(6,15)">Continuar →</button>
+  </div>
+</div>
+
+<!-- S6: CAPITAL -->
+<div class="slide" id="s6">
+  <div>
+    <div class="q-tag" style="background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.2)">✦ Pergunta 6 de 11</div>
+    <div class="q-title">Qual valor você teria para começar?</div>
+    <div class="q-sub">Sem compromisso — isso ajuda a calcular o potencial de retorno para o seu caso.</div>
+    <div class="opts">
+      <div class="opt" onclick="pick(this,6,'demo')"><div class="opt-ic">🆓</div><div><div class="opt-t">Quero testar grátis primeiro</div><div class="opt-s">Conta demo sem risco nenhum</div></div></div>
+      <div class="opt" onclick="pick(this,6,'pequeno')"><div class="opt-ic">💵</div><div><div class="opt-t">R$ 50 a R$ 200</div><div class="opt-s">Começar pequeno e ir crescendo</div></div></div>
+      <div class="opt" onclick="pick(this,6,'medio')"><div class="opt-ic">💰</div><div><div class="opt-t">R$ 200 a R$ 1.000</div><div class="opt-s">Tenho uma reserva para investir</div></div></div>
+      <div class="opt" onclick="pick(this,6,'grande')"><div class="opt-ic">🏦</div><div><div class="opt-t">R$ 1.000 ou mais</div><div class="opt-s">Quero resultados mais expressivos</div></div></div>
+    </div>
+    <button class="btn btn-primary" id="b6" disabled onclick="go(7,20)">Continuar →</button>
+  </div>
+</div>
+
+<!-- S7: MILESTONE -->
+<div class="slide" id="s7">
+  <div class="ms">
+    <span class="ms-badge">🏆</span>
+    <div class="ms-title">Você está quase lá!</div>
+    <div class="ms-coins">🪙 <span id="midcoins">0</span> moedas acumuladas</div>
+    <div class="ms-text">Nossa IA já montou 60% do seu perfil. As próximas perguntas vão definir exatamente qual estratégia vai funcionar melhor para você.</div>
+  </div>
+  <div class="rev">
+    <div class="rev-icon">⏰</div>
+    <div class="rev-title">O horário que poucos traders conhecem</div>
+    <div class="rev-text">Entre <strong>14h e 16h</strong> (horário de Brasília) o mercado tem score de <strong style="color:var(--green)">88%</strong> — o maior do dia. O Alpha Clock mostra isso em tempo real para você nunca operar na hora errada.</div>
+  </div>
+  <button class="btn btn-primary" onclick="go(8,25)">Continuar →</button>
+</div>
+
+<!-- S8: EXPERIÊNCIA -->
+<div class="slide" id="s8">
+  <div>
+    <div class="q-tag" style="background:rgba(168,85,247,0.1);color:var(--purple);border:1px solid rgba(168,85,247,0.2)">✦ Pergunta 8 de 11</div>
+    <div class="q-title">Qual sua experiência com trading?</div>
+    <div class="q-sub">Sem julgamento — só queremos recomendar o caminho certo para você.</div>
+    <div class="opts">
+      <div class="opt" onclick="pick(this,8,'zero')"><div class="opt-ic">🐣</div><div><div class="opt-t">Iniciante completo</div><div class="opt-s">Nunca investi nem fiz trading</div></div></div>
+      <div class="opt" onclick="pick(this,8,'basico')"><div class="opt-ic">📚</div><div><div class="opt-t">Sei o básico, já ouvi falar</div><div class="opt-s">Nunca operei mas entendo a ideia</div></div></div>
+      <div class="opt" onclick="pick(this,8,'medio')"><div class="opt-ic">⚡</div><div><div class="opt-t">Já operei mas sem consistência</div><div class="opt-s">Perdi dinheiro operando no emocional</div></div></div>
+      <div class="opt" onclick="pick(this,8,'avancado')"><div class="opt-ic">🎯</div><div><div class="opt-t">Tenho experiência real</div><div class="opt-s">Opero há pelo menos 6 meses</div></div></div>
+    </div>
+    <button class="btn btn-primary" id="b8" disabled onclick="go(9,15)">Continuar →</button>
+  </div>
+</div>
+
+<!-- S9: PROVA SOCIAL -->
+<div class="slide" id="s9">
+  <div class="cin-slide">
+    <div class="cin-tag" style="background:rgba(14,165,233,0.1);color:var(--blue);border:1px solid rgba(14,165,233,0.2)">✦ Dados em tempo real</div>
+    <div class="cin-title">Veja o que está acontecendo <span class="hl">agora</span> na plataforma</div>
+    <div class="rev">
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-num" style="color:var(--blue)">800+</div><div class="stat-label">Traders ativos agora</div></div>
+        <div class="stat-box"><div class="stat-num" style="color:var(--green)">74%</div><div class="stat-label">Win rate médio</div></div>
+        <div class="stat-box"><div class="stat-num" style="color:var(--purple)">R$30</div><div class="stat-label">Para começar grátis</div></div>
+        <div class="stat-box"><div class="stat-num" style="color:var(--gold)">7 dias</div><div class="stat-label">Garantia em produtos</div></div>
+      </div>
+    </div>
+    <div class="q-sub" style="text-align:center">Você acredita que esse sistema pode funcionar para você?</div>
+    <div class="opts">
+      <div class="opt" onclick="pick(this,9,'sim')"><div class="opt-ic">✅</div><div><div class="opt-t">Sim, acredito que pode funcionar</div></div></div>
+      <div class="opt" onclick="pick(this,9,'talvez')"><div class="opt-ic">🤔</div><div><div class="opt-t">Talvez — quero ver antes de acreditar</div></div></div>
+      <div class="opt" onclick="pick(this,9,'duvida')"><div class="opt-ic">❓</div><div><div class="opt-t">Ainda tenho dúvidas</div></div></div>
+    </div>
+    <button class="btn btn-primary" id="b9" disabled onclick="go(10,15)">Continuar →</button>
+  </div>
+</div>
+
+<!-- S10: SONHO FUTURO -->
+<div class="slide" id="s10">
+  <div>
+    <div class="q-tag" style="background:rgba(245,158,11,0.1);color:var(--gold);border:1px solid rgba(245,158,11,0.2)">✦ Última pergunta!</div>
+    <div class="q-title">Onde você quer estar <span style="color:var(--gold)">daqui a 6 meses</span>?</div>
+    <div class="q-sub">Sua resposta vai completar seu perfil e definir a estratégia ideal para chegar lá.</div>
+    <div class="opts">
+      <div class="opt" onclick="pick(this,10,'livre')"><div class="opt-ic">🌍</div><div><div class="opt-t">Livre para trabalhar de onde quiser</div><div class="opt-s">Sem horário de chefe, sem local fixo</div></div></div>
+      <div class="opt" onclick="pick(this,10,'estavel')"><div class="opt-ic">🏠</div><div><div class="opt-t">Financeiramente estável e sem dívidas</div><div class="opt-s">Dormir tranquilo sem preocupar com contas</div></div></div>
+      <div class="opt" onclick="pick(this,10,'substituir')"><div class="opt-ic">💼</div><div><div class="opt-t">Com renda que substituiu o emprego</div><div class="opt-s">Dependendo só de mim mesmo</div></div></div>
+      <div class="opt" onclick="pick(this,10,'crescendo')"><div class="opt-ic">📈</div><div><div class="opt-t">Crescendo como trader de verdade</div><div class="opt-s">Aprendendo e evoluindo consistentemente</div></div></div>
+    </div>
+    <button class="btn btn-primary" id="b10" disabled onclick="go(11,30)">Ver meu resultado personalizado →</button>
+  </div>
+</div>
+
+<!-- S11: RESULTADO FINAL -->
+<div class="slide" id="s11">
+  <div class="final-wrap" id="finalWrap"></div>
+</div>
+
+</div>
+</div>
+
+<script>
+// PARTICLES
+(function(){
+  const c=['rgba(14,165,233,0.4)','rgba(168,85,247,0.4)','rgba(34,197,94,0.3)','rgba(245,158,11,0.3)'];
+  const wrap=document.getElementById('particles');
+  for(let i=0;i<25;i++){
+    const p=document.createElement('div');
+    p.className='particle';
+    const s=Math.random()*4+2;
+    p.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;background:${c[Math.floor(Math.random()*c.length)]};animation-duration:${Math.random()*15+10}s;animation-delay:${Math.random()*10}s`;
+    wrap.appendChild(p);
+  }
+})();
+
+let coins=0, answers={}, cur=1;
+const _sid = 'qs_' + Math.random().toString(36).substr(2,9) + '_' + Date.now();
+function _track(step, answer, completed){
+  fetch('/api/quiz/track', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({quiz:'quiz', session_id:_sid, step, answer:answer||'', completed:completed||0})
+  }).catch(()=>{});
+}
+const total=11;
+
+function pick(el,slide,val){
+  document.querySelectorAll('#s'+slide+' .opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+  answers[slide]=val;
+  const b=document.getElementById('b'+slide);
+  if(b) b.disabled=false;
+}
+
+function addCoins(n){
+  coins+=n;
+  const el=document.getElementById('coinsNum');
+  el.textContent=coins;
+  const box=document.getElementById('coinsEl');
+  box.style.transform='scale(1.2)';
+  setTimeout(()=>box.style.transform='scale(1)',300);
+  const pop=document.createElement('div');
+  pop.className='cpop';
+  pop.textContent='+'+n+'🪙';
+  pop.style.cssText='top:55px;right:24px;position:fixed';
+  document.body.appendChild(pop);
+  setTimeout(()=>pop.remove(),1000);
+}
+
+function go(to,reward){
+  _track(to, answers[cur]||'', to===11 ? 1 : 0);
+  addCoins(reward);
+  const from=document.getElementById('s'+cur);
+  const next=document.getElementById('s'+to);
+  from.classList.remove('active');
+  next.classList.add('active');
+  cur=to;
+  document.getElementById('pfill').style.width=((to/total)*100)+'%';
+  if(to===7) document.getElementById('midcoins').textContent=coins;
+  if(to===11) buildFinal();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function confetti(){
+  const colors=['#0ea5e9','#a855f7','#22c55e','#f59e0b','#ec4899','#22d3ee'];
+  for(let i=0;i<40;i++){
+    setTimeout(()=>{
+      const c=document.createElement('div');
+      c.className='conf';
+      const s=Math.random()*10+6;
+      c.style.cssText=`left:${Math.random()*100}vw;top:-20px;width:${s}px;height:${s}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>0.5?'50%':'2px'};animation-delay:${Math.random()*0.5}s`;
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(),3000);
+    },i*60);
+  }
+}
+
+function buildFinal(){
+  confetti();
+  const exp=answers[8]||'zero';
+  const capital=answers[6]||'demo';
+  const obj=answers[1]||'extra';
+  const sonho=answers[10]||'estavel';
+
+  // PERFIL
+  let badge,name,desc,pred,recs;
+  if(exp==='zero'||exp==='basico'){
+    badge='🌱'; name='Trader Iniciante com Alto Potencial';
+    desc='Você está no melhor momento para começar — sem vícios de operações erradas, sem trauma de perdas passadas. Com as ferramentas certas, iniciantes que começam pelo caminho certo chegam à consistência em semanas, não anos.';
+    pred=[
+      {ic:'🎯',bg:'rgba(34,197,94,0.1)',label:'Recomendação de entrada',val:'Conta Demo + Robô Simples'},
+      {ic:'⏱️',bg:'rgba(14,165,233,0.1)',label:'Tempo para primeiros resultados',val:'1 a 2 semanas de prática'},
+      {ic:'💰',bg:'rgba(245,158,11,0.1)',label:'Potencial com R$200 de banca',val:'R$40 a R$100 por semana'},
+      {ic:'🛡️',bg:'rgba(168,85,247,0.1)',label:'Proteção recomendada',val:'Alpha Bank — gestão automática'},
+    ];
+    recs=[
+      {icon:'🆓',nome:'Acesso Gratuito — Comece Agora',desc:'Robô simples + conta demo sem risco',price:'Grátis para sempre',link:'/home',cor:'#22c55e',bg:'rgba(34,197,94,0.1)',cta:'Começar grátis →'},
+      {icon:'🏦',nome:'Alpha Bank',desc:'Gestão automática de banca — protege seu capital',price:'R$ 19,90 vitalício',link:'/checkout?produto=alpha-bank',cor:'#22c55e',bg:'rgba(34,197,94,0.08)',cta:'Ver detalhes →'},
+    ];
+  } else if(exp==='medio'){
+    badge='⚡'; name='Trader em Evolução — Pronto para Consistência';
+    desc='Você já sabe o que é o mercado, mas ainda não encontrou a fórmula para ser consistente. O problema quase nunca é estratégia — é gestão de banca e emocional. O Alpha Dolar resolve os dois automaticamente, sem você precisar lutar contra si mesmo.';
+    pred=[
+      {ic:'🎯',bg:'rgba(168,85,247,0.1)',label:'Seu maior ganho com a plataforma',val:'Eliminar o fator emocional'},
+      {ic:'📈',bg:'rgba(14,165,233,0.1)',label:'Estratégia recomendada',val:'IA Avançado com Machine Learning'},
+      {ic:'💰',bg:'rgba(245,158,11,0.1)',label:'Potencial com R$500 de banca',val:'R$100 a R$300 por semana'},
+      {ic:'🧠',bg:'rgba(168,85,247,0.1)',label:'Diferencial para você',val:'Score de confiança automático'},
+    ];
+    recs=[
+      {icon:'🧠',nome:'IA Avançado',desc:'Machine learning que aprende o mercado em tempo real',price:'R$ 97,00 vitalício',link:'/checkout?produto=ia-avancado',cor:'#a855f7',bg:'rgba(168,85,247,0.1)',cta:'Quero esse →'},
+      {icon:'🏦',nome:'Alpha Bank',desc:'Gestão automática de banca — stop loss + meta diária',price:'R$ 19,90 vitalício',link:'/checkout?produto=alpha-bank',cor:'#22c55e',bg:'rgba(34,197,94,0.08)',cta:'Ver detalhes →'},
+    ];
+  } else {
+    badge='🎯'; name='Trader Avançado — Pronto para o Próximo Nível';
+    desc='Você tem experiência real e sabe reconhecer uma boa ferramenta. As estratégias VIP com análise neural foram desenvolvidas para traders como você — que entendem que win rate consistente vale muito mais que qualquer promessa de enriquecimento rápido.';
+    pred=[
+      {ic:'💎',bg:'rgba(14,165,233,0.1)',label:'Pacote ideal para seu perfil',val:'Estratégias VIP — 7 IAs neurais'},
+      {ic:'📊',bg:'rgba(34,197,94,0.1)',label:'Win rate esperado',val:'78% a 82% nas estratégias VIP'},
+      {ic:'💰',bg:'rgba(245,158,11,0.1)',label:'Potencial com R$1k de banca',val:'R$300 a R$800 por semana'},
+      {ic:'🚀',bg:'rgba(168,85,247,0.1)',label:'Upgrade disponível',val:'Premium Elite — 84%+ win rate'},
+    ];
+    recs=[
+      {icon:'💎',nome:'Estratégias VIP',desc:'7 IAs exclusivas com análise neural — win rate até 82%',price:'R$ 97,00 vitalício',link:'/checkout?produto=estrategias-vip',cor:'#0ea5e9',bg:'rgba(14,165,233,0.1)',cta:'Quero o VIP →'},
+      {icon:'⭐',nome:'Premium Elite',desc:'O pacote mais completo — deep learning + win rate 84%+',price:'R$ 147,00 vitalício',link:'/checkout?produto=premium-elite',cor:'#f59e0b',bg:'rgba(245,158,11,0.08)',cta:'Ver detalhes →'},
+    ];
+  }
+
+  const mainRec=recs[0];
+
+  document.getElementById('finalWrap').innerHTML=`
+    <div class="final-hero">
+      <div class="final-coins-badge">🪙 ${coins} moedas conquistadas!</div>
+      <div style="font-size:13px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:20px">✦ Seu perfil personalizado</div>
+      <div class="profile-card">
+        <span class="profile-emoji">${badge}</span>
+        <div class="profile-name">${name}</div>
+        <div class="profile-desc">${desc}</div>
+      </div>
+    </div>
+
+    <div style="padding:0 20px">
+
+      <div class="prediction-box">
+        <div class="pred-title">✦ Sua análise personalizada</div>
+        ${pred.map(p=>`
+          <div class="pred-item">
+            <div class="pred-ic" style="background:${p.bg}">${p.ic}</div>
+            <div><div class="pred-label">${p.label}</div><div class="pred-val">${p.val}</div></div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="sec-title">🎯 Recomendado para você</div>
+      <div class="rec-list">
+        ${recs.map((r,i)=>`
+          <a href="${r.link}" class="rec-item" style="border-color:${r.cor}22">
+            <div class="rec-ic" style="background:${r.bg}">${r.icon}</div>
+            <div style="flex:1;min-width:0">
+              <div class="rec-nome">${r.nome}</div>
+              <div class="rec-desc">${r.desc}</div>
+              <div class="rec-price" style="color:${r.cor}">${r.price}</div>
+            </div>
+            <div class="rec-cta" style="background:${r.bg};color:${r.cor}">${r.cta}</div>
+          </a>
+        `).join('')}
+      </div>
+
+      <div class="objecoes">
+        <div class="sec-title">❓ Perguntas frequentes</div>
+        <div class="obj-item">
+          <div class="obj-check">✓</div>
+          <div><div class="obj-q">Precisa saber trading para usar?</div><div class="obj-a">Não. O modo simples funciona com 3 cliques — qualquer pessoa consegue. O robô toma as decisões por você.</div></div>
+        </div>
+        <div class="obj-item">
+          <div class="obj-check">✓</div>
+          <div><div class="obj-q">Posso perder todo o meu dinheiro?</div><div class="obj-a">O Alpha Bank configura automaticamente o stop loss diário. Quando o limite é atingido, o robô para sozinho — protegendo o restante da sua banca.</div></div>
+        </div>
+        <div class="obj-item">
+          <div class="obj-check">✓</div>
+          <div><div class="obj-q">Tem garantia se não funcionar?</div><div class="obj-a">Todos os produtos pagos têm garantia de 7 dias. Se não gostar, devolvemos 100% sem perguntas.</div></div>
+        </div>
+        <div class="obj-item">
+          <div class="obj-check">✓</div>
+          <div><div class="obj-q">Funciona em qualquer celular?</div><div class="obj-a">Sim. O sistema roda 100% no navegador — iPhone, Android, computador. Sem instalar nada.</div></div>
+        </div>
+      </div>
+
+      <div class="depos">
+        <div class="sec-title">⭐ O que dizem os traders</div>
+        <div class="depo">
+          <div class="depo-av" style="background:rgba(34,197,94,0.1)">🧑</div>
+          <div><div class="depo-nome">Carlos M. — Trader há 3 meses</div><div class="depo-text">"Comecei sem saber nada de trading. Hoje o robô opera sozinho enquanto estou no trabalho. Na primeira semana já recuperei o valor do plano."</div><div class="depo-stars">★★★★★</div></div>
+        </div>
+        <div class="depo">
+          <div class="depo-av" style="background:rgba(14,165,233,0.1)">👩</div>
+          <div><div class="depo-nome">Ana R. — Professora e trader</div><div class="depo-text">"O Alpha Bank foi o que me faltava. Parei de estourar a conta porque o stop loss agora é automático. Muito mais tranquilidade."</div><div class="depo-stars">★★★★★</div></div>
+        </div>
+        <div class="depo">
+          <div class="depo-av" style="background:rgba(168,85,247,0.1)">🧔</div>
+          <div><div class="depo-nome">Lucas F. — Trader avançado</div><div class="depo-text">"As estratégias VIP são outro nível. Alpha Sniper com 82% de win rate é real — tenho o histórico das últimas 200 operações para provar."</div><div class="depo-stars">★★★★★</div></div>
+        </div>
+      </div>
+
+      <div class="urgency">
+        <div class="urg-title">⚡ Comece hoje — sem risco</div>
+        <div class="urg-text">O acesso básico é gratuito. Você pode testar tudo na conta demo antes de investir qualquer valor real.</div>
+      </div>
+
+      <a href="${mainRec.link}" class="btn-final">🚀 ${mainRec.cta} — Começar Agora</a>
+      <a href="/home" class="btn-free">🆓 Ou acessar gratuitamente sem pagar nada</a>
+      <div class="guarantee">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Garantia de 7 dias · Pagamento 100% seguro · Sem mensalidade
+      </div>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>

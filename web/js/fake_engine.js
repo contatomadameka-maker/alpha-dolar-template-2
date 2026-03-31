@@ -151,6 +151,17 @@ function gerarTrade() {
     STATE.derrotas++; STATE.loss_streak++; STATE.win_streak = 0;
     STATE.stake_atual = parseFloat((STATE.stake_atual * 2.2).toFixed(2));
     if (STATE.stake_atual > STATE.stake_base * 128) STATE.stake_atual = STATE.stake_base;
+    // Multi-estratégia fake: troca display após perda
+    if (window._multiStrategyAtivo) {
+      var estrategiasFake = ['Alpha Bot 1','Alpha Bot 2','Alpha Bot 3','Alpha Mind','Quantum Trader','Titan Core','Alpha Pulse','Alpha Smart','Mega Alpha 1.0','Alpha Elite','Alpha Nexus'];
+      var atual = document.getElementById('botDisplayStrategy');
+      if (atual) {
+        var nomeAtual = atual.innerText.replace('⚡ ','');
+        var opcoes = estrategiasFake.filter(function(e){ return e !== nomeAtual; });
+        var nova = opcoes[Math.floor(Math.random() * opcoes.length)];
+        atual.innerText = '⚡ ' + nova;
+      }
+    }
   }
 
   const winRateAtual = STATE.total_trades > 0 ? parseFloat(((STATE.vitorias/STATE.total_trades)*100).toFixed(1)) : 0;

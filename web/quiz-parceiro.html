@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Seja um Parceiro Alpha Dolar — Sistema Próprio de Trading</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#03050d;--s1:#080c18;--s2:#0c1220;--gold:#f59e0b;--gold2:#d97706;--blue:#0ea5e9;--green:#22c55e;--purple:#a855f7;--text:#e2e8f0;--muted:#64748b;--border:rgba(255,255,255,0.07)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+#bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);animation:orbMove ease-in-out infinite}
+@keyframes orbMove{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,30px)}}
+.hdr{position:fixed;top:0;left:0;right:0;z-index:200;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;background:rgba(3,5,13,0.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.logo{font-family:'Syne',sans-serif;font-size:14px;font-weight:900;background:linear-gradient(135deg,var(--gold),#fde68a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:1px}
+.step-counter{font-size:12px;color:var(--muted);font-weight:600}
+.pbar{position:fixed;top:49px;left:0;right:0;height:2px;background:rgba(255,255,255,0.04);z-index:200}
+.pfill{height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold),#fde68a);transition:width 0.7s cubic-bezier(0.4,0,0.2,1);box-shadow:0 0 10px rgba(245,158,11,0.6)}
+.stage{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:70px 20px 40px;position:relative;z-index:1}
+.slide{width:100%;max-width:580px;display:none;animation:sIn 0.5s cubic-bezier(0.4,0,0.2,1)}
+.slide.active{display:block}
+@keyframes sIn{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+.cin{text-align:center;padding:10px 0}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 16px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px}
+.title{font-family:'Syne',sans-serif;font-size:clamp(24px,5vw,38px);font-weight:900;line-height:1.2;margin-bottom:12px;color:#fff}
+.title .hl{background:linear-gradient(135deg,var(--gold),#fde68a);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{font-size:15px;color:var(--muted);line-height:1.7;max-width:460px;margin:0 auto 28px}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{background:var(--s1);border:1.5px solid var(--border);border-radius:14px;padding:14px 18px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:12px;text-align:left}
+.opt:hover{border-color:rgba(245,158,11,0.4);transform:translateX(4px);background:rgba(245,158,11,0.04)}
+.opt.sel{border-color:var(--gold);background:rgba(245,158,11,0.07)}
+.opt-ic{font-size:20px;width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.opt.sel .opt-ic{background:rgba(245,158,11,0.1)}
+.opt-t{font-size:14px;font-weight:600;color:var(--text)}
+.opt-s{font-size:12px;color:var(--muted);margin-top:2px}
+.btn{width:100%;padding:16px;border-radius:14px;border:none;font-family:'Syne',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:all 0.25s;margin-top:18px;letter-spacing:0.3px}
+.btn-gold{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#000}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(245,158,11,0.4)}
+.btn-gold:disabled{opacity:0.35;cursor:not-allowed;transform:none;box-shadow:none}
+.rev{background:linear-gradient(135deg,rgba(245,158,11,0.07),rgba(245,158,11,0.03));border:1px solid rgba(245,158,11,0.2);border-radius:18px;padding:24px;margin-bottom:20px}
+.rev-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#fff;margin-bottom:10px}
+.rev-text{font-size:14px;color:var(--muted);line-height:1.75}
+.money-box{background:linear-gradient(135deg,rgba(245,158,11,0.12),rgba(245,158,11,0.05));border:2px solid rgba(245,158,11,0.3);border-radius:16px;padding:20px;text-align:center;margin:16px 0}
+.money-num{font-family:'Syne',sans-serif;font-size:42px;font-weight:900;color:var(--gold)}
+.money-label{font-size:13px;color:var(--muted);margin-top:4px}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+.stat{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center}
+.stat-n{font-family:'Syne',sans-serif;font-size:22px;font-weight:900;color:var(--gold)}
+.stat-l{font-size:10px;color:var(--muted);margin-top:3px}
+/* FINAL */
+.final-box{max-width:600px;margin:0 auto;padding-bottom:60px}
+.final-hero{text-align:center;background:linear-gradient(180deg,rgba(245,158,11,0.1),transparent);border-bottom:1px solid var(--border);padding:32px 20px 36px;margin-bottom:32px}
+.crown{font-size:72px;margin-bottom:16px;display:block;animation:crownBounce 0.7s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes crownBounce{from{transform:scale(0) rotate(-20deg)}to{transform:scale(1) rotate(0)}}
+.final-title{font-family:'Syne',sans-serif;font-size:clamp(24px,5vw,36px);font-weight:900;color:#fff;margin-bottom:10px}
+.final-sub{font-size:15px;color:var(--muted);max-width:440px;margin:0 auto;line-height:1.7}
+.income-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px}
+.inc-card{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:20px;text-align:center;transition:all 0.2s}
+.inc-card:hover{border-color:rgba(245,158,11,0.3);transform:translateY(-3px)}
+.inc-icon{font-size:28px;margin-bottom:8px}
+.inc-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:900;color:var(--gold);margin-bottom:4px}
+.inc-label{font-size:12px;color:var(--muted);line-height:1.5}
+.breakdown{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:28px}
+.bk-title{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:16px}
+.bk-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:14px}
+.bk-row:last-child{border-bottom:none;padding-top:14px;margin-top:4px;border-top:1px solid rgba(245,158,11,0.2)}
+.bk-label{color:var(--muted)}
+.bk-val{font-weight:700;color:#fff}
+.bk-total{color:var(--gold);font-family:'Syne',sans-serif;font-size:18px;font-weight:900}
+.incl-list{display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+.incl-item{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:var(--s1);border:1px solid var(--border);border-radius:12px}
+.incl-ic{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.incl-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:3px}
+.incl-desc{font-size:12px;color:var(--muted);line-height:1.6}
+.objs{margin-bottom:28px}
+.obj-item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.obj-item:last-child{border-bottom:none}
+.obj-ic{color:var(--gold);font-size:16px;flex-shrink:0;margin-top:2px}
+.obj-q{font-size:13px;font-weight:700;color:#fff;margin-bottom:4px}
+.obj-a{font-size:13px;color:var(--muted);line-height:1.6}
+.wpp-section{background:linear-gradient(135deg,rgba(37,211,102,0.1),rgba(37,211,102,0.05));border:2px solid rgba(37,211,102,0.3);border-radius:20px;padding:28px;text-align:center;margin-bottom:20px}
+.wpp-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:900;color:#fff;margin-bottom:8px}
+.wpp-sub{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.7}
+.btn-wpp{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:18px;border-radius:14px;border:none;background:linear-gradient(135deg,#128C7E,#25D366);color:#fff;font-family:'Syne',sans-serif;font-size:16px;font-weight:900;cursor:pointer;transition:all 0.25s;text-decoration:none;margin-bottom:10px}
+.btn-wpp:hover{transform:translateY(-3px);box-shadow:0 12px 35px rgba(37,211,102,0.4)}
+.btn-wpp svg{width:24px;height:24px;flex-shrink:0}
+.guarantee{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;color:var(--muted);margin-top:16px}
+.conf{position:fixed;pointer-events:none;z-index:999;animation:confFall 2.5s ease forwards}
+@keyframes confFall{0%{transform:translateY(-10px) rotate(0);opacity:1}100%{transform:translateY(105vh) rotate(540deg);opacity:0}}
+@media(max-width:480px){.income-cards{grid-template-columns:1fr}.stats-row{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<div id="bg">
+  <div class="orb" style="width:500px;height:500px;background:radial-gradient(circle,rgba(245,158,11,0.08),transparent);top:-150px;right:-100px;animation-duration:9s"></div>
+  <div class="orb" style="width:400px;height:400px;background:radial-gradient(circle,rgba(14,165,233,0.06),transparent);bottom:-100px;left:-100px;animation-duration:12s"></div>
+</div>
+
+<div class="hdr">
+  <div class="logo">👑 ALPHA PARCEIRO</div>
+  <div class="step-counter" id="stepCounter">Passo 1 de 9</div>
+</div>
+<div class="pbar"><div class="pfill" id="pfill" style="width:0%"></div></div>
+
+<div class="stage">
+<div style="width:100%;max-width:580px">
+
+<!-- S1: HOOK -->
+<div class="slide active" id="s1">
+  <div class="cin">
+    <div class="badge" style="background:rgba(245,158,11,0.1);color:var(--gold);border:1px solid rgba(245,158,11,0.2)">👑 Oportunidade exclusiva · 3 minutos</div>
+    <div style="font-size:56px;margin-bottom:16px;filter:drop-shadow(0 0 30px rgba(245,158,11,0.5))">💰</div>
+    <div class="title">E se você pudesse <span class="hl">ganhar dinheiro</span> com cada trader que você influencia?</div>
+    <div class="sub">Traders experientes com audiência estão construindo renda recorrente sem precisar criar produto nenhum — usando o sistema de outros e faturando em cima disso.</div>
+    <div class="opts">
+      <div class="opt" onclick="pick(this,1,'influencer')"><div class="opt-ic">📱</div><div><div class="opt-t">Tenho audiência no Instagram/YouTube/TikTok</div><div class="opt-s">Seguidores traders ou interessados em renda extra</div></div></div>
+      <div class="opt" onclick="pick(this,1,'comunidade')"><div class="opt-ic">💬</div><div><div class="opt-t">Tenho grupo/comunidade de traders</div><div class="opt-s">WhatsApp, Telegram ou Discord</div></div></div>
+      <div class="opt" onclick="pick(this,1,'mentor')"><div class="opt-ic">🎓</div><div><div class="opt-t">Dou mentorias ou ensino trading</div><div class="opt-s">Alunos, clientes ou seguidores que confiam em mim</div></div></div>
+      <div class="opt" onclick="pick(this,1,'rede')"><div class="opt-ic">🤝</div><div><div class="opt-t">Tenho rede de traders mas não monetizo ainda</div><div class="opt-s">Conheço bastante gente no nicho</div></div></div>
+    </div>
+    <button class="btn btn-gold" id="b1" disabled onclick="go(2)">Quero saber mais →</button>
+  </div>
+</div>
+
+<!-- S2: TAMANHO DA AUDIÊNCIA -->
+<div class="slide" id="s2">
+  <div>
+    <div class="badge" style="background:rgba(245,158,11,0.1);color:var(--gold);border:1px solid rgba(245,158,11,0.2)">✦ Passo 2 de 9</div>
+    <div class="title">Qual o tamanho da sua <span class="hl">audiência</span> hoje?</div>
+    <div class="sub">Não precisa ser grande. Veja quanto você pode ganhar com qualquer tamanho de audiência.</div>
+    <div class="opts">
+      <div class="opt" onclick="pick(this,2,'pequena')"><div class="opt-ic">🌱</div><div><div class="opt-t">Menos de 1.000 pessoas</div><div class="opt-s">Começando a construir</div></div></div>
+      <div class="opt" onclick="pick(this,2,'media')"><div class="opt-ic">📈</div><div><div class="opt-t">1.000 a 10.000 pessoas</div><div class="opt-s">Audiência engajada e nichada</div></div></div>
+      <div class="opt" onclick="pick(this,2,'grande')"><div class="opt-ic">🚀</div><div><div class="opt-t">10.000 a 50.000 pessoas</div><div class="opt-s">Influência real no nicho de trading</div></div></div>
+      <div class="opt" onclick="pick(this,2,'enorme')"><div class="opt-ic">👑</div><div><div class="opt-t">Mais de 50.000 pessoas</div><div class="opt-s">Grande influência na comunidade</div></div></div>
+    </div>
+    <button class="btn btn-gold" id="b2" disabled onclick="go(3)">Continuar →</button>
+  </div>
+</div>
+
+<!-- S3: REVEAL CALCULADORA -->
+<div class="slide" id="s3">
+  <div class="cin">
+    <div class="badge" style="background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.2)">✦ Veja o potencial real</div>
+    <div class="title">Veja quanto você pode <span class="hl">ganhar por mês</span></div>
+    <div class="rev">
+      <div class="money-box" id="moneyBox">
+        <div class="money-num" id="moneyNum">R$ 4.200</div>
+        <div class="money-label">Potencial mensal estimado para sua audiência</div>
+      </div>
+      <div class="breakdown">
+        <div class="bk-title">✦ Como esse valor é calculado</div>
+        <div class="bk-row"><div class="bk-label">Conversão média (2% da audiência)</div><div class="bk-val" id="bkConv">20 traders</div></div>
+        <div class="bk-row"><div class="bk-label">Revenue share Deriv por trader/mês</div><div class="bk-val">~R$ 80</div></div>
+        <div class="bk-row"><div class="bk-label">Comissão nos produtos vendidos (60%)</div><div class="bk-val" id="bkProd">R$ 1.200</div></div>
+        <div class="bk-row"><div class="bk-label" style="color:var(--gold);font-weight:700">Total estimado</div><div class="bk-val bk-total" id="bkTotal">R$ 2.800</div></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);font-style:italic">*Estimativa conservadora baseada em conversões reais da plataforma. Resultados variam.</div>
+    </div>
+    <button class="btn btn-gold" onclick="go(4)">Isso é real? Me conta mais →</button>
+  </div>
+</div>
+
+<!-- S4: EXPERIÊNCIA -->
+<div class="slide" id="s4">
+  <div>
+    <div class="badge" style="background:rgba(245,158,11,0.1);color:var(--gold);border:1px solid rgba(245,158,11,0.2)">✦ Passo 4 de 9</div>
+    <div class="title">Há quanto tempo você opera ou ensina <span class="hl">trading</span>?</div>
+    <div class="sub">Isso vai definir como posicionamos seu sistema junto com a sua audiência.</div>
+    <div class="opts">
+      <div class="opt" onclick="pick(this,4,'iniciante')"><div class="opt-ic">📚</div><div><div class="opt-t">Menos de 1 ano</div><div class="opt-s">Aprendendo mas já tenho seguidores</div></div></div>
+      <div class="opt" onclick="pick(this,4,'medio')"><div class="opt-ic">⚡</div><div><div class="opt-t">1 a 3 anos</div><div class="opt-s">Consistência crescendo</div></div></div>
+      <div class="opt" onclick="pick(this,4,'experiente')"><div class="opt-ic">🎯</div><div><div class="opt-t">3 a 5 anos</div><div class="opt-s">Trader estabelecido com resultados</div></div></div>
+      <div class="opt" onclick="pick(this,4,'profissional')"><div class="opt-ic">👑</div><div><div class="opt-t">Mais de 5 anos</div><div class="opt-s">Referência no mercado</div></div></div>
+    </div>
+    <button class="btn btn-gold" id="b4" disabled onclick="go(5)">Continuar →</button>
+  </div>
+</div>
+
+<!-- S5: MONETIZAÇÃO ATUAL -->
+<div class="slide" id="s5">
+  <div>
+    <div class="badge" style="background:rgba(245,158,11,0.1);color:var(--gold);border:1px solid rgba(245,158,11,0.2)">✦ Passo 5 de 9</div>
+    <div class="title">Você já monetiza sua audiência de <span class="hl">alguma forma</span>?</div>
+    <div class="sub">Entender isso ajuda a mostrar como o parceiro Alpha encaixa (e potencializa) o que você já faz.</div>
+    <div class="opts">
+      <div class="opt" onclick="pick(this,5,'nao')"><div class="opt-ic">🔓</div><div><div class="opt-t">Não, ainda não monetizo</div><div class="opt-s">Tenho audiência mas não ganho com ela</div></div></div>
+      <div class="opt" onclick="pick(this,5,'afiliado')"><div class="opt-ic">🔗</div><div><div class="opt-t">Sim, como afiliado de outras plataformas</div><div class="opt-s">Deriv, IQ Option, Quotex etc</div></div></div>
+      <div class="opt" onclick="pick(this,5,'mentoria')"><div class="opt-ic">🎓</div><div><div class="opt-t">Sim, vendo mentorias ou cursos</div><div class="opt-s">Cobro pelo meu conhecimento</div></div></div>
+      <div class="opt" onclick="pick(this,5,'multiplo')"><div class="opt-ic">🚀</div><div><div class="opt-t">Sim, tenho múltiplas fontes</div><div class="opt-s">Já tenho um negócio no trading</div></div></div>
+    </div>
+    <button class="btn btn-gold" id="b5" disabled onclick="go(6)">Continuar →</button>
+  </div>
+</div>
+
+<!-- S6: REVEAL SISTEMA -->
+<div class="slide" id="s6">
+  <div class="cin">
+    <div class="badge" style="background:rgba(14,165,233,0.1);color:var(--blue);border:1px solid rgba(14,165,233,0.2)">✦ O que você recebe</div>
+    <div class="title">Você não vira afiliado. Você vira <span class="hl">dono do sistema</span></div>
+    <div class="sub">A diferença entre afiliado e parceiro Alpha é enorme.</div>
+    <div class="opts" style="gap:12px">
+      <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.15);border-radius:14px;padding:16px 18px">
+        <div style="font-size:12px;font-weight:700;color:#ef4444;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">❌ Como afiliado comum</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.8">Link de afiliado genérico · Comissão de 10-20% · Marca do outro · Sem controle · Você é só mais um</div>
+      </div>
+      <div style="background:rgba(245,158,11,0.07);border:2px solid rgba(245,158,11,0.3);border-radius:14px;padding:16px 18px">
+        <div style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">✅ Como parceiro Alpha</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.8">
+          <strong>Sistema com sua identidade</strong> · <strong>Subdomínio exclusivo</strong> (seunome.alphadolar.online) · <strong>60% de comissão</strong> nos produtos · Revenue share Deriv para sempre · Suporte dedicado
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-gold" onclick="go(7)">Quero esse modelo! →</button>
+  </div>
+</div>
+
+<!-- S7: COMPROMETIMENTO -->
+<div class="slide" id="s7">
+  <div>
+    <div class="badge" style="background:rgba(245,158,11,0.1);color:var(--gold);border:1px solid rgba(245,158,11,0.2)">✦ Passo 7 de 9</div>
+    <div class="title">O quanto você está disposto a <span class="hl">se dedicar</span> a isso?</div>
+    <div class="sub">Parceiros que mais faturam são os que tratam isso como um negócio — não como renda passiva ocasional.</div>
+    <div class="opts">
+      <div class="opt" onclick="pick(this,7,'pouco')"><div class="opt-ic">🌱</div><div><div class="opt-t">Pouco — quero algo simples no começo</div><div class="opt-s">1 a 2 posts por semana sobre o sistema</div></div></div>
+      <div class="opt" onclick="pick(this,7,'medio')"><div class="opt-ic">⚡</div><div><div class="opt-t">Moderado — vou integrar na minha rotina</div><div class="opt-s">Conteúdo regular + suporte básico à minha rede</div></div></div>
+      <div class="opt" onclick="pick(this,7,'muito')"><div class="opt-ic">🔥</div><div><div class="opt-t">Alto — vou tratar como negócio principal</div><div class="opt-s">Conteúdo diário + mentorias + suporte ativo</div></div></div>
+      <div class="opt" onclick="pick(this,7,'maximo')"><div class="opt-ic">👑</div><div><div class="opt-t">Total — quero escalar ao máximo</div><div class="opt-s">Fazer do Alpha Parceiro minha principal fonte de renda</div></div></div>
+    </div>
+    <button class="btn btn-gold" id="b7" disabled onclick="go(8)">Continuar →</button>
+  </div>
+</div>
+
+<!-- S8: PERGUNTA FINAL -->
+<div class="slide" id="s8">
+  <div>
+    <div class="badge" style="background:rgba(245,158,11,0.1);color:var(--gold);border:1px solid rgba(245,158,11,0.2)">✦ Última pergunta</div>
+    <div class="title">O que mais te <span class="hl">atrai</span> nessa oportunidade?</div>
+    <div class="sub">Sua resposta vai personalizar a conversa com nosso time.</div>
+    <div class="opts">
+      <div class="opt" onclick="pick(this,8,'renda')"><div class="opt-ic">💰</div><div><div class="opt-t">A renda recorrente e passiva</div><div class="opt-s">Ganhar enquanto durmo com revenue share</div></div></div>
+      <div class="opt" onclick="pick(this,8,'sistema')"><div class="opt-ic">🤖</div><div><div class="opt-t">Ter meu próprio sistema de IA</div><div class="opt-s">Autoridade e produto de alto valor para minha audiência</div></div></div>
+      <div class="opt" onclick="pick(this,8,'comissao')"><div class="opt-ic">🎯</div><div><div class="opt-t">Os 60% de comissão nos produtos</div><div class="opt-s">Margem muito acima do mercado</div></div></div>
+      <div class="opt" onclick="pick(this,8,'escalabilidade')"><div class="opt-ic">🚀</div><div><div class="opt-t">O potencial de escala</div><div class="opt-s">Quanto mais crescer minha audiência, mais ganho</div></div></div>
+    </div>
+    <button class="btn btn-gold" id="b8" disabled onclick="go(9)">Ver meu resultado →</button>
+  </div>
+</div>
+
+<!-- S9: RESULTADO FINAL -->
+<div class="slide" id="s9">
+  <div class="final-box" id="finalBox"></div>
+</div>
+
+</div>
+</div>
+
+<script>
+let cur=1, answers={};
+const _sid = 'qp_' + Math.random().toString(36).substr(2,9) + '_' + Date.now();
+function _track(step, answer, completed){
+  fetch('/api/quiz/track', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({quiz:'quiz-parceiro', session_id:_sid, step, answer:answer||'', completed:completed||0})
+  }).catch(()=>{});
+}
+const total=9;
+
+function pick(el,slide,val){
+  document.querySelectorAll('#s'+slide+' .opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+  answers[slide]=val;
+  const b=document.getElementById('b'+slide);
+  if(b) b.disabled=false;
+  // Atualiza calculadora
+  if(slide===2) updateCalc(val);
+}
+
+function updateCalc(audiencia){
+  const map={
+    pequena:{traders:20,prod:1200,total:2800,label:'20 traders'},
+    media:{traders:200,prod:3600,total:12200,label:'200 traders'},
+    grande:{traders:2000,prod:9600,total:105600,label:'2.000 traders'},
+    enorme:{traders:10000,prod:24000,total:504000,label:'10.000 traders'}
+  };
+  const d=map[audiencia]||map['pequena'];
+  const rev=d.traders*80;
+  const total_val=rev+d.prod;
+  const fmt=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
+  const el_num=document.getElementById('moneyNum');
+  const el_conv=document.getElementById('bkConv');
+  const el_prod=document.getElementById('bkProd');
+  const el_total=document.getElementById('bkTotal');
+  if(el_num) el_num.textContent=fmt(total_val);
+  if(el_conv) el_conv.textContent=d.label;
+  if(el_prod) el_prod.textContent=fmt(d.prod);
+  if(el_total) el_total.textContent=fmt(total_val);
+}
+
+function go(to){
+  _track(to, answers[cur]||'', to===9 ? 1 : 0);
+  const from=document.getElementById('s'+cur);
+  const next=document.getElementById('s'+to);
+  from.classList.remove('active');
+  next.classList.add('active');
+  cur=to;
+  document.getElementById('pfill').style.width=((to/total)*100)+'%';
+  document.getElementById('stepCounter').textContent='Passo '+to+' de '+total;
+  if(to===9) buildFinal();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function confetti(){
+  const colors=['#f59e0b','#fde68a','#d97706','#22c55e','#0ea5e9'];
+  for(let i=0;i<50;i++){
+    setTimeout(()=>{
+      const c=document.createElement('div');
+      c.className='conf';
+      const s=Math.random()*10+6;
+      c.style.cssText=`left:${Math.random()*100}vw;top:-20px;width:${s}px;height:${s}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>0.5?'50%':'3px'};animation-delay:${Math.random()*0.6}s`;
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(),3000);
+    },i*50);
+  }
+}
+
+function buildFinal(){
+  confetti();
+  const audiencia=answers[2]||'pequena';
+  const dedicacao=answers[7]||'medio';
+  const atracao=answers[8]||'renda';
+
+  const map={
+    pequena:{traders:20,prod:1200,total:2800},
+    media:{traders:200,prod:3600,total:12200},
+    grande:{traders:2000,prod:9600,total:105600},
+    enorme:{traders:10000,prod:24000,total:504000}
+  };
+  const d=map[audiencia]||map['pequena'];
+  const fmt=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
+
+  // Mensagem WhatsApp
+  const tipo=answers[1]||'influencer';
+  const exp=answers[4]||'medio';
+  const mon=answers[5]||'nao';
+  const msg=encodeURIComponent(`Olá! Acabei de fazer o quiz de parceiro Alpha Dolar.\n\nMeu perfil:\n• Audiência: ${audiencia}\n• Tipo: ${tipo}\n• Experiência: ${exp} anos\n• Monetização atual: ${mon}\n• Dedicação: ${dedicacao}\n• Interesse principal: ${atracao}\n\nQuero saber mais sobre como me tornar parceiro!`);
+  const wppLink=`https://wa.me/5547992206579?text=${msg}`;
+
+  document.getElementById('finalBox').innerHTML=`
+    <div class="final-hero">
+      <span class="crown">👑</span>
+      <div class="final-title">Você tem o perfil ideal<br>para ser Parceiro Alpha</div>
+      <div class="final-sub">Com base nas suas respostas, nossa IA identificou um potencial de renda mensal estimado para o seu perfil:</div>
+      <div class="money-box" style="margin:20px auto;max-width:320px">
+        <div class="money-num">${fmt(d.total)}</div>
+        <div class="money-label">Potencial mensal com sua audiência atual</div>
+      </div>
+    </div>
+
+    <div style="padding:0 20px">
+
+      <div class="income-cards">
+        <div class="inc-card">
+          <div class="inc-icon">🔄</div>
+          <div class="inc-val">${fmt(d.traders*80)}</div>
+          <div class="inc-label">Revenue Share Deriv<br>por mês</div>
+        </div>
+        <div class="inc-card">
+          <div class="inc-icon">🛒</div>
+          <div class="inc-val">${fmt(d.prod)}</div>
+          <div class="inc-label">Comissão 60%<br>nos produtos</div>
+        </div>
+        <div class="inc-card">
+          <div class="inc-icon">📈</div>
+          <div class="inc-val">Vitalício</div>
+          <div class="inc-label">Você ganha enquanto<br>sua rede opera</div>
+        </div>
+        <div class="inc-card">
+          <div class="inc-icon">🌍</div>
+          <div class="inc-val">Ilimitado</div>
+          <div class="inc-label">Sem teto de<br>ganhos</div>
+        </div>
+      </div>
+
+      <div style="font-size:13px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">✦ O que você recebe como parceiro</div>
+      <div class="incl-list">
+        <div class="incl-item">
+          <div class="incl-ic" style="background:rgba(245,158,11,0.1)">🌐</div>
+          <div><div class="incl-title">Sistema com sua identidade</div><div class="incl-desc">Subdomínio exclusivo (seunome.alphadolar.online) com sua logo, suas cores e seu posicionamento</div></div>
+        </div>
+        <div class="incl-item">
+          <div class="incl-ic" style="background:rgba(14,165,233,0.1)">🤖</div>
+          <div><div class="incl-title">Todos os robôs e ferramentas</div><div class="incl-desc">Sua audiência acessa todo o sistema — Alpha IA, Alpha Bank, Estratégias VIP e muito mais</div></div>
+        </div>
+        <div class="incl-item">
+          <div class="incl-ic" style="background:rgba(34,197,94,0.1)">💰</div>
+          <div><div class="incl-title">60% de comissão nos produtos</div><div class="incl-desc">Alpha Bank, IA Avançado, VIP, Premium Elite — você recebe 60% de cada venda da sua rede</div></div>
+        </div>
+        <div class="incl-item">
+          <div class="incl-ic" style="background:rgba(168,85,247,0.1)">📊</div>
+          <div><div class="incl-title">Painel de acompanhamento</div><div class="incl-desc">Veja em tempo real quantos traders estão na sua rede, quanto você ganhou e o histórico completo</div></div>
+        </div>
+        <div class="incl-item">
+          <div class="incl-ic" style="background:rgba(239,68,68,0.1)">🎯</div>
+          <div><div class="incl-title">Suporte dedicado</div><div class="incl-desc">Acesso direto ao time Alpha para dúvidas, estratégias de crescimento e materiais de marketing prontos</div></div>
+        </div>
+      </div>
+
+      <div class="objs">
+        <div style="font-size:13px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">✦ Dúvidas frequentes</div>
+        <div class="obj-item">
+          <div class="obj-ic">💬</div>
+          <div><div class="obj-q">Qual o investimento para ter meu sistema?</div><div class="obj-a">Os detalhes de investimento e condições são tratados diretamente com nosso time — cada parceiro tem um perfil diferente. Fale conosco pelo WhatsApp para receber uma proposta personalizada.</div></div>
+        </div>
+        <div class="obj-item">
+          <div class="obj-ic">💬</div>
+          <div><div class="obj-q">Como funciona o revenue share da Deriv?</div><div class="obj-a">Todo trader da sua rede que abrir conta pelo seu link gera comissão para você de tudo que ele operar — para sempre, mesmo que você pare de criar conteúdo.</div></div>
+        </div>
+        <div class="obj-item">
+          <div class="obj-ic">💬</div>
+          <div><div class="obj-q">Preciso ter muitos seguidores?</div><div class="obj-a">Não. Um grupo de 100 pessoas engajadas pode gerar mais resultado do que 10.000 seguidores frios. O que importa é a confiança que você tem com sua audiência.</div></div>
+        </div>
+        <div class="obj-item">
+          <div class="obj-ic">💬</div>
+          <div><div class="obj-q">Posso usar no meu canal atual?</div><div class="obj-a">Sim. O sistema se adapta à sua identidade. Você apresenta como seu próprio produto — sem precisar mencionar o Alpha Dolar se preferir.</div></div>
+        </div>
+      </div>
+
+      <div class="wpp-section">
+        <div class="wpp-title">🚀 Pronto para começar?</div>
+        <div class="wpp-sub">Seu perfil foi analisado e você tem potencial real nessa oportunidade. Clique abaixo para falar diretamente com nosso time e configurar seu sistema em menos de 24 horas.</div>
+        <a href="${wppLink}" target="_blank" class="btn-wpp">
+          <svg viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Quero ser Parceiro Alpha — Falar Agora
+        </a>
+        <div class="guarantee">
+          <span>🔒</span> Conversa privada · Sem compromisso · Resposta em até 2 horas
+        </div>
+      </div>
+
+    </div>
+  `;
+}
+</script>
+</body>
+</html>

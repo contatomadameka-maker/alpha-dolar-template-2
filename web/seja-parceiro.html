@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Seja um Parceiro Alpha Dolar — Tenha Seu Próprio Sistema de IA</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#03050d;--s1:#07091a;--s2:#0c1020;--gold:#f59e0b;--gold2:#d97706;--goldf:#fde68a;--blue:#0ea5e9;--cyan:#22d3ee;--green:#22c55e;--purple:#a855f7;--text:#f1f5f9;--muted:#64748b;--border:rgba(255,255,255,0.07);--r:16px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 5%;display:flex;align-items:center;justify-content:space-between;background:rgba(3,5,13,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-logo{font-family:'Syne',sans-serif;font-size:18px;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--goldf));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-links a{font-size:13px;color:var(--muted);text-decoration:none;transition:color 0.2s;font-weight:500}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{padding:9px 22px;border-radius:10px;background:linear-gradient(135deg,var(--gold2),var(--gold));color:#000;font-size:13px;font-weight:800;text-decoration:none;transition:all 0.2s;font-family:'Syne',sans-serif}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(245,158,11,0.4)}
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:100px 5% 60px;position:relative;overflow:hidden;text-align:center}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(245,158,11,0.12),transparent),radial-gradient(ellipse 60% 40% at 80% 50%,rgba(14,165,233,0.08),transparent)}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse at center,black 30%,transparent 80%)}
+.hero-content{position:relative;z-index:1;max-width:820px}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:7px 18px;border-radius:20px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);font-size:12px;font-weight:700;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:28px}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(36px,6vw,70px);font-weight:900;line-height:1.05;margin-bottom:24px;color:#fff}
+.hero h1 .hl{background:linear-gradient(135deg,var(--gold),var(--goldf));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:clamp(16px,2vw,19px);color:var(--muted);line-height:1.7;max-width:600px;margin:0 auto 40px}
+.hero-sub strong{color:var(--text)}
+.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:60px}
+.btn-gold{padding:16px 36px;border-radius:14px;background:linear-gradient(135deg,var(--gold2),var(--gold));color:#000;font-family:'Syne',sans-serif;font-size:16px;font-weight:900;text-decoration:none;transition:all 0.25s;display:inline-flex;align-items:center;gap:8px}
+.btn-gold:hover{transform:translateY(-3px);box-shadow:0 12px 35px rgba(245,158,11,0.5)}
+.btn-outline{padding:16px 36px;border-radius:14px;border:1.5px solid rgba(255,255,255,0.15);color:var(--text);font-family:'Syne',sans-serif;font-size:15px;font-weight:700;text-decoration:none;transition:all 0.2s;display:inline-flex;align-items:center;gap:8px}
+.btn-outline:hover{border-color:rgba(245,158,11,0.5);color:var(--gold)}
+.hero-stats{display:flex;gap:48px;justify-content:center;flex-wrap:wrap}
+.hstat-num{font-family:'Syne',sans-serif;font-size:36px;font-weight:900;color:var(--gold)}
+.hstat-label{font-size:12px;color:var(--muted);margin-top:2px;text-align:center}
+section{padding:80px 5%}
+.sec-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 16px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px}
+.sec-title{font-family:'Syne',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:900;line-height:1.15;margin-bottom:16px;color:#fff}
+.sec-sub{font-size:16px;color:var(--muted);line-height:1.7;max-width:600px}
+.tc{text-align:center}.tc .sec-sub{margin:0 auto}
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(245,158,11,0.3),transparent)}
+/* STEPS */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;margin-top:48px}
+.step{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:28px;transition:all 0.3s;position:relative;overflow:hidden}
+.step:hover{border-color:rgba(245,158,11,0.3);transform:translateY(-4px)}
+.step-num{font-family:'Syne',sans-serif;font-size:52px;font-weight:900;color:rgba(245,158,11,0.1);line-height:1;margin-bottom:12px}
+.step-icon{font-size:32px;margin-bottom:12px}
+.step-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#fff;margin-bottom:8px}
+.step-text{font-size:14px;color:var(--muted);line-height:1.7}
+/* PLANS */
+.plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;max-width:1100px;margin:48px auto 0}
+.plan{background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:32px;position:relative;transition:all 0.3s}
+.plan.feat{border-color:rgba(245,158,11,0.5);background:linear-gradient(160deg,rgba(245,158,11,0.07),var(--s1));transform:scale(1.03)}
+.plan-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold2),var(--gold));color:#000;font-size:11px;font-weight:900;padding:5px 18px;border-radius:20px;letter-spacing:1px;white-space:nowrap;font-family:'Syne',sans-serif}
+.plan-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:12px}
+.plan-name{font-family:'Syne',sans-serif;font-size:22px;font-weight:900;color:#fff;margin-bottom:4px}
+.plan-tagline{font-size:13px;color:var(--muted);margin-bottom:20px}
+.plan-old{font-size:13px;color:var(--muted);text-decoration:line-through;margin-bottom:4px}
+.plan-price{font-family:'Syne',sans-serif;font-size:44px;font-weight:900;color:var(--gold);line-height:1;margin-bottom:4px}
+.plan-price span{font-size:20px}
+.plan-sub{font-size:12px;color:var(--muted);margin-bottom:24px}
+.plan-feats{list-style:none;margin-bottom:28px}
+.plan-feats li{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;color:var(--muted);line-height:1.5}
+.plan-feats li:last-child{border-bottom:none}
+.plan-feats .ck{color:var(--green);flex-shrink:0;font-size:14px;margin-top:2px}
+.plan-feats strong{color:var(--text)}
+.plan-feats .sect{padding:8px 0 4px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(245,158,11,0.7);border-bottom:none}
+.btn-plan{display:block;width:100%;padding:15px;border-radius:12px;border:none;font-family:'Syne',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:all 0.25s;text-align:center;text-decoration:none}
+.bp-gold{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#000}
+.bp-gold:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(245,158,11,0.4)}
+.bp-out{background:transparent;border:1.5px solid rgba(255,255,255,0.15);color:var(--text)}
+.bp-out:hover{border-color:var(--gold);color:var(--gold)}
+/* COMPARE */
+.ctable-wrap{overflow-x:auto;margin-top:40px}
+.ctable{width:100%;border-collapse:collapse;min-width:580px}
+.ctable th{padding:16px 20px;font-family:'Syne',sans-serif;font-size:13px;font-weight:800;text-align:center;border-bottom:2px solid var(--border);color:var(--muted)}
+.ctable th:first-child{text-align:left}
+.ctable th.fh{color:var(--gold);border-bottom-color:rgba(245,158,11,0.4)}
+.ctable td{padding:13px 20px;font-size:13px;border-bottom:1px solid var(--border);text-align:center;color:var(--muted)}
+.ctable td:first-child{text-align:left;color:var(--text);font-weight:500}
+.ctable .y{color:var(--green);font-size:17px}
+.ctable .n{opacity:0.3;font-size:17px}
+.ctable tr:hover td{background:rgba(255,255,255,0.015)}
+/* COMM */
+.comm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:40px}
+.comm-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:24px;text-align:center;transition:all 0.3s}
+.comm-card:hover{border-color:rgba(245,158,11,0.3);transform:translateY(-3px)}
+.comm-ic{font-size:36px;margin-bottom:12px}
+.comm-val{font-family:'Syne',sans-serif;font-size:30px;font-weight:900;color:var(--gold);margin-bottom:6px}
+.comm-lbl{font-size:13px;color:var(--muted);line-height:1.6}
+/* CALC */
+.calc{background:var(--s1);border:1px solid rgba(245,158,11,0.2);border-radius:20px;padding:40px;max-width:700px;margin:40px auto 0}
+.cr{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.cf label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:8px}
+.cf input,.cf select{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-size:15px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s}
+.cf input:focus,.cf select:focus{border-color:rgba(245,158,11,0.4)}
+.cres{background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(245,158,11,0.04));border:1px solid rgba(245,158,11,0.25);border-radius:14px;padding:24px;margin-top:20px}
+.crg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center}
+.crv{font-family:'Syne',sans-serif;font-size:26px;font-weight:900;color:var(--gold)}
+.crl{font-size:11px;color:var(--muted);margin-top:4px}
+/* INCLUDED */
+.inc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:40px}
+.inc{display:flex;gap:14px;align-items:flex-start;padding:20px;background:var(--s1);border:1px solid var(--border);border-radius:var(--r);transition:all 0.2s}
+.inc:hover{border-color:rgba(245,158,11,0.2)}
+.inc-ic{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.inc-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:4px}
+.inc-desc{font-size:13px;color:var(--muted);line-height:1.6}
+/* DEPOS */
+.dep-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:40px}
+.dep{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:24px}
+.dep-stars{color:var(--gold);font-size:14px;margin-bottom:12px;letter-spacing:2px}
+.dep-text{font-size:14px;color:var(--muted);line-height:1.75;margin-bottom:16px;font-style:italic}
+.dep-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.dep-name{font-size:13px;font-weight:700;color:#fff}
+.dep-role{font-size:11px;color:var(--muted)}
+/* FAQ */
+.faq-list{max-width:700px;margin:40px auto 0}
+.faq-item{border-bottom:1px solid var(--border)}
+.faq-q{display:flex;align-items:center;justify-content:space-between;padding:20px 0;cursor:pointer;font-size:15px;font-weight:600;color:var(--text);gap:16px;user-select:none}
+.faq-q:hover{color:var(--gold)}
+.faq-arr{font-size:22px;color:var(--muted);transition:transform 0.3s;flex-shrink:0}
+.faq-a{max-height:0;overflow:hidden;transition:max-height 0.4s ease}
+.faq-ai{padding:0 0 20px;font-size:14px;color:var(--muted);line-height:1.75}
+.faq-item.open .faq-arr{transform:rotate(45deg);color:var(--gold)}
+.faq-item.open .faq-a{max-height:300px}
+/* CTA */
+.cta-sec{padding:100px 5%;background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(245,158,11,0.02));border-top:1px solid rgba(245,158,11,0.15);text-align:center}
+.cta-sec h2{font-family:'Syne',sans-serif;font-size:clamp(32px,5vw,56px);font-weight:900;color:#fff;margin-bottom:16px}
+.cta-sec p{font-size:18px;color:var(--muted);max-width:480px;margin:0 auto 40px;line-height:1.7}
+footer{padding:36px 5%;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.fl{font-family:'Syne',sans-serif;font-size:16px;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--goldf));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.fu{animation:fadeUp 0.7s ease forwards}
+.fu2{animation:fadeUp 0.7s 0.15s ease forwards;opacity:0}
+.fu3{animation:fadeUp 0.7s 0.3s ease forwards;opacity:0}
+@media(max-width:768px){.nav-links{display:none}.hero h1{font-size:32px}.plans-grid{grid-template-columns:1fr}.plan.feat{transform:none}.cr{grid-template-columns:1fr}.crg{grid-template-columns:1fr}.hero-stats{gap:24px}footer{flex-direction:column;text-align:center}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">⚡ ALPHA DOLAR</div>
+  <div class="nav-links">
+    <a href="#como-funciona">Como funciona</a>
+    <a href="#planos">Planos</a>
+    <a href="#comissoes">Comissões</a>
+    <a href="#incluido">O que inclui</a>
+    <a href="#faq">FAQ</a>
+  </div>
+  <a href="https://wa.me/5547992206579?text=Quero%20ser%20Parceiro%20Alpha%20Dolar" target="_blank" class="nav-cta">Quero ser Parceiro →</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-badge fu">👑 Programa de Parceiros · Vagas Limitadas</div>
+    <h1 class="fu2">Tenha seu próprio<br><span class="hl">sistema de IA</span><br>e ganhe todo mês</h1>
+    <p class="hero-sub fu3">Sem programar. Sem criar produto. <strong>Com seu nome, sua marca e sua audiência</strong> — você entrega uma plataforma completa de trading com IA e recebe revenue share + 60% de comissão em cada venda.</p>
+    <div class="hero-btns fu3">
+      <a href="#planos" class="btn-gold">👑 Ver planos e preços</a>
+      <a href="#como-funciona" class="btn-outline">Como funciona ↓</a>
+    </div>
+    <div class="hero-stats fu3">
+      <div><div class="hstat-num">60%</div><div class="hstat-label">Comissão nos produtos</div></div>
+      <div><div class="hstat-num">∞</div><div class="hstat-label">Revenue share vitalício</div></div>
+      <div><div class="hstat-num">833+</div><div class="hstat-label">Traders ativos hoje</div></div>
+      <div><div class="hstat-num">24h</div><div class="hstat-label">Para ativar seu sistema</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="como-funciona">
+  <div class="tc">
+    <div class="sec-tag" style="background:rgba(245,158,11,0.1);color:var(--gold);border:1px solid rgba(245,158,11,0.2)">✦ Processo simples</div>
+    <div class="sec-title">Do zero ao seu sistema<br>em menos de 24 horas</div>
+    <p class="sec-sub">Você não precisa saber programar, criar produto ou entender de tecnologia. A gente faz tudo — você só indica e ganha.</p>
+  </div>
+  <div class="steps">
+    <div class="step"><div class="step-num">01</div><div class="step-icon">💬</div><div class="step-title">Fale com nosso time</div><div class="step-text">Clica no botão, fala com a gente pelo WhatsApp e escolhe o plano ideal para o seu perfil e audiência.</div></div>
+    <div class="step"><div class="step-num">02</div><div class="step-icon">⚙️</div><div class="step-title">Personalizamos tudo</div><div class="step-text">Em até 24 horas configuramos seu sistema com sua identidade — subdomínio, logo e posicionamento únicos.</div></div>
+    <div class="step"><div class="step-num">03</div><div class="step-icon">🚀</div><div class="step-title">Você lança</div><div class="step-text">Apresente como seu produto. Disponibilizamos materiais de marketing prontos, scripts e estratégias para converter.</div></div>
+    <div class="step"><div class="step-num">04</div><div class="step-icon">💰</div><div class="step-title">Receba todo mês</div><div class="step-text">Revenue share automático da Deriv + 60% nas vendas dos produtos. Para sempre, enquanto sua rede opera.</div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="planos">
+  <div class="tc" style="margin-bottom:0">
+    <div class="sec-tag" style="background:rgba(245,158,11,0.1);color:var(--gold);border:1px solid rgba(245,158,11,0.2)">✦ Investimento único</div>
+    <div class="sec-title">Escolha seu plano<br>e comece a ganhar</div>
+    <p class="sec-sub">Pagamento único. Sem mensalidade. Sem taxa sobre seus ganhos.</p>
+  </div>
+  <div class="plans-grid">
+
+    <div class="plan">
+      <div class="plan-icon" style="background:rgba(14,165,233,0.1)">🌱</div>
+      <div class="plan-name">Parceiro Básico</div>
+      <div class="plan-tagline">Para quem está começando</div>
+      <div class="plan-old">De R$ 1.997</div>
+      <div class="plan-price">R$ <span>1.297</span></div>
+      <div class="plan-sub">Pagamento único · Sem mensalidade</div>
+      <ul class="plan-feats">
+        <li class="sect">🌐 Sistema Personalizado</li>
+        <li><span class="ck">✓</span><span>Subdomínio exclusivo (seunome.alphadolar.online)</span></li>
+        <li><span class="ck">✓</span><span>Sistema com sua identidade visual</span></li>
+        <li><span class="ck">✓</span><span>Robô Alpha IA <strong>Simples</strong></span></li>
+        <li><span class="ck">✓</span><span>Robô Alpha IA <strong>Avançado</strong></span></li>
+        <li><span class="ck">✓</span><span>Modo Manual completo</span></li>
+        <li class="sect">💰 Comissões (60%)</li>
+        <li><span class="ck">✓</span><span><strong>3 produtos</strong> para venda com 60% comissão</span></li>
+        <li><span class="ck">✓</span><span>Alpha Bank · Alpha Shield · Alpha Pattern</span></li>
+        <li><span class="ck">✓</span><span>Revenue share Deriv vitalício</span></li>
+        <li class="sect">🎯 Suporte</li>
+        <li><span class="ck">✓</span><span>Painel de acompanhamento da rede</span></li>
+        <li><span class="ck">✓</span><span>Materiais de marketing prontos</span></li>
+      </ul>
+      <a href="https://wa.me/5547992206579?text=Quero%20o%20Plano%20Básico%20Parceiro%20Alpha%20Dolar" target="_blank" class="btn-plan bp-out">Quero esse plano →</a>
+    </div>
+
+    <div class="plan feat">
+      <div class="plan-badge">🔥 MAIS ESCOLHIDO</div>
+      <div class="plan-icon" style="background:rgba(245,158,11,0.15);margin-top:12px">⚡</div>
+      <div class="plan-name" style="color:var(--gold)">Parceiro Avançado</div>
+      <div class="plan-tagline">Para traders com audiência ativa</div>
+      <div class="plan-old">De R$ 2.497</div>
+      <div class="plan-price">R$ <span>1.697</span></div>
+      <div class="plan-sub">Pagamento único · Sem mensalidade</div>
+      <ul class="plan-feats">
+        <li class="sect">🌐 Tudo do Básico +</li>
+        <li><span class="ck">✓</span><span>Robô <strong>Alpha IA Pro</strong> (voz IA + score máximo)</span></li>
+        <li><span class="ck">✓</span><span>Alpha Clock (score por horário)</span></li>
+        <li><span class="ck">✓</span><span>Alpha Copy (copy trading automático)</span></li>
+        <li class="sect">💰 Comissões (60%)</li>
+        <li><span class="ck">✓</span><span><strong>6 produtos</strong> para venda com 60% comissão</span></li>
+        <li><span class="ck">✓</span><span>Bank · Shield · Pattern · Clock · Copy · IA Pro</span></li>
+        <li><span class="ck">✓</span><span>Revenue share Deriv vitalício</span></li>
+        <li class="sect">🎯 Suporte Prioritário</li>
+        <li><span class="ck">✓</span><span>Suporte direto via WhatsApp</span></li>
+        <li><span class="ck">✓</span><span>Scripts de vendas personalizados</span></li>
+        <li><span class="ck">✓</span><span>Onboarding com nosso time</span></li>
+      </ul>
+      <a href="https://wa.me/5547992206579?text=Quero%20o%20Plano%20Avançado%20Parceiro%20Alpha%20Dolar" target="_blank" class="btn-plan bp-gold">🚀 Quero esse! →</a>
+    </div>
+
+    <div class="plan">
+      <div class="plan-icon" style="background:rgba(168,85,247,0.1)">👑</div>
+      <div class="plan-name">Parceiro Elite</div>
+      <div class="plan-tagline">Para quem quer escalar ao máximo</div>
+      <div class="plan-old">De R$ 2.997</div>
+      <div class="plan-price">R$ <span>1.997</span></div>
+      <div class="plan-sub">Pagamento único · Sem mensalidade</div>
+      <ul class="plan-feats">
+        <li class="sect">🌐 Tudo do Avançado +</li>
+        <li><span class="ck">✓</span><span><strong>AI Signals</strong> — sinais VIP em tempo real</span></li>
+        <li><span class="ck">✓</span><span>Estratégias VIP exclusivas (win rate até 82%)</span></li>
+        <li><span class="ck">✓</span><span>Premium Elite com deep learning</span></li>
+        <li><span class="ck">✓</span><span>Sala de sinais privada para sua audiência</span></li>
+        <li class="sect">💰 Comissões (60%)</li>
+        <li><span class="ck">✓</span><span><strong>8+ produtos</strong> para venda com 60% comissão</span></li>
+        <li><span class="ck">✓</span><span>Todos os produtos da plataforma incluídos</span></li>
+        <li><span class="ck">✓</span><span>Revenue share Deriv vitalício + bônus performance</span></li>
+        <li class="sect">👑 Suporte VIP</li>
+        <li><span class="ck">✓</span><span>Acesso direto ao fundador</span></li>
+        <li><span class="ck">✓</span><span>Estratégia de lançamento personalizada</span></li>
+        <li><span class="ck">✓</span><span>Prioridade em novas funcionalidades</span></li>
+      </ul>
+      <a href="https://wa.me/5547992206579?text=Quero%20o%20Plano%20Elite%20Parceiro%20Alpha%20Dolar" target="_blank" class="btn-plan bp-out">Quero o Elite →</a>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section>
+  <div class="tc">
+    <div class="sec-tag" style="background:rgba(14,165,233,0.1);color:var(--blue);border:1px solid rgba(14,165,233,0.2)">✦ Compare os planos</div>
+    <div class="sec-title">O que cada plano inclui</div>
+  </div>
+  <div class="ctable-wrap">
+    <table class="ctable">
+      <thead><tr><th>Recurso</th><th>Básico</th><th class="fh">⚡ Avançado</th><th>👑 Elite</th></tr></thead>
+      <tbody>
+        <tr><td>Subdomínio personalizado</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>Robô Alpha IA Simples + Avançado</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>Alpha IA Pro (voz IA)</td><td class="n">—</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>Alpha Clock + Alpha Copy</td><td class="n">—</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>AI Signals VIP</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td></tr>
+        <tr><td>Estratégias VIP (82% win rate)</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td></tr>
+        <tr><td>Sala de sinais privada</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td></tr>
+        <tr><td>Produtos para venda (60%)</td><td>3 produtos</td><td style="color:var(--gold);font-weight:700">6 produtos</td><td>8+ produtos</td></tr>
+        <tr><td>Revenue share Deriv</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>Suporte prioritário WhatsApp</td><td class="n">—</td><td class="y">✓</td><td class="y">✓</td></tr>
+        <tr><td>Acesso ao fundador</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td></tr>
+        <tr><td style="font-weight:700;color:var(--gold)">Investimento único</td><td style="color:var(--text);font-weight:700">R$ 1.297</td><td style="color:var(--gold);font-weight:700">R$ 1.697</td><td style="color:var(--text);font-weight:700">R$ 1.997</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="comissoes">
+  <div class="tc">
+    <div class="sec-tag" style="background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.2)">✦ Suas fontes de renda</div>
+    <div class="sec-title">Duas formas de ganhar.<br>As duas automáticas.</div>
+    <p class="sec-sub">Revenue share recorrente enquanto sua rede opera + comissão direta em cada produto vendido.</p>
+  </div>
+  <div class="comm-grid">
+    <div class="comm-card"><div class="comm-ic">🔄</div><div class="comm-val">Revenue Share</div><div class="comm-lbl">Ganhe % de tudo que sua rede operar na Deriv — para sempre, mesmo que você pare de criar conteúdo</div></div>
+    <div class="comm-card"><div class="comm-ic">🛒</div><div class="comm-val">60%</div><div class="comm-lbl">De comissão em cada produto vendido para sua rede — Alpha Bank, VIP, Premium e muito mais</div></div>
+    <div class="comm-card"><div class="comm-ic">📈</div><div class="comm-val">Sem teto</div><div class="comm-lbl">Não tem limite de ganhos. Quanto maior sua rede, mais você recebe — mês após mês</div></div>
+    <div class="comm-card"><div class="comm-ic">🎯</div><div class="comm-val">Vitalício</div><div class="comm-lbl">Um trader indicado uma vez te paga para sempre. Ele opera hoje e daqui a 2 anos, você continua ganhando</div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section>
+  <div class="tc">
+    <div class="sec-tag" style="background:rgba(245,158,11,0.1);color:var(--gold);border:1px solid rgba(245,158,11,0.2)">✦ Simulador de ganhos</div>
+    <div class="sec-title">Quanto você pode ganhar?</div>
+    <p class="sec-sub">Simule seu potencial de renda mensal baseado na sua audiência.</p>
+  </div>
+  <div class="calc">
+    <div class="cr">
+      <div class="cf"><label>Tamanho da sua audiência</label><input type="number" id="caud" value="1000" min="100" oninput="calc()"></div>
+      <div class="cf"><label>Taxa de conversão</label><select id="cconv" onchange="calc()"><option value="0.01">1% — Audiência fria</option><option value="0.02" selected>2% — Audiência morna</option><option value="0.05">5% — Engajada</option><option value="0.10">10% — Comunidade ativa</option></select></div>
+    </div>
+    <div class="cr">
+      <div class="cf"><label>Plano mais vendido</label><select id="cprod" onchange="calc()"><option value="1297">Básico — R$ 1.297</option><option value="1697" selected>Avançado — R$ 1.697</option><option value="1997">Elite — R$ 1.997</option></select></div>
+      <div class="cf"><label>Vendas por mês</label><select id="cfreq" onchange="calc()"><option value="1">1 venda/mês</option><option value="3" selected>3 vendas/mês</option><option value="5">5 vendas/mês</option><option value="10">10 vendas/mês</option></select></div>
+    </div>
+    <div class="cres">
+      <div class="crg">
+        <div><div class="crv" id="crcom">R$ 3.054</div><div class="crl">Comissão (60%)</div></div>
+        <div><div class="crv" id="crrev">R$ 1.600</div><div class="crl">Revenue share</div></div>
+        <div><div class="crv" id="crtot" style="color:var(--green)">R$ 4.654</div><div class="crl">💰 Total/mês</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:12px;font-style:italic">*Estimativa conservadora. Revenue share baseado em operação média de $200/trader. Resultados variam.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="incluido">
+  <div class="tc">
+    <div class="sec-tag" style="background:rgba(168,85,247,0.1);color:var(--purple);border:1px solid rgba(168,85,247,0.2)">✦ Plataforma completa</div>
+    <div class="sec-title">Tudo que sua audiência<br>vai ter acesso</div>
+    <p class="sec-sub">Uma plataforma completa de trading com IA que você entrega como seu produto — sem precisar criar nada.</p>
+  </div>
+  <div class="inc-grid">
+    <div class="inc"><div class="inc-ic" style="background:rgba(168,85,247,0.1)">🤖</div><div><div class="inc-title">Alpha IA Simples</div><div class="inc-desc">Robô automático para iniciantes. 3 cliques para operar, sem precisar saber nada de trading.</div></div></div>
+    <div class="inc"><div class="inc-ic" style="background:rgba(14,165,233,0.1)">🧠</div><div><div class="inc-title">Alpha IA Avançado</div><div class="inc-desc">Machine learning com multiplicador inteligente e filtro de perdas virtuais antes de entrar real.</div></div></div>
+    <div class="inc"><div class="inc-ic" style="background:rgba(245,158,11,0.1)">✨</div><div><div class="inc-title">Alpha IA Pro</div><div class="inc-desc">Motor premium com voz IA, 3 modelos combinados, score máximo e modo AUTO inteligente.</div></div></div>
+    <div class="inc"><div class="inc-ic" style="background:rgba(34,197,94,0.1)">🏦</div><div><div class="inc-title">Alpha Bank</div><div class="inc-desc">Gestão automática de banca. Calcula stake, stop loss e meta pelo saldo atual do trader.</div></div></div>
+    <div class="inc"><div class="inc-ic" style="background:rgba(239,68,68,0.1)">🛡️</div><div><div class="inc-title">Alpha Shield</div><div class="inc-desc">Monitor de volatilidade que alerta quando o mercado está perigoso e protege o capital.</div></div></div>
+    <div class="inc"><div class="inc-ic" style="background:rgba(168,85,247,0.1)">🔮</div><div><div class="inc-title">Alpha Pattern</div><div class="inc-desc">Detector de padrões em tempo real. Identifica sequências nos últimos 500 ticks.</div></div></div>
+    <div class="inc"><div class="inc-ic" style="background:rgba(14,165,233,0.1)">⏰</div><div><div class="inc-title">Alpha Clock</div><div class="inc-desc">Score por horário baseado em 500+ operações. Sabe exatamente quando operar.</div></div></div>
+    <div class="inc"><div class="inc-ic" style="background:rgba(34,197,94,0.1)">📡</div><div><div class="inc-title">Alpha Copy</div><div class="inc-desc">Copy trading automático. Replica operações dos melhores traders da plataforma.</div></div></div>
+    <div class="inc"><div class="inc-ic" style="background:rgba(245,158,11,0.1)">⭐</div><div><div class="inc-title">AI Signals VIP (Elite)</div><div class="inc-desc">Sinais VIP com análise neural em tempo real para EVEN, ODD, OVER, UNDER e MATCH.</div></div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section>
+  <div class="tc">
+    <div class="sec-tag" style="background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.2)">✦ Quem já é parceiro</div>
+    <div class="sec-title">Resultados reais de<br>parceiros reais</div>
+  </div>
+  <div class="dep-grid">
+    <div class="dep"><div class="dep-stars">★★★★★</div><div class="dep-text">"Comecei com o Avançado, apresentei para meu grupo de 800 traders no Telegram. Em 2 semanas recuperei o investimento. Hoje o revenue share paga sozinho todo mês."</div><div style="display:flex;align-items:center;gap:10px"><div class="dep-av" style="background:rgba(14,165,233,0.1)">👨</div><div><div class="dep-name">Marcos T.</div><div class="dep-role">Trader e criador de conteúdo · SP</div></div></div></div>
+    <div class="dep"><div class="dep-stars">★★★★★</div><div class="dep-text">"Eu vendia mentoria de trading. O sistema Alpha Dolar virou meu produto principal. Meus alunos adoram e eu ganho em cima de tudo que eles operam. Melhor decisão que tomei."</div><div style="display:flex;align-items:center;gap:10px"><div class="dep-av" style="background:rgba(245,158,11,0.1)">👩</div><div><div class="dep-name">Carla M.</div><div class="dep-role">Mentora de trading · MG</div></div></div></div>
+    <div class="dep"><div class="dep-stars">★★★★★</div><div class="dep-text">"Peguei o Elite. Os sinais VIP têm win rate absurdo e minha audiência fica renovando todo mês. Revenue share consistente, sem precisar fazer nada além de indicar."</div><div style="display:flex;align-items:center;gap:10px"><div class="dep-av" style="background:rgba(168,85,247,0.1)">🧔</div><div><div class="dep-name">Rafael S.</div><div class="dep-role">Influencer de finanças · RJ</div></div></div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="faq">
+  <div class="tc">
+    <div class="sec-tag" style="background:rgba(14,165,233,0.1);color:var(--blue);border:1px solid rgba(14,165,233,0.2)">✦ Dúvidas frequentes</div>
+    <div class="sec-title">Perguntas e respostas</div>
+  </div>
+  <div class="faq-list">
+    <div class="faq-item"><div class="faq-q" onclick="faq(this)">Preciso saber programar ou criar produto?<span class="faq-arr">+</span></div><div class="faq-a"><div class="faq-ai">Não. A gente faz tudo por você — configura o sistema, personaliza com sua identidade e entrega pronto para você apresentar para sua audiência. Você não precisa entender nada de tecnologia.</div></div></div>
+    <div class="faq-item"><div class="faq-q" onclick="faq(this)">Como funciona o pagamento do investimento?<span class="faq-arr">+</span></div><div class="faq-a"><div class="faq-ai">É um investimento único. Sem mensalidade, sem taxa sobre seus ganhos. Você paga uma vez e o sistema é seu para sempre, com todo o revenue share e comissões fluindo diretamente para você.</div></div></div>
+    <div class="faq-item"><div class="faq-q" onclick="faq(this)">Quanto tempo leva para ativar meu sistema?<span class="faq-arr">+</span></div><div class="faq-a"><div class="faq-ai">Em até 24 horas após a confirmação do pagamento e envio das informações (logo, nome, cores), seu sistema já está no ar e pronto para receber traders.</div></div></div>
+    <div class="faq-item"><div class="faq-q" onclick="faq(this)">Como recebo o revenue share da Deriv?<span class="faq-arr">+</span></div><div class="faq-a"><div class="faq-ai">O revenue share é pago diretamente pela Deriv no seu painel de afiliados. Você cria sua conta de afiliado na Deriv, integra com o sistema e recebe automaticamente toda vez que alguém da sua rede opera.</div></div></div>
+    <div class="faq-item"><div class="faq-q" onclick="faq(this)">Preciso ter audiência grande para funcionar?<span class="faq-arr">+</span></div><div class="faq-a"><div class="faq-ai">Não precisa ser grande — precisa ser engajada. Um grupo de 200 traders ativos pode gerar mais resultado do que 10.000 seguidores frios. O que importa é a confiança que você tem com sua audiência.</div></div></div>
+    <div class="faq-item"><div class="faq-q" onclick="faq(this)">Posso apresentar como meu próprio sistema?<span class="faq-arr">+</span></div><div class="faq-a"><div class="faq-ai">Sim. O sistema vem com sua identidade visual — nome, logo e posicionamento. Você pode apresentar como seu produto sem precisar mencionar o Alpha Dolar se preferir.</div></div></div>
+    <div class="faq-item"><div class="faq-q" onclick="faq(this)">O sistema funciona em qualquer dispositivo?<span class="faq-arr">+</span></div><div class="faq-a"><div class="faq-ai">Sim. A plataforma é 100% responsiva e funciona em celular, tablet e computador — qualquer navegador, sem precisar instalar nada. Seus traders podem operar de qualquer lugar.</div></div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="cta-sec">
+  <div class="sec-tag" style="background:rgba(245,158,11,0.1);color:var(--gold);border:1px solid rgba(245,158,11,0.2);display:inline-flex;margin-bottom:20px">👑 Vagas limitadas</div>
+  <h2>Pronto para ter seu<br>próprio sistema?</h2>
+  <p>Fale com nosso time agora e receba uma proposta personalizada para o seu perfil e audiência.</p>
+  <a href="https://wa.me/5547992206579?text=Quero%20ser%20Parceiro%20Alpha%20Dolar%20—%20me%20manda%20os%20detalhes" target="_blank" class="btn-gold" style="margin:0 auto">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    Falar com o time agora
+  </a>
+  <div style="font-size:13px;color:var(--muted);margin-top:16px">Resposta em até 2 horas · Sem compromisso</div>
+</section>
+
+<footer>
+  <div class="fl">⚡ ALPHA DOLAR</div>
+  <div style="font-size:12px;color:var(--muted)">© 2026 Alpha Dolar. Todos os direitos reservados.</div>
+  <div style="display:flex;gap:16px">
+    <a href="/landing" style="font-size:12px;color:var(--muted);text-decoration:none">Para traders →</a>
+    <a href="/quiz-parceiro" style="font-size:12px;color:var(--muted);text-decoration:none">Quiz parceiro →</a>
+  </div>
+</footer>
+
+<script>
+function calc(){
+  const a=parseFloat(document.getElementById('caud').value)||1000;
+  const c=parseFloat(document.getElementById('cconv').value)||0.02;
+  const p=parseFloat(document.getElementById('cprod').value)||1697;
+  const f=parseFloat(document.getElementById('cfreq').value)||3;
+  const com=p*0.6*f;
+  const rev=Math.round(a*c)*80;
+  const tot=com+rev;
+  const fm=v=>'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});
+  document.getElementById('crcom').textContent=fm(com);
+  document.getElementById('crrev').textContent=fm(rev);
+  document.getElementById('crtot').textContent=fm(tot);
+}
+calc();
+function faq(el){
+  const it=el.parentElement;
+  const op=it.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+  if(!op)it.classList.add('open');
+}
+</script>
+</body>
+</html>

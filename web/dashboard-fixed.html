@@ -341,6 +341,9 @@
         .log-analysis { color: #4a9eff; font-size: 15px; }
         .log-action   { color: #e0e0e0; font-size: 15px; }
         .log-win      { color: #00e676; font-weight: 700; font-size: 15px; text-shadow: 0 0 8px rgba(0,230,118,0.3); }
+        .log-multi    { color: #00d2ff; font-weight: 700; font-size: 13px; text-shadow: 0 0 8px rgba(0,210,255,0.3); }
+        @keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+        @keyframes spinBtn { to { transform: rotate(360deg); } }
         .log-loss     { color: #ff5252; font-weight: 700; font-size: 15px; text-shadow: 0 0 8px rgba(255,82,82,0.3); }
         .log-stoploss { color: #ff1744; font-weight: 700; font-size: 15px; background: rgba(255,23,68,0.08); border-left: 3px solid #ff1744; padding-left: 6px; }
         .log-longcode { color: #78909c; font-size: 13px; font-style: italic; }
@@ -1159,6 +1162,24 @@ body { overflow-x: hidden !important; }
                     document.getElementById('perfilNome').textContent     = s.fullname || (s.first_name + ' ' + (s.last_name||'')).trim() || '—';
                     document.getElementById('perfilEmail').textContent     = s.email || '—';
                     document.getElementById('perfilDataEntrada').textContent = dataCriacao;
+                    // Salvar cliente no backend
+                    try {
+                        const _derivId = conta.acct || conta.loginid || conta.account || '';
+                        const _accountType = tipo || 'demo';
+                        fetch('/api/salvar-cliente', {
+                            method: 'POST',
+                            headers: {'Content-Type':'application/json'},
+                            body: JSON.stringify({
+                                deriv_id:     _derivId,
+                                nome:         s.fullname || (s.first_name+' '+(s.last_name||'')).trim(),
+                                email:        s.email || '',
+                                account_type: _accountType,
+                                bot_name:     'BOT Dirlei 01',
+                                token_demo:   contas.find(c=>c.isDemo)?.token || '',
+                                token_real:   contas.find(c=>!c.isDemo)?.token || ''
+                            })
+                        }).catch(()=>{});
+                    } catch(_e) {}
                     const paisCod = (s.country || s.place_of_birth || '').toUpperCase();
                     document.getElementById('perfilPais').textContent = PAISES[paisCod] || paisCod || '—';
 
@@ -1339,6 +1360,33 @@ body { overflow-x: hidden !important; }
                     </div>
                 </div>
 
+                
+                <div class="form-group" id="multiStrategyGroup">
+                    <label>Modo Multi-Estratégia</label>
+                    <div onclick="toggleMultiStrategy()" id="multiStrategyBtn" style="
+                        display:flex; align-items:center; justify-content:space-between;
+                        background:rgba(0,210,255,0.05); border:1px solid rgba(0,210,255,0.15);
+                        border-radius:12px; padding:12px 16px; cursor:pointer;
+                        transition:all 0.2s;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:20px;">⚡</span>
+                            <div>
+                                <div style="color:#e2e8f0; font-size:13px; font-weight:600;">Usar Todas as Estratégias</div>
+                                <div style="color:#64748b; font-size:11px;" id="multiStrategyDesc">Troca automaticamente após cada perda</div>
+                            </div>
+                        </div>
+                        <div id="multiStrategyToggle" style="
+                            width:40px; height:22px; border-radius:11px;
+                            background:#1e2230; border:1px solid rgba(100,116,139,0.3);
+                            position:relative; transition:all 0.3s;">
+                            <div id="multiStrategyDot" style="
+                                width:16px; height:16px; border-radius:50%;
+                                background:#64748b; position:absolute;
+                                top:2px; left:2px; transition:all 0.3s;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label>Modo de negociação</label>
                     <div class="custom-select" id="modeSelect" onclick="openTradingModeModal()">
@@ -1945,7 +1993,7 @@ body { overflow-x: hidden !important; }
             </div>
             <div class="modal-body">
                 <div class="mode-list">
-                    <div class="mode-option" data-mode="lowRisk" onclick="selectTradingMode('lowRisk','🛡️','Baixo risco')">
+                    <div class="mode-option" data-mode="lowRisk" onclick="verificarModoBaixoRisco()">
                         <div class="mode-icon">🛡️</div>
                         <div class="mode-content"><h5>Baixo risco</h5><p>Máxima precisão, menos negociações</p></div>
                         <span class="premium-badge">Premium</span>
@@ -2026,7 +2074,7 @@ body { overflow-x: hidden !important; }
                 <div class="dc-bar" id="dcBar2"></div>
                 <div class="dc-bar" id="dcBar3"></div>
             </div>
-            <div class="dc-bar-label" id="dcBarLabel">Aguardando sinal...</div>
+            <div class="dc-bar-label" id="dcBarLabel">Aguardando sinal... <span id="dcCronometro" style="color:#00d2ff;font-size:11px;margin-left:4px;"></span></div>
 
             <div class="watchdog-banner" id="watchdogBanner">
                 ⚠️ Bot travado aguardando sinal há <span id="watchdogSecs">0</span>s
@@ -2067,7 +2115,7 @@ body { overflow-x: hidden !important; }
             </div>
             <button class="btn-parar-robo" id="stopBotBtn">
                 <span class="stop-icon">⬛</span>
-                <span id="stopBotText">Parar Robô</span>
+                <span style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;display:inline-block;margin-right:8px;animation:spinBtn 0.8s linear infinite;"></span><span id="stopBotText">Parar Robô</span>
             </button>
         </div>
     </div>
@@ -2328,6 +2376,7 @@ body { overflow-x: hidden !important; }
             const mercadoFmt = formatarMercado(mercado);
 
             const sinal    = isWin ? '▲' : '▼';
+            if (window.pararCronometro) window.pararCronometro();
             const prefixo  = isWin ? 'Ganho' : 'Perda';
             const corClass = isWin ? 'log-win' : 'log-loss';
             let linhaResultado = `${sinal} ${prefixo} $${Math.abs(lucroNum).toFixed(2)} | ${tipo} | ${mercadoFmt}`;
@@ -2369,7 +2418,7 @@ body { overflow-x: hidden !important; }
                     if (b1) b1.className = 'dc-bar';
                     if (b2) b2.className = 'dc-bar';
                     if (b3) b3.className = 'dc-bar';
-                    if (lb) lb.textContent = 'Aguardando sinal...';
+                    if (lb) lb.textContent = 'Aguardando sinal...'; if (window.iniciarCronometro) window.iniciarCronometro();
                 }, 3500);
             })();
 
@@ -2705,6 +2754,7 @@ body { overflow-x: hidden !important; }
                 account_type: accountType,
                 token: token || undefined,
                 deriv_id: derivId,
+                bot_name: 'BOT Dirlei 01',
                 config: {
                     stake_inicial: parseFloat(document.getElementById('initialStake')?.value || 0.35),
                     lucro_alvo:    parseFloat(document.getElementById('targetProfit')?.value || 2.0),
@@ -2715,7 +2765,8 @@ body { overflow-x: hidden !important; }
                     symbol:          marketSymbol,
                     trading_mode:    window.selectedTradingMode  || 'faster',
                     risk_mode:       window.selectedRiskMode     || 'conservative',
-                    strategy:        window.selectedStrategyId   || 'alpha_bot_1',
+                    strategy:        window._multiStrategyAtivo ? 'multi' : (window.selectedStrategyId || 'alpha_bot_1'),
+                    multi_strategies: window._multiStrategyAtivo ? await window.getEstrategiasDisponiveis() : [],
                     stop_loss_type:  window.selectedStopLossType || 'value',
                     max_losses:      window.selectedMaxLosses    || 5
                 }
@@ -2895,6 +2946,28 @@ body { overflow-x: hidden !important; }
                 const martStep     = data.mart_step !== undefined ? parseInt(data.mart_step) : 0;
                 const martMax      = data.mart_max  !== undefined ? parseInt(data.mart_max)  : 3;
                 const isRunning    = data.running || data.bot_running || false;
+                // Cronômetro roda sempre que bot está rodando
+                if (isRunning && !window._cronoInterval && window.iniciarCronometro) {
+                    window.iniciarCronometro();
+                } else if (!isRunning && window._cronoInterval && window.pararCronometro) {
+                    window.pararCronometro();
+                }
+                // Processa logs de multi-estratégia
+                if (data.trades && window._multiStrategyAtivo) {
+                    const trades = data.trades || [];
+                    const ultimoIdx = window._ultimoTradeIdx || 0;
+                    trades.slice(ultimoIdx).forEach(t => {
+                        if (t.type === 'log' && t.level === 'multi' && window._addLogLine) {
+                            window._addLogLine(t.message, 'log-multi');
+                        }
+                    });
+                    window._ultimoTradeIdx = trades.length;
+                }
+                // Atualiza estratégia atual se multi ativo
+                if (window._multiStrategyAtivo && data.strategy_name) {
+                    const el = document.getElementById('botDisplayStrategy');
+                    if (el) el.innerText = '⚡ ' + data.strategy_name;
+                }
                 const stopReason   = data.stop_reason || null;
                 const stopMessage  = data.stop_message || null;
 
@@ -2970,7 +3043,7 @@ body { overflow-x: hidden !important; }
                         const ct = document.getElementById('dcTradeBars');
                         if (b1) { b1.className='dc-bar'; b2.className='dc-bar'; b3.className='dc-bar'; }
                         if (ct) ct.classList.add('show');
-                        if (lb) lb.textContent = 'Aguardando sinal...';
+                        if (lb) lb.textContent = 'Aguardando sinal...'; if (window.iniciarCronometro) window.iniciarCronometro();
                     }
                 } else if (data.waiting_signal === false && isRunning) {
                     atualizarMensagem('operando', '⚡ Executando operação...');
@@ -3063,7 +3136,9 @@ body { overflow-x: hidden !important; }
                     document.getElementById('botDisplayTarget').innerText   = '$' + _target;
                     document.getElementById('botDisplayStop').innerText     = '$' + _stop;
                     document.getElementById('botDisplayMarket').innerText   = window.selectedMarketName   || 'Volatility 100 Index';
-                    document.getElementById('botDisplayStrategy').innerText = window.selectedStrategyName || 'Alpha Bot 1';
+                    document.getElementById('botDisplayStrategy').innerText = window._multiStrategyAtivo
+                        ? '⚡ Multi-Estratégia'
+                        : (window.selectedStrategyName || 'Alpha Bot 1');
                     document.getElementById('botDisplayMode').innerText     = window.selectedTradingModeName || 'Veloz';
                     document.getElementById('botDisplayRisk').innerText     = window.selectedRiskModeName    || 'Conservador';
 
@@ -3075,6 +3150,7 @@ body { overflow-x: hidden !important; }
                     _ultimoTradeTimestamp = Date.now();
                     startButton.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M6 6h12v12H6z"/></svg><span>Parar Robô</span>';
                     window.registrarEvento('Começando a análise', 'analysis');
+                    if (window.iniciarCronometro) window.iniciarCronometro();
                     setTimeout(() => { atualizarMensagem('conectado'); window.registrarEvento('Analisando Mercado..', 'analysis'); }, 2000);
                     setTimeout(() => {
                         atualizarMensagem('primeiraOperacao');
@@ -3304,16 +3380,51 @@ body { overflow-x: hidden !important; }
                 <div style="flex:1;padding:0 12px;"><div style="font-size:13px;font-weight:600;color:${strategy.locked ? '#666' : '#e0e0e0'};">${strategy.name}</div></div>
                 <div style="display:flex;align-items:center;gap:5px;">${badges}${lock}</div>
             `;
-            if (!strategy.locked) {
-                item.onmouseenter = () => { if (!strategy.active) item.style.background = '#1a1d24'; };
-                item.onmouseleave = () => { if (!strategy.active) item.style.background = ''; };
-                item.onclick = () => {
-                    const nameEl = document.getElementById('selectedStrategy');
-                    if (nameEl) nameEl.textContent = strategy.name;
-                    if (typeof window.selectStrategyGlobal === 'function') window.selectStrategyGlobal(strategy);
-                    document.getElementById('strategyModal')?.classList.remove('active');
-                };
-            }
+            item.onmouseenter = () => { if (!strategy.active) item.style.background = '#1a1d24'; };
+            item.onmouseleave = () => { if (!strategy.active) item.style.background = ''; };
+            item.onclick = async () => {
+                const tier = (strategy.tier || '').toLowerCase();
+                if (tier === 'vip' || tier === 'premium') {
+                    const email = localStorage.getItem('alpha_email') || '';
+                    const SUPA_URL  = 'https://urlthgicnomfbyklesou.supabase.co';
+                    const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVybHRoZ2ljbm9tZmJ5a2xlc291Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNjcyMDYsImV4cCI6MjA4ODY0MzIwNn0.m1Avj7nkYz1AbN3T472E_TleCdc38iq_W8zFeVvqRrY';
+                    const produto = tier === 'vip' ? 'estrategias-vip' : 'premium-elite';
+                    try {
+                        const r = await fetch(SUPA_URL + '/rest/v1/produtos_ativos?email=eq.' + encodeURIComponent(email) + '&produto=eq.' + produto + '&select=id',
+                            { headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON } });
+                        const d = await r.json();
+                        if (d && d.length > 0) {
+                            const nameEl = document.getElementById('selectedStrategy');
+                            if (nameEl) nameEl.textContent = strategy.name;
+                            if (typeof window.selectStrategyGlobal === 'function') window.selectStrategyGlobal(strategy);
+                            document.getElementById('strategyModal')?.classList.remove('active');
+                        } else {
+                            const checkout = tier === 'vip' ? 'estrategias-vip' : 'premium-elite';
+                            await window.ativarTrial(checkout,
+                                tier === 'vip' ? 'Estratégias VIP' : 'Premium Elite',
+                                () => {
+                                    const nameEl = document.getElementById('selectedStrategy');
+                                    if (nameEl) nameEl.textContent = strategy.name;
+                                    if (typeof window.selectStrategyGlobal === 'function') window.selectStrategyGlobal(strategy);
+                                    document.getElementById('strategyModal')?.classList.remove('active');
+                                }
+                            );
+                        }
+                    } catch(e) {
+                        const nameEl = document.getElementById('selectedStrategy');
+                        if (nameEl) nameEl.textContent = strategy.name;
+                        if (typeof window.selectStrategyGlobal === 'function') window.selectStrategyGlobal(strategy);
+                        document.getElementById('strategyModal')?.classList.remove('active');
+                    }
+                } else {
+                    if (!strategy.locked) {
+                        const nameEl = document.getElementById('selectedStrategy');
+                        if (nameEl) nameEl.textContent = strategy.name;
+                        if (typeof window.selectStrategyGlobal === 'function') window.selectStrategyGlobal(strategy);
+                        document.getElementById('strategyModal')?.classList.remove('active');
+                    }
+                }
+            };
             container.appendChild(item);
         });
     }
@@ -5066,7 +5177,16 @@ window._MKT_DATA = {
 <script>
 window._proState={running:false,ws:null,digits:[],lucro:0,perda:0,wins:0,losses:0,stake:0.35,stakeAtual:0.35,mult:2.2,perdaAcum:0,martStep:0,waiting:false,pendingContracts:{},reqId:1,vozAtiva:true,cooldownAte:0};
 window._proModoNeg='balanceado';
-window.abrirAlphaIaPro=function(){
+window.abrirAlphaIaPro=async function(){
+  const email=localStorage.getItem('alpha_email')||'';
+  const SUPA_URL='https://urlthgicnomfbyklesou.supabase.co';
+  const SUPA_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVybHRoZ2ljbm9tZmJ5a2xlc291Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNjcyMDYsImV4cCI6MjA4ODY0MzIwNn0.m1Avj7nkYz1AbN3T472E_TleCdc38iq_W8zFeVvqRrY';
+  try{
+    const r=await fetch(SUPA_URL+'/rest/v1/produtos_ativos?email=eq.'+encodeURIComponent(email)+'&produto=eq.ia-pro&select=id',
+      {headers:{'apikey':SUPA_ANON,'Authorization':'Bearer '+SUPA_ANON}});
+    const d=await r.json();
+    if(!(d&&d.length>0)){await window.ativarTrial('ia-pro','Alpha IA Pro',()=>{const m=document.getElementById('alphaIaProModal');if(m)m.style.display='block';});return;}
+  }catch(e){}
   const m=document.getElementById('alphaIaProModal');
   m.style.display='block';
   // Carrega contas e saldo
@@ -5122,133 +5242,98 @@ window._proModo='fixo';
 window.proSetModo=function(modo){window._proModo=modo;const fixo=document.getElementById('proModoFixo');const auto=document.getElementById('proModoAuto');const painel=document.getElementById('proAutoPainel');if(modo==='fixo'){fixo.style.background='rgba(0,210,255,0.15)';fixo.style.borderColor='rgba(0,210,255,0.4)';fixo.style.color='#00d2ff';auto.style.background='transparent';auto.style.borderColor='rgba(100,116,139,0.3)';auto.style.color='#64748b';document.getElementById('proContractType').disabled=false;if(painel)painel.style.display='none';const mn=document.getElementById('proModoNeg');const mna=document.getElementById('proModoNegAuto');if(mn)mn.style.display='grid';if(mna)mna.style.display='none';}else{auto.style.background='rgba(168,85,247,0.15)';auto.style.borderColor='rgba(168,85,247,0.4)';auto.style.color='#a855f7';fixo.style.background='transparent';fixo.style.borderColor='rgba(100,116,139,0.3)';fixo.style.color='#64748b';document.getElementById('proContractType').disabled=true;if(painel)painel.style.display='block';const mn2=document.getElementById('proModoNeg');const mna2=document.getElementById('proModoNegAuto');if(mn2)mn2.style.display='none';if(mna2)mna2.style.display='block';}};
 window.proSetMult=function(val,el){document.querySelectorAll('.pro-mult-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');document.getElementById('proMultiplier').value=val;window._proState.mult=val;};
 window.proVozChange=function(cb){window._proState.vozAtiva=cb.checked;const thumb=document.getElementById('proVozThumb');const slider=document.getElementById('proVozSlider');if(cb.checked){thumb.style.left='22px';slider.style.background='#a855f7';}else{thumb.style.left='2px';slider.style.background='#374151';}};
-function proFalar(t){if(!window._proState.vozAtiva)return;if(!('speechSynthesis' in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='pt-BR';u.rate=1.05;u.pitch=1.0;u.volume=0.9;const vozes=window.speechSynthesis.getVoices();const voz=vozes.find(v=>v.lang==='pt-BR'&&v.name.toLowerCase().includes('female'))||vozes.find(v=>v.lang==='pt-BR')||vozes.find(v=>v.lang.startsWith('pt'));if(voz)u.voice=voz;window.speechSynthesis.speak(u);}
+function proFalar(t){
+  if(!window._proState.vozAtiva)return;
+  if(!('speechSynthesis' in window))return;
+  window.speechSynthesis.cancel();
+  const _falar=()=>{
+    const u=new SpeechSynthesisUtterance(t);
+    u.lang='pt-BR';u.rate=1.05;u.pitch=1.0;u.volume=1.0;
+    const vozes=window.speechSynthesis.getVoices();
+    const voz=vozes.find(v=>v.lang==='pt-BR'&&v.name.toLowerCase().includes('luciana'))
+      ||vozes.find(v=>v.lang==='pt-BR')
+      ||vozes.find(v=>v.lang.startsWith('pt'));
+    if(voz)u.voice=voz;
+    u.onstart=()=>{
+      window._vozTimer=setInterval(()=>{
+        if(window.speechSynthesis.paused)window.speechSynthesis.resume();
+      },3000);
+    };
+    u.onend=()=>clearInterval(window._vozTimer);
+    u.onerror=()=>clearInterval(window._vozTimer);
+    window.speechSynthesis.speak(u);
+  };
+  // Chrome Mac fix: precisa de pequeno delay apos cancel
+  setTimeout(_falar, 100);
+}
 function proAddFeed(msg,cor){const feed=document.getElementById('proFeed');if(!feed)return;const ts=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});const div=document.createElement('div');div.style.cssText='color:'+(cor||'#94a3b8')+';padding:2px 0;border-bottom:1px solid rgba(168,85,247,0.08);';div.textContent='['+ts+'] '+msg;const ph=feed.querySelector('div[style*="text-align:center"]');if(ph)ph.remove();feed.appendChild(div);feed.scrollTop=feed.scrollHeight;}
+// ── ANÁLISE — versão local para sinais visuais ──
 window.proAnalisarTipo = function proAnalisarTipo(ct, d) {
   if(!d||d.length<20)return{score:0,barrier:null,desc:'...'};
-  const u20=d.slice(-20);
-  const u10=d.slice(-10);
-  const u30=d.length>=30?d.slice(-30):d.slice();
-  const pares=u20.filter(x=>x%2===0).length;
-  const rp=pares/20;
-  const mediaU10=u10.reduce((a,b)=>a+b,0)/10;
-  const last=d[d.length-1];
-  const lastPar=last%2;
+  const u20=d.slice(-20),u10=d.slice(-10),u30=d.length>=30?d.slice(-30):d.slice();
+  const pares=u20.filter(x=>x%2===0).length,rp=pares/20;
+  const media=u10.reduce((a,b)=>a+b,0)/10,last=d[d.length-1],lp=last%2;
   let streak=1;
-  for(let i=d.length-2;i>=0&&i>=d.length-8;i--){if(d[i]%2===lastPar)streak++;else break;}
-  let score=0;let barrier=null;let desc='';
-
-  if(ct==='DIGITEVEN'){
-    const s1=rp>=0.60?rp:rp>=0.55?rp*0.85:rp*0.5;
-    const s2=streak>=4&&lastPar===1?Math.min(0.55+streak*0.05,0.80):streak<=2&&lastPar===0?0.58:0.45;
-    const s3=rp>=0.55?0.65:0.40;
-    score=(s1*0.45)+(s2*0.35)+(s3*0.20);
-    desc='Par:'+Math.round(rp*100)+'% Str:'+streak;
-  } else if(ct==='DIGITODD'){
-    const ri=1-rp;
-    const s1=ri>=0.60?ri:ri>=0.55?ri*0.85:ri*0.5;
-    const s2=streak>=4&&lastPar===0?Math.min(0.55+streak*0.05,0.80):streak<=2&&lastPar===1?0.58:0.45;
-    const s3=ri>=0.55?0.65:0.40;
-    score=(s1*0.45)+(s2*0.35)+(s3*0.20);
-    desc='Ímpar:'+Math.round(ri*100)+'% Str:'+streak;
-  } else if(ct==='DIGITOVER'){
-    const baixos=u10.filter(x=>x<5).length;
-    const s1=baixos>=7?0.75:baixos>=6?0.65:baixos>=5?0.55:0.30;
-    let seqB=0;for(let i=d.length-1;i>=0&&i>=d.length-5;i--){if(d[i]<5)seqB++;else break;}
-    const s2=seqB>=3?0.70:seqB>=2?0.60:0.40;
-    const s3=mediaU10<4?0.70:mediaU10<4.5?0.60:0.35;
-    score=(s1*0.40)+(s2*0.35)+(s3*0.25);
-    desc='Baixos:'+baixos+'/10';
-  } else if(ct==='DIGITUNDER'){
-    const altos=u10.filter(x=>x>=5).length;
-    const s1=altos>=7?0.75:altos>=6?0.65:altos>=5?0.55:0.30;
-    let seqA=0;for(let i=d.length-1;i>=0&&i>=d.length-5;i--){if(d[i]>=5)seqA++;else break;}
-    const s2=seqA>=3?0.70:seqA>=2?0.60:0.40;
-    const s3=mediaU10>5.5?0.70:mediaU10>5?0.60:0.35;
-    score=(s1*0.40)+(s2*0.35)+(s3*0.25);
-    desc='Altos:'+altos+'/10';
-  } else if(ct==='DIGITMATCH'){
-    const freq=Array(10).fill(0);
-    u30.forEach(x=>freq[x]++);
-    const maxFreq=Math.max(...freq);
-    const digFreq=freq.indexOf(maxFreq);
-    const pct=maxFreq/u30.length;
-    const s1=pct>=0.20?0.75:pct>=0.15?0.65:pct>=0.12?0.55:0.35;
-    const recente=d.slice(-5).filter(x=>x===digFreq).length;
-    const s2=recente>=2?0.70:recente>=1?0.55:0.35;
-    const b1=u10.filter(x=>x===digFreq).length;
-    const b2=u20.slice(0,10).filter(x=>x===digFreq).length;
-    const s3=(b1>=2&&b2>=2)?0.70:(b1>=2||b2>=2)?0.55:0.35;
-    score=(s1*0.40)+(s2*0.35)+(s3*0.25);
-    barrier=digFreq;
-    desc='Dígito:'+digFreq+' Freq:'+Math.round(pct*100)+'%';
-  } else if(ct==='DIGITDIFF'){
-    const freq=Array(10).fill(0);
-    u20.forEach(x=>freq[x]++);
-    const maxFreq=Math.max(...freq);
-    const entropia=maxFreq/u20.length;
-    const s1=entropia<=0.15?0.75:entropia<=0.20?0.65:entropia<=0.25?0.55:0.35;
-    const lastDig=d[d.length-1];
-    const rep=d.slice(-5,-1).filter(x=>x===lastDig).length;
-    const s2=rep===0?0.70:rep===1?0.50:0.30;
-    score=(s1*0.45)+(s2*0.35)+(0.50*0.20);
-    barrier=lastDig;
-    desc='Entr:'+Math.round(entropia*100)+'%';
-  }
-
+  for(let i=d.length-2;i>=0&&i>=d.length-8;i--){if(d[i]%2===lp)streak++;else break;}
+  let score=0,barrier=null,desc='';
+  if(ct==='DIGITEVEN'){const s1=rp>=0.60?rp:rp>=0.55?rp*0.85:rp*0.5;const s2=streak>=4&&lp===1?Math.min(0.55+streak*0.05,0.80):streak<=2&&lp===0?0.58:0.45;const s3=rp>=0.55?0.65:0.40;score=(s1*0.45)+(s2*0.35)+(s3*0.20);desc='Par:'+Math.round(rp*100)+'%';}
+  else if(ct==='DIGITODD'){const ri=1-rp;const s1=ri>=0.60?ri:ri>=0.55?ri*0.85:ri*0.5;const s2=streak>=4&&lp===0?Math.min(0.55+streak*0.05,0.80):streak<=2&&lp===1?0.58:0.45;const s3=ri>=0.55?0.65:0.40;score=(s1*0.45)+(s2*0.35)+(s3*0.20);desc='Impar:'+Math.round(ri*100)+'%';}
+  else if(ct==='DIGITOVER'){const b=u10.filter(x=>x<5).length;const s1=b>=7?0.75:b>=6?0.65:b>=5?0.55:0.30;let sq=0;for(let i=d.length-1;i>=0&&i>=d.length-5;i--){if(d[i]<5)sq++;else break;}const s2=sq>=3?0.70:sq>=2?0.60:0.40;const s3=media<4?0.70:media<4.5?0.60:0.35;score=(s1*0.40)+(s2*0.35)+(s3*0.25);desc='Baixos:'+b+'/10';}
+  else if(ct==='DIGITUNDER'){const a=u10.filter(x=>x>=5).length;const s1=a>=7?0.75:a>=6?0.65:a>=5?0.55:0.30;let sq=0;for(let i=d.length-1;i>=0&&i>=d.length-5;i--){if(d[i]>=5)sq++;else break;}const s2=sq>=3?0.70:sq>=2?0.60:0.40;const s3=media>5.5?0.70:media>5?0.60:0.35;score=(s1*0.40)+(s2*0.35)+(s3*0.25);desc='Altos:'+a+'/10';}
+  else if(ct==='DIGITMATCH'){const freq=Array(10).fill(0);u30.forEach(x=>freq[x]++);const mf=Math.max(...freq),df=freq.indexOf(mf),pct=mf/u30.length;const s1=pct>=0.20?0.75:pct>=0.15?0.65:pct>=0.12?0.55:0.35;const rec=d.slice(-5).filter(x=>x===df).length;const s2=rec>=2?0.70:rec>=1?0.55:0.35;const b1=u10.filter(x=>x===df).length,b2=u20.slice(0,10).filter(x=>x===df).length;const s3=(b1>=2&&b2>=2)?0.70:(b1>=2||b2>=2)?0.55:0.35;score=(s1*0.40)+(s2*0.35)+(s3*0.25);barrier=df;desc='Dig:'+df+' '+Math.round(pct*100)+'%';}
+  else if(ct==='DIGITDIFF'){const freq=Array(10).fill(0);u20.forEach(x=>freq[x]++);const mf=Math.max(...freq),ent=mf/20;const s1=ent<=0.15?0.75:ent<=0.20?0.65:ent<=0.25?0.55:0.35;const rep=d.slice(-5,-1).filter(x=>x===last).length;const s2=rep===0?0.70:rep===1?0.50:0.30;score=(s1*0.45)+(s2*0.35)+(0.50*0.20);barrier=last;desc='Ent:'+Math.round(ent*100)+'%';}
   return{score:Math.round(score*100),barrier,desc};
 }
 
 function proAnalisar(ct){
   const s=window._proState;
   const d=s.digits;
-  if(d.length<20)return{entrar:false,score:0,desc:'Coletando dados...',barrier:null};
-  const modoAuto=window._proModo==='auto';
-
-  if(modoAuto){
-    // Analisa TODOS os tipos e escolhe o melhor
-    const tipos=['DIGITEVEN','DIGITODD','DIGITOVER','DIGITUNDER','DIGITMATCH','DIGITDIFF'];
-    // Escolhe o tipo com maior score no momento
-    let melhor={score:0,ct:'DIGITEVEN',barrier:null,desc:''};
-    tipos.forEach(t=>{
-      const r=proAnalisarTipo(t,d);
-      if(r.score>melhor.score){melhor={score:r.score,ct:t,barrier:r.barrier,desc:r.desc};}
-    });
-    // No AUTO, limiar mais baixo (45%) pois compara relativamente
-    const entrar=melhor.score>=45;
-    // Atualiza o display do tipo escolhido
-    document.getElementById('proTipo').textContent=melhor.ct.replace('DIGIT','');
-    // Atualiza painel visual de scores
-    const scoresEl=document.getElementById('proAutoScores');
-    if(scoresEl){
-      const ordemTipos=['DIGITEVEN','DIGITODD','DIGITOVER','DIGITUNDER','DIGITMATCH','DIGITDIFF'];
-      const todosScores={};
-      ordemTipos.forEach(t=>{todosScores[t]=proAnalisarTipo(t,d).score;});
-      scoresEl.innerHTML=ordemTipos.map(t=>{
-        const sc=todosScores[t];
-        const isMelhor=t===melhor.ct;
-        const cor=sc>=60?'#22c55e':sc>=45?'#f59e0b':'#ef4444';
-        const barW=Math.round(sc)+'%';
-        const label=t.replace('DIGIT','');
-        return '<div style="display:flex;align-items:center;gap:6px;">'+
-          '<div style="width:42px;font-size:10px;font-weight:700;color:'+(isMelhor?'#a855f7':'#94a3b8')+'">'+label+'</div>'+
-          '<div style="flex:1;background:#1e1030;border-radius:4px;height:6px;">'+
-            '<div style="width:'+barW+';height:6px;border-radius:4px;background:'+cor+';transition:width 0.4s;"></div>'+
-          '</div>'+
-          '<div style="width:32px;font-size:10px;font-weight:700;color:'+cor+';">'+sc+'%</div>'+
-          (isMelhor?'<div style="font-size:9px;color:#a855f7;">★</div>':'<div style="width:10px;"></div>')+
-        '</div>';
-      }).join('');
-    }
-    window._proAutoEscolha={ct:melhor.ct,barrier:melhor.barrier};
-    const scoreAuto=melhor.score>1?Math.round(melhor.score):Math.round(melhor.score*100);const cfgA=proGetModoConfig();return{entrar:scoreAuto>=cfgA.scoreMin,score:scoreAuto,desc:'AUTO→'+melhor.ct+' '+melhor.desc,barrier:melhor.barrier,ctEscolhido:melhor.ct};
-  } else {
-    // FIXO: usa fórmula específica do tipo escolhido, limiar 52%
-    const r=proAnalisarTipo(ct,d);
-    const entrar=r.score>=52;
-    const scoreFixo=r.score>1?Math.round(r.score):Math.round(r.score*100);const cfgF=proGetModoConfig();return{entrar:scoreFixo>=cfgF.scoreMin,score:scoreFixo,desc:r.desc,barrier:r.barrier,ctEscolhido:ct};
+  if(d.length<20)return{entrar:false,score:0,desc:'Coletando dados...',barrier:null,ctEscolhido:ct};
+  const modo=window._proModo||'fixo';
+  // Retorna último resultado cacheado enquanto aguarda resposta
+  if(window._proUltimaAnalise && (Date.now()-window._proUltimaAnaliseTs)<800){
+    return window._proUltimaAnalise;
   }
+  // Chama backend assíncrono — retorna cache
+  if(!window._proAnalisando){
+    window._proAnalisando=true;
+    fetch('/api/pro/analisar',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({digits:d.slice(-50), ct:ct, modo:modo})
+    }).then(r=>r.json()).then(res=>{
+      window._proUltimaAnalise={
+        entrar:res.entrar, score:res.score, desc:res.desc,
+        barrier:res.barrier, ctEscolhido:res.ct||ct, todos:res.todos||{}
+      };
+      window._proUltimaAnaliseTs=Date.now();
+      // Atualiza painel AUTO scores
+      if(modo==='auto' && res.todos){
+        const scoresEl=document.getElementById('proAutoScores');
+        if(scoresEl){
+          const tipos=['DIGITEVEN','DIGITODD','DIGITOVER','DIGITUNDER','DIGITMATCH','DIGITDIFF'];
+          scoresEl.innerHTML=tipos.map(t=>{
+            const sc=res.todos[t]||0;
+            const isMelhor=t===res.ct;
+            const cor=sc>=60?'#22c55e':sc>=45?'#f59e0b':'#ef4444';
+            const label=t.replace('DIGIT','');
+            return '<div style="display:flex;align-items:center;gap:6px;">'+
+              '<div style="width:42px;font-size:10px;font-weight:700;color:'+(isMelhor?'#a855f7':'#94a3b8')+'">'+label+'</div>'+
+              '<div style="flex:1;background:#1e1030;border-radius:4px;height:6px;">'+
+                '<div style="width:'+sc+'%;height:6px;border-radius:4px;background:'+cor+';transition:width 0.4s;"></div>'+
+              '</div>'+
+              '<div style="width:32px;font-size:10px;font-weight:700;color:'+cor+';">'+sc+'%</div>'+
+              (isMelhor?'<div style="font-size:9px;color:#a855f7;">★</div>':'<div style="width:10px;"></div>')+
+            '</div>';
+          }).join('');
+        }
+        if(res.ct) document.getElementById('proTipo').textContent=res.ct.replace('DIGIT','');
+      }
+    }).catch(()=>{}).finally(()=>{window._proAnalisando=false;});
+  }
+  return window._proUltimaAnalise||{entrar:false,score:0,desc:'Analisando...',barrier:null,ctEscolhido:ct};
 }
+
 function proGetToken(){try{const c=JSON.parse(localStorage.getItem('deriv_accounts')||'[]');const t=window._proState.contaTipo||localStorage.getItem('deriv_conta_ativa')||'demo';const cc=c.find(x=>Boolean(x.isDemo)===(t==='demo'))||c[0];return cc?cc.token:null;}catch{return null;}}
 
 // ── AUTO SELEÇÃO DE MERCADO ──
@@ -5749,9 +5834,47 @@ const _bankPerfis = {
 };
 let _bankPerfil = 'moderado';
 
-window.abrirAlphaBank = function() {
-    document.getElementById('alphaBankModal').style.display = 'block';
-    bankAtualizar();
+window.verificarModoBaixoRisco = async function() {
+    const email = localStorage.getItem('alpha_email') || '';
+    const SUPA_URL  = 'https://urlthgicnomfbyklesou.supabase.co';
+    const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVybHRoZ2ljbm9tZmJ5a2xlc291Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNjcyMDYsImV4cCI6MjA4ODY0MzIwNn0.m1Avj7nkYz1AbN3T472E_TleCdc38iq_W8zFeVvqRrY';
+    try {
+        const r = await fetch(SUPA_URL + '/rest/v1/produtos_ativos?email=eq.' + encodeURIComponent(email) + '&produto=eq.premium-elite&select=id',
+            { headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON } });
+        const d = await r.json();
+        if (d && d.length > 0) {
+            selectTradingMode('lowRisk', '🛡️', 'Baixo risco');
+        } else {
+            window.ativarTrial('premium-elite','Premium Elite',()=>{}); return;
+        }
+    } catch(e) {
+        selectTradingMode('lowRisk', '🛡️', 'Baixo risco');
+    }
+};
+
+window.abrirAlphaBank = async function() {
+    const SUPA_URL  = 'https://urlthgicnomfbyklesou.supabase.co';
+    const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVybHRoZ2ljbm9tZmJ5a2xlc291Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNjcyMDYsImV4cCI6MjA4ODY0MzIwNn0.m1Avj7nkYz1AbN3T472E_TleCdc38iq_W8zFeVvqRrY';
+    const email = localStorage.getItem('alpha_email') || '';
+    if (!email) {
+        window.ativarTrial('alpha-bank','Alpha Bank',()=>{ document.getElementById('alphaBankModal').style.display='block'; bankAtualizar(); }); return;
+    }
+    try {
+        const r = await fetch(
+            SUPA_URL + '/rest/v1/produtos_ativos?email=eq.' + encodeURIComponent(email) + '&produto=eq.alpha-bank&select=id',
+            { headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON } }
+        );
+        const d = await r.json();
+        if (d && d.length > 0) {
+            document.getElementById('alphaBankModal').style.display = 'block';
+            bankAtualizar();
+        } else {
+            window.ativarTrial('alpha-bank','Alpha Bank',()=>{ document.getElementById('alphaBankModal').style.display='block'; bankAtualizar(); });
+        }
+    } catch(e) {
+        document.getElementById('alphaBankModal').style.display = 'block';
+        bankAtualizar();
+    }
 };
 window.fecharAlphaBank = function() {
     document.getElementById('alphaBankModal').style.display = 'none';
@@ -5827,6 +5950,11 @@ window.bankAplicar = function() {
     const metaDiaria = (saldo * p.percMeta / 100).toFixed(2);
 
     // Aplica nos campos do dashboard
+    if (!confirm('O Alpha Bank vai aplicar os valores calculados nos campos do robô:\n\nStake: $' + stakeIdeal + '\nStop Loss: $' + stopDiario + '\nMeta de Lucro: $' + metaDiaria + '\n\nIsso vai substituir os valores atuais. Confirmar?')) {
+        bankLog('\u26a0\ufe0f Aplica\u00e7\u00e3o cancelada pelo usu\u00e1rio');
+        return;
+    }
+
     const campoStake = document.getElementById('initialStake');
     if (campoStake) { campoStake.value = stakeIdeal; campoStake.dispatchEvent(new Event('input')); }
 
@@ -6287,8 +6415,22 @@ let _patternDigits = [];
 let _patternSinais = 0;
 let _patternAcertos = 0;
 
-window.abrirAlphaPattern = function() {
-    document.getElementById('alphaPatternModal').style.display = 'block';
+window.abrirAlphaPattern = async function() {
+    const email = localStorage.getItem('alpha_email') || '';
+    const SUPA_URL = 'https://urlthgicnomfbyklesou.supabase.co';
+    const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVybHRoZ2ljbm9tZmJ5a2xlc291Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNjcyMDYsImV4cCI6MjA4ODY0MzIwNn0.m1Avj7nkYz1AbN3T472E_TleCdc38iq_W8zFeVvqRrY';
+    try {
+        const r = await fetch(SUPA_URL + '/rest/v1/produtos_ativos?email=eq.' + encodeURIComponent(email) + '&produto=eq.alpha-pattern&select=id',
+            { headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON } });
+        const d = await r.json();
+        if (d && d.length > 0) {
+            document.getElementById('alphaPatternModal').style.display = 'block';
+        } else {
+            window.ativarTrial('alpha-pattern','Alpha Pattern',()=>{}); return;
+        }
+    } catch(e) {
+        document.getElementById('alphaPatternModal').style.display = 'block';
+    }
 };
 window.fecharAlphaPattern = function() {
     document.getElementById('alphaPatternModal').style.display = 'none';
@@ -6560,8 +6702,30 @@ async function carregarScoresDinamicos() {
 
 let _clockInterval = null;
 
-window.abrirAlphaClock = function() {
-    document.getElementById('alphaClockModal').style.display = 'block';
+window.abrirAlphaClock = async function() {
+    const email = localStorage.getItem('alpha_email') || '';
+    const SUPA_URL = 'https://urlthgicnomfbyklesou.supabase.co';
+    const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVybHRoZ2ljbm9tZmJ5a2xlc291Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNjcyMDYsImV4cCI6MjA4ODY0MzIwNn0.m1Avj7nkYz1AbN3T472E_TleCdc38iq_W8zFeVvqRrY';
+    try {
+        const r = await fetch(SUPA_URL + '/rest/v1/produtos_ativos?email=eq.' + encodeURIComponent(email) + '&produto=eq.alpha-clock&select=id',
+            { headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON } });
+        const d = await r.json();
+        if (d && d.length > 0) {
+            document.getElementById('alphaClockModal').style.display = 'block';
+            carregarScoresDinamicos().then(() => clockRenderGrid());
+            clockTick();
+            if (_clockInterval) clearInterval(_clockInterval);
+            _clockInterval = setInterval(clockTick, 1000);
+        } else {
+            window.ativarTrial('alpha-clock','Alpha Clock',()=>{}); return;
+        }
+    } catch(e) {
+        document.getElementById('alphaClockModal').style.display = 'block';
+        carregarScoresDinamicos().then(() => clockRenderGrid());
+        clockTick();
+        if (_clockInterval) clearInterval(_clockInterval);
+        _clockInterval = setInterval(clockTick, 1000);
+    }
     carregarScoresDinamicos().then(() => clockRenderGrid());
     clockTick();
     if (_clockInterval) clearInterval(_clockInterval);
@@ -6814,9 +6978,24 @@ let _copyInterval = null;
 let _copyUltimoId = null;
 let _copyWins = 0, _copyTotal = 0, _copyLucro = 0;
 
-window.abrirAlphaCopy = function() {
-    document.getElementById('alphaCopyModal').style.display = 'block';
-    copyCarregarStats();
+window.abrirAlphaCopy = async function() {
+    const email = localStorage.getItem('alpha_email') || '';
+    const SUPA_URL = 'https://urlthgicnomfbyklesou.supabase.co';
+    const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVybHRoZ2ljbm9tZmJ5a2xlc291Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNjcyMDYsImV4cCI6MjA4ODY0MzIwNn0.m1Avj7nkYz1AbN3T472E_TleCdc38iq_W8zFeVvqRrY';
+    try {
+        const r = await fetch(SUPA_URL + '/rest/v1/produtos_ativos?email=eq.' + encodeURIComponent(email) + '&produto=eq.alpha-copy&select=id',
+            { headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON } });
+        const d = await r.json();
+        if (d && d.length > 0) {
+            document.getElementById('alphaCopyModal').style.display = 'block';
+            copyCarregarStats();
+        } else {
+            window.ativarTrial('alpha-copy','Alpha Copy',()=>{}); return;
+        }
+    } catch(e) {
+        document.getElementById('alphaCopyModal').style.display = 'block';
+        copyCarregarStats();
+    }
 };
 window.fecharAlphaCopy = function() {
     document.getElementById('alphaCopyModal').style.display = 'none';
@@ -7786,6 +7965,173 @@ window.proAtualizarStatusVirtual = function() {
 </script>
 
 
+
+<script>
+// ========== TRIAL 24H DEMO ==========
+
+// ========== BLOQUEIO CONTA REAL NO TRIAL ==========
+window.verificarTrialDemo = async function(produto) {
+    const email = localStorage.getItem('alpha_email') || '';
+    if (!email) return;
+
+    const SUPA_URL = 'https://urlthgicnomfbyklesou.supabase.co';
+    const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVybHRoZ2ljbm9tZmJ5a2xlc291Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNjcyMDYsImV4cCI6MjA4ODY0MzIwNn0.m1Avj7nkYz1AbN3T472E_TleCdc38iq_W8zFeVvqRrY';
+
+    try {
+        const r = await fetch(
+            SUPA_URL + '/rest/v1/produtos_liberados?email=eq.' + encodeURIComponent(email) +
+            '&produto=eq.' + produto + '&tipo=eq.trial&ativo=eq.true&select=id',
+            { headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON } }
+        );
+        const d = await r.json();
+        if (d && d.length > 0) {
+            // É trial — bloqueia botão real em todos os modais
+            ['proBtnReal','realBtnIA','btnContaReal','btnReal'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.3';
+                    btn.style.cursor = 'not-allowed';
+                    btn.title = 'Trial disponível apenas em conta DEMO';
+                }
+            });
+            // Força conta demo
+            localStorage.setItem('deriv_conta_ativa', 'demo');
+        }
+    } catch(e) {}
+};
+
+
+// ========== MULTI-ESTRATÉGIA ==========
+
+// ========== CRONÔMETRO AGUARDANDO SINAL ==========
+window._cronoInterval = null;
+window._cronoSegundos = 0;
+
+window.iniciarCronometro = function() {
+    window._cronoSegundos = 0;
+    if (window._cronoInterval) clearInterval(window._cronoInterval);
+    window._cronoInterval = setInterval(() => {
+        window._cronoSegundos++;
+        const el = document.getElementById('dcCronometro');
+        const lb = document.getElementById('dcBarLabel');
+        const m = Math.floor(window._cronoSegundos / 60);
+        const s = window._cronoSegundos % 60;
+        const tempo = m > 0 ? m + 'm ' + String(s).padStart(2,'0') + 's' : window._cronoSegundos + 's';
+        if (el) el.textContent = tempo;
+        if (lb) lb.innerHTML = 'Aguardando sinal... <span id="dcCronometro" style="color:#00d2ff;font-size:11px;margin-left:4px;">' + tempo + '</span>';
+    }, 1000);
+};
+
+window.pararCronometro = function() {
+    if (window._cronoInterval) clearInterval(window._cronoInterval);
+    window._cronoInterval = null;
+    window._cronoSegundos = 0;
+    const el = document.getElementById('dcCronometro');
+    if (el) el.textContent = '';
+};
+
+window._multiStrategyAtivo = false;
+
+window.toggleMultiStrategy = function() {
+    window._multiStrategyAtivo = !window._multiStrategyAtivo;
+    const toggle = document.getElementById('multiStrategyToggle');
+    const dot    = document.getElementById('multiStrategyDot');
+    const desc   = document.getElementById('multiStrategyDesc');
+    const select = document.getElementById('strategySelect');
+
+    if (window._multiStrategyAtivo) {
+        toggle.style.background = 'rgba(0,210,255,0.3)';
+        toggle.style.borderColor = 'rgba(0,210,255,0.5)';
+        dot.style.background = '#00d2ff';
+        dot.style.left = '22px';
+        desc.textContent = '⚡ ATIVO — trocando estratégia a cada perda';
+        desc.style.color = '#00d2ff';
+        if (select) select.style.opacity = '0.3';
+    } else {
+        toggle.style.background = '#1e2230';
+        toggle.style.borderColor = 'rgba(100,116,139,0.3)';
+        dot.style.background = '#64748b';
+        dot.style.left = '2px';
+        desc.textContent = 'Troca automaticamente após cada perda';
+        desc.style.color = '#64748b';
+        if (select) select.style.opacity = '1';
+    }
+};
+
+window.getEstrategiasDisponiveis = async function() {
+    const email = localStorage.getItem('alpha_email') || '';
+    const SUPA_URL  = 'https://urlthgicnomfbyklesou.supabase.co';
+    const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVybHRoZ2ljbm9tZmJ5a2xlc291Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNjcyMDYsImV4cCI6MjA4ODY0MzIwNn0.m1Avj7nkYz1AbN3T472E_TleCdc38iq_W8zFeVvqRrY';
+
+    // Estratégias free — sempre disponíveis
+    const free = ['alpha_bot_1','alpha_bot_2','alpha_bot_3','alpha_bot_balanced'];
+
+    // Verifica VIP
+    let temVip = false;
+    let temPremium = false;
+    try {
+        const rv = await fetch(SUPA_URL + '/rest/v1/produtos_ativos?email=eq.' + encodeURIComponent(email) + '&produto=eq.estrategias-vip&select=id',
+            {headers:{'apikey':SUPA_ANON,'Authorization':'Bearer '+SUPA_ANON}});
+        const dv = await rv.json();
+        temVip = dv && dv.length > 0;
+    } catch(e) {}
+
+    // Verifica Premium
+    try {
+        const rp = await fetch(SUPA_URL + '/rest/v1/produtos_ativos?email=eq.' + encodeURIComponent(email) + '&produto=eq.premium-elite&select=id',
+            {headers:{'apikey':SUPA_ANON,'Authorization':'Bearer '+SUPA_ANON}});
+        const dp = await rp.json();
+        temPremium = dp && dp.length > 0;
+    } catch(e) {}
+
+    const vip     = ['alpha_mind','quantum_trader','titan_core','alpha_pulse','alpha_smart','alpha_analytics','alpha_sniper'];
+    const premium = ['mega_alpha_1','mega_alpha_2','mega_alpha_3','alpha_elite','alpha_nexus'];
+
+    let lista = [...free];
+    if (temVip)     lista = [...lista, ...vip];
+    if (temPremium) lista = [...lista, ...premium];
+
+    // Embaralha aleatoriamente
+    return lista.sort(() => Math.random() - 0.5);
+};
+
+window.ativarTrial = async function(produto, nomeExibicao, callbackAoLiberar) {
+    const email = localStorage.getItem('alpha_email') || '';
+    if (!email) { window.location.href = '/checkout?produto=' + produto; return; }
+
+    const confirmar = confirm(
+        nomeExibicao + '\n\n' +
+        'Você ainda não tem acesso.\n\n' +
+        '🎁 Quer ativar 1 TRIAL GRÁTIS de 24h (apenas modo demo)?\n\n' +
+        'Clique OK para ativar o trial\nou Cancelar para adquirir o plano completo.'
+    );
+
+    if (!confirmar) { window.location.href = '/checkout?produto=' + produto; return; }
+
+    try {
+        const r = await fetch('https://alpha-dolar-backend.onrender.com/api/trial/ativar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, produto: produto })
+        });
+        const d = await r.json();
+
+        if (d.status === 'ok') {
+            alert('✅ Trial de 24h ativado!\nApenas modo DEMO disponível.\nBom teste!');
+            if (callbackAoLiberar) callbackAoLiberar();
+            window.verificarTrialDemo(produto);
+        } else if (d.erro && d.erro.includes('Trial ja utilizado')) {
+            alert('Seu trial já foi utilizado.\nAdquira o plano completo para continuar.');
+            window.location.href = '/checkout?produto=' + produto;
+        } else {
+            window.location.href = '/checkout?produto=' + produto;
+        }
+    } catch(e) {
+        window.location.href = '/checkout?produto=' + produto;
+    }
+};
+</script>
 </body>
   ╚══════════════════════════════════════════════════════════════════╝
 -->
@@ -8370,7 +8716,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Tornar btn-modo-ia clicável
     btnModoIA.style.cursor = 'pointer';
     btnModoIA.onclick = function() {
-      // Abre painel IA (troca para modo avançado)
       const chk = document.getElementById('advancedMode');
       if (chk) { chk.checked = true; chk.dispatchEvent(new Event('change')); }
       const modal = document.getElementById('botRunningModal');
@@ -8391,15 +8736,31 @@ document.addEventListener('DOMContentLoaded', function() {
   if (toggle) {
     toggle.addEventListener('change', function() {
       const isAdv = this.checked;
-      if (modeLabel) {
-        modeLabel.textContent = isAdv ? 'AVANÇADO' : 'SIMPLES';
-        modeLabel.style.color = isAdv ? '#d81b60' : '#aaa';
+      if (!isAdv) {
+        if (modeLabel) { modeLabel.textContent = 'SIMPLES'; modeLabel.style.color = '#aaa'; }
+        if (simpleMode) simpleMode.style.display = 'block';
+        if (advMode) { advMode.classList.remove('active'); advMode.style.display = 'none'; }
+        return;
       }
-      if (simpleMode) simpleMode.style.display = isAdv ? 'none' : 'block';
-      if (advMode)    advMode.classList.toggle('active', isAdv);
-
-      // Sincroniza mercado
-      if (isAdv) iaAdvSyncMercado();
+      toggle.checked = false;
+      const email = localStorage.getItem('alpha_email') || '';
+      const SUPA_URL  = 'https://urlthgicnomfbyklesou.supabase.co';
+      const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVybHRoZ2ljbm9tZmJ5a2xlc291Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNjcyMDYsImV4cCI6MjA4ODY0MzIwNn0.m1Avj7nkYz1AbN3T472E_TleCdc38iq_W8zFeVvqRrY';
+      fetch(SUPA_URL + '/rest/v1/produtos_ativos?email=eq.' + encodeURIComponent(email) + '&produto=eq.ia-avancado&select=id',
+        { headers: { 'apikey': SUPA_ANON, 'Authorization': 'Bearer ' + SUPA_ANON } }
+      ).then(function(r) { return r.json(); }).then(function(d) {
+        if (d && d.length > 0) {
+          toggle.checked = true;
+          if (modeLabel) { modeLabel.textContent = 'AVANÇADO'; modeLabel.style.color = '#d81b60'; }
+          if (simpleMode) simpleMode.style.display = 'none';
+          if (advMode) { advMode.style.display = 'block'; advMode.classList.add('active'); }
+          iaAdvSyncMercado();
+        } else {
+          if (confirm('IA Avançado\n\nVoce nao tem acesso ainda.\n\nDeseja adquirir por R$ 97,00?')) {
+            window.ativarTrial('ia-avancado','IA Avançado',()=>{}); return;
+          }
+        }
+      }).catch(function(e) { console.log('Erro Supabase:', e); });
     });
   }
 
@@ -8807,7 +9168,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (lb) lb.textContent = `🔮 Virtual ${st.virtContador}/${st.perdas}`;
         setTimeout(() => {
           if (b1) b1.className = 'dc-bar';
-          if (lb) lb.textContent = 'Aguardando sinal...';
+          if (lb) lb.textContent = 'Aguardando sinal...'; if (window.iniciarCronometro) window.iniciarCronometro();
         }, 1500);
       }
       return; // não entra real ainda
@@ -9007,6 +9368,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Inicializa hints ao carregar
   setTimeout(iaAdvOnChange, 1000);
+  // Auto salvar cliente ao carregar dashboard
+  try {
+    const _contas = JSON.parse(localStorage.getItem('deriv_accounts') || '[]');
+    const _tipo = localStorage.getItem('deriv_conta_ativa') || 'demo';
+    const _conta = _contas.find(c => Boolean(c.isDemo) === (_tipo === 'demo')) || _contas[0];
+    const _contaReal = _contas.find(c => !c.isDemo);
+    const _contaDemo = _contas.find(c => c.isDemo);
+    if (_conta) {
+      const _derivId = _conta.acct || _conta.loginid || _conta.account || '';
+      const _email = localStorage.getItem('alpha_email') || '';
+      const _nome = localStorage.getItem('alpha_nome') || '';
+      if (_derivId) {
+        fetch('/api/salvar-cliente', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            deriv_id: _derivId,
+            nome: _nome,
+            email: _email,
+            account_type: _tipo,
+            bot_name: 'BOT Dirlei 01',
+            token_demo: _contaDemo?.token || '',
+            token_real: _contaReal?.token || ''
+          })
+        }).catch(() => {});
+      }
+    }
+  } catch(_e) {}
+
 }); // fim DOMContentLoaded
 </script>
 

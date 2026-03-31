@@ -392,6 +392,22 @@ body::before {
   .topbar { padding: 0 14px; }
   .bot-header { flex-direction: column; align-items: flex-start; }
 }
+
+  .btn-filtro-t {
+    background: rgba(100,116,139,0.1);
+    border: 1px solid rgba(100,116,139,0.2);
+    color: #64748b;
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .btn-filtro-t.active {
+    background: rgba(0,210,255,0.15);
+    border-color: rgba(0,210,255,0.4);
+    color: #00d2ff;
+  }
+
 </style>
 </head>
 <body>
@@ -450,6 +466,16 @@ body::before {
       </div>
     </div>
 
+    <!-- LINK DE AFILIADO -->
+    <div style="background:rgba(0,210,255,0.05);border:1px solid rgba(0,210,255,0.2);border-radius:12px;padding:16px;margin-bottom:20px;">
+      <div style="color:#00d2ff;font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:8px;">🔗 SEU LINK DE AFILIADO</div>
+      <div style="font-size:11px;color:#64748b;margin-bottom:10px;">Compartilhe este link. Clientes que entrarem por ele serão vinculados ao seu bot para cálculo de Revenue Share.</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div id="linkAfiliado" style="flex:1;background:rgba(0,0,0,0.3);border:1px solid rgba(100,116,139,0.2);border-radius:8px;padding:8px 12px;font-size:12px;color:#e2e8f0;word-break:break-all;">—</div>
+        <button onclick="copiarLinkAfiliado()" style="background:rgba(0,210,255,0.15);border:1px solid rgba(0,210,255,0.3);color:#00d2ff;border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer;white-space:nowrap;">📋 Copiar</button>
+      </div>
+    </div>
+
     <!-- KPIs -->
     <div class="kpi-grid">
       <div class="kpi blue">
@@ -480,6 +506,23 @@ body::before {
       <div class="panel">
         <div class="panel-hdr">
           <h3>💰 Revenue Share & Comissão</h3>
+
+    <!-- FILTRO DE PERÍODO TRADER -->
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;background:rgba(0,0,0,0.2);border-radius:10px;padding:12px;">
+      <div style="color:#64748b;font-size:11px;font-weight:600;">📅 PERÍODO:</div>
+      <button onclick="filtrarTrader('hoje')" class="btn-filtro-t" id="ft-hoje">Hoje</button>
+      <button onclick="filtrarTrader('7d')"   class="btn-filtro-t" id="ft-7d">7d</button>
+      <button onclick="filtrarTrader('30d')"  class="btn-filtro-t" id="ft-30d">30d</button>
+      <button onclick="filtrarTrader('mes')"  class="btn-filtro-t active" id="ft-mes">Este mês</button>
+      <button onclick="filtrarTrader('3m')"   class="btn-filtro-t" id="ft-3m">3m</button>
+      <button onclick="filtrarTrader('6m')"   class="btn-filtro-t" id="ft-6m">6m</button>
+      <button onclick="filtrarTrader('1a')"   class="btn-filtro-t" id="ft-1a">1 ano</button>
+      <input type="date" id="ftDataInicio" style="background:#1e2230;border:1px solid rgba(100,116,139,0.3);color:#e2e8f0;border-radius:6px;padding:4px 8px;font-size:11px;">
+      <span style="color:#64748b;font-size:11px;">até</span>
+      <input type="date" id="ftDataFim" style="background:#1e2230;border:1px solid rgba(100,116,139,0.3);color:#e2e8f0;border-radius:6px;padding:4px 8px;font-size:11px;">
+      <button onclick="filtrarTraderPersonalizado()" style="background:rgba(0,210,255,0.15);border:1px solid rgba(0,210,255,0.3);color:#00d2ff;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">Aplicar</button>
+    </div>
+
         </div>
         <div class="panel-body">
           <div class="receita-card">
@@ -507,13 +550,35 @@ body::before {
               <span class="lbl" style="font-weight: 700;">✅ Seu Lucro Líquido (80%)</span>
               <span class="val g" id="rsLiquido">$ 0.00</span>
             </div>
+            <div class="receita-row" style="border-top:1px solid rgba(0,210,255,0.15);margin-top:8px;padding-top:8px;">
+              <span class="lbl" style="color:#00d2ff;">📊 Markup Estimado (2% stakes)</span>
+              <span class="val" id="rsMarkup" style="color:#00d2ff;">$ 0.00</span>
+            </div>
+            <div class="receita-row">
+              <span class="lbl">🏛️ Markup → Alpha Dolar (20%)</span>
+              <span class="val" id="rsMarkupAlpha">$ 0.00</span>
+            </div>
+            <div class="receita-row">
+              <span class="lbl" style="color:#00e676;">✅ Markup → Você (80%)</span>
+              <span class="val g" id="rsMarkupTrader">$ 0.00</span>
+            </div>
+            <div class="receita-row" style="border-top:2px solid rgba(245,158,11,0.3);margin-top:8px;padding-top:8px;">
+              <span class="lbl" style="color:#f59e0b;font-weight:700;">💰 TOTAL A PAGAR ALPHA DOLAR</span>
+              <span class="val" id="rsTotalPagar" style="color:#f59e0b;font-weight:700;">$ 0.00</span>
+            </div>
+            <div class="receita-row">
+              <span class="lbl" style="color:#00e676;font-weight:700;">🏆 SEU LUCRO TOTAL</span>
+              <span class="val g" id="rsTotalLucro" style="font-weight:700;">$ 0.00</span>
+            </div>
           </div>
           <div class="formula-box">
             <strong>Como é calculado:</strong><br>
             Lucro Líquido Deriv = Perdas − Ganhos dos clientes<br>
-            Revenue Share (estimado 30%) = Lucro × 0.30<br>
+            Revenue Share (30%) calculado SOMENTE sobre clientes via link de afiliado<br>
             <strong>Sua comissão Alpha Dolar = Revenue Share × 20%</strong><br>
             <strong>Seu lucro = Revenue Share × 80%</strong>
+            <br>Markup (2% das stakes) → Alpha Dolar fica 20%, você fica 80%
+            <div id="rsNotaAfiliados" style="color:#f59e0b;font-size:11px;margin-top:6px;"></div>
           </div>
         </div>
       </div>
@@ -651,6 +716,15 @@ async function carregarDados(botName) {
       document.getElementById('botDerivId').textContent = bot.deriv_id || '—';
       document.getElementById('botCadastro').textContent = bot.criado_em
         ? new Date(bot.criado_em).toLocaleDateString('pt-BR') : '—';
+      window._botAtualNome = bot.nome;
+      // Gera link de afiliado
+      const linkEl = document.getElementById('linkAfiliado');
+      if (linkEl) {
+        const nomeLimpo = encodeURIComponent(bot.nome.toLowerCase().replace(/\s+/g,'-'));
+        linkEl.textContent = `https://alphadolar.online/?bot=${nomeLimpo}`;
+      }
+      // Carrega financeiro real
+      carregarFinanceiroReal(bot.nome);
 
       const badge = document.getElementById('botStatusBadge');
       if (bot.status === 'suspenso') {
@@ -663,8 +737,15 @@ async function carregarDados(botName) {
     }
 
     // 2. Operações — campo bot_name no banco
-    const resOps = await fetch(`${API}/api/operacoes?bot_name=${encodeURIComponent(botName)}`);
-    const ops    = await resOps.json();
+    const resOps = await fetch(`${API}/api/operacoes?bot_name=${encodeURIComponent(botName)}&limit=500`);
+    const opsRaw = await resOps.json();
+    // Deduplicar operacoes com mesmo valor em menos de 2 segundos
+    const ops = opsRaw.filter((op, i) => {
+      if (i === 0) return true;
+      const prev = opsRaw[i-1];
+      const tDiff = Math.abs(new Date(op.criado_em) - new Date(prev.criado_em));
+      return !(tDiff < 2000 && op.lucro === prev.lucro && op.stake === prev.stake);
+    });
     renderOperacoes(ops);
     calcularKPIs(ops);
 
@@ -895,4 +976,77 @@ if (sessao) entrarPainel(sessao, sessionStorage.getItem('trader_master') === '1'
 </script>
 
 </body>
-</html>
+</html><script>
+let filtroTrader = { from: null, to: null };
+function getISO(d) { return d.toISOString().split('T')[0]; }
+function filtrarTrader(tipo) {
+  const hoje = new Date();
+  let from;
+  if (tipo==='hoje')     { from = new Date(hoje); from.setHours(0,0,0,0); }
+  else if (tipo==='7d')  { from = new Date(hoje); from.setDate(from.getDate()-7); }
+  else if (tipo==='30d') { from = new Date(hoje); from.setDate(from.getDate()-30); }
+  else if (tipo==='mes') { from = new Date(hoje.getFullYear(), hoje.getMonth(), 1); }
+  else if (tipo==='3m')  { from = new Date(hoje); from.setMonth(from.getMonth()-3); }
+  else if (tipo==='6m')  { from = new Date(hoje); from.setMonth(from.getMonth()-6); }
+  else if (tipo==='1a')  { from = new Date(hoje); from.setFullYear(from.getFullYear()-1); }
+  const ftI = document.getElementById('ftDataInicio');
+  const ftF = document.getElementById('ftDataFim');
+  if (ftI) ftI.value = getISO(from);
+  if (ftF) ftF.value = getISO(hoje);
+  document.querySelectorAll('.btn-filtro-t').forEach(b=>b.classList.remove('active'));
+  const btn = document.getElementById('ft-'+tipo);
+  if (btn) btn.classList.add('active');
+  filtroTrader = { from: getISO(from), to: getISO(hoje) };
+  if (window._botAtualNome) carregarFinanceiroReal(window._botAtualNome);
+}
+function filtrarTraderPersonalizado() {
+  const from = document.getElementById('ftDataInicio')?.value;
+  const to   = document.getElementById('ftDataFim')?.value;
+  if (!from || !to) return;
+  document.querySelectorAll('.btn-filtro-t').forEach(b=>b.classList.remove('active'));
+  filtroTrader = { from, to };
+  if (window._botAtualNome) carregarFinanceiroReal(window._botAtualNome);
+}
+window.addEventListener('DOMContentLoaded', function(){
+  const hoje = new Date();
+  const from = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const ftI = document.getElementById('ftDataInicio');
+  const ftF = document.getElementById('ftDataFim');
+  if (ftI) ftI.value = getISO(from);
+  if (ftF) ftF.value = getISO(hoje);
+  filtroTrader = { from: getISO(from), to: getISO(hoje) };
+});
+</script>
+<script>
+async function carregarFinanceiroReal(botName) {
+  try {
+    if (!filtroTrader.from) {
+      const hoje = new Date();
+      const from = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+      filtroTrader = { from: getISO(from), to: getISO(hoje) };
+    }
+    const params = `?date_from=${filtroTrader.from}&date_to=${filtroTrader.to}`;
+    const r = await fetch(`${API}/api/admin/financeiro/${encodeURIComponent(botName)}${params}`);
+    const d = await r.json();
+    if (d.status !== 'ok') return;
+
+    const s = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = '$ ' + parseFloat(val||0).toFixed(2); };
+    s('rsGanhos',  d.ganhos_afiliado);
+    s('rsPerdas',  d.perdas_afiliado);
+    s('rsLucro',   Math.max(0, d.net_revenue));
+    s('rsShare',   d.revenue_share_30);
+    s('rsPagar',   d.pagar_alpha_20);
+    s('rsLiquido', d.seu_lucro_80);
+    s('rsMarkup',       d.markup_estimado);
+    s('rsMarkupAlpha',  d.markup_alpha_20);
+    s('rsMarkupTrader', d.markup_trader_80);
+    s('rsTotalPagar',   d.total_pagar_alpha);
+    s('rsTotalLucro',   d.total_lucro_trader);
+    s('proximoPagamento', d.total_lucro_trader);
+
+    const notaEl = document.getElementById('rsNotaAfiliados');
+    if (notaEl) notaEl.textContent = `⚠️ Calculado sobre ${d.clientes_afiliado} clientes via link afiliado (de ${d.clientes_total} total)`;
+
+  } catch(e) { console.warn('Financeiro erro:', e); }
+}
+</script>

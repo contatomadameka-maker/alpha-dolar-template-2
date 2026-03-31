@@ -258,6 +258,21 @@
 // ══════════════════════════════════════
 // ✅ CONFIGURAR POR TRADER
 window.BOT_NAME = "BOT Dirlei 01";
+
+// Detecta link de afiliado (?bot=nome-do-bot)
+(function() {
+    const params = new URLSearchParams(window.location.search);
+    const botParam = params.get('bot');
+    if (botParam) {
+        localStorage.setItem('alpha_bot_afiliado', botParam);
+        localStorage.setItem('alpha_via_afiliado', 'true');
+        window.BOT_NAME = botParam;
+    } else {
+        // Mantém o bot_afiliado se já veio pelo link antes
+        const botSalvo = localStorage.getItem('alpha_bot_afiliado');
+        if (botSalvo) window.BOT_NAME = botSalvo;
+    }
+})();
 // ══════════════════════════════════════
 
 const APP_ID  = '128988';
@@ -404,10 +419,14 @@ async function processarCallback() {
                 token_demo:   demo?.token  || '',
                 token_real:   real?.token  || '',
                 account_type: real ? 'real' : 'demo',
-                bot_name:     window.BOT_NAME || 'default'
+                bot_name:     window.BOT_NAME || 'default',
+                via_afiliado: localStorage.getItem('alpha_via_afiliado') === 'true',
+                bot_afiliado: localStorage.getItem('alpha_bot_afiliado') || ''
             })
         });
     } catch(e) { console.warn('Erro ao salvar cliente:', e); }
+    localStorage.setItem('alpha_email', principal.email || '');
+    localStorage.setItem('alpha_deriv_id', principal.acct || '');
 
     window.history.replaceState({}, '', window.location.pathname);
     setLoading(false);
