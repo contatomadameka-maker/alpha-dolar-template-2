@@ -737,7 +737,9 @@ async function carregarDados(botName) {
     }
 
     // 2. Operações — campo bot_name no banco
-    const resOps = await fetch(`${API}/api/operacoes?bot_name=${encodeURIComponent(botName)}&limit=500`);
+    const hoje = new Date();
+    const dataFrom = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
+    const resOps = await fetch(`${API}/api/operacoes?bot_name=${encodeURIComponent(botName)}&limit=1000&criado_em=gte.${dataFrom}`);
     const opsRaw = await resOps.json();
     // Deduplicar operacoes com mesmo valor em menos de 2 segundos
     const ops = opsRaw.filter((op, i) => {
@@ -813,7 +815,10 @@ function renderClientes(clientes) {
   }
 
   const avatares = ['👨','👩','🧑','👨‍💼','👩‍💼','🧔','👱','🧑‍💻'];
-  el.innerHTML = clientes.slice(0, 10).map((c, i) => `
+  const _cliVisiveis = window._cliVisiveis || 10;
+  const _cliFatia = clientes.slice(0, _cliVisiveis);
+  window._cliAllCache = clientes;
+  el.innerHTML = _cliFatia.map((c, i) => `
     <div class="cli-row">
       <div class="cli-av">${avatares[i % avatares.length]}</div>
       <div class="cli-info">
@@ -829,6 +834,9 @@ function renderClientes(clientes) {
       <div class="cli-online ${c.ultimo_acesso && isRecente(c.ultimo_acesso) ? 'on' : 'off'}"></div>
     </div>
   `).join('');
+  if (clientes.length > _cliVisiveis) {
+    el.innerHTML += '<div onclick="window._cliVisiveis=(window._cliVisiveis||10)+10;renderClientes(window._cliAllCache)" style="text-align:center;padding:12px;cursor:pointer;color:#00d2ff;font-size:13px;border-top:1px solid rgba(255,255,255,0.05);">&#9660; Ver mais (' + (clientes.length - _cliVisiveis) + ' restantes)</div>';
+  }
 }
 
 // ══ RENDER OPERAÇÕES ══
@@ -840,7 +848,7 @@ function renderOperacoes(ops) {
     return;
   }
 
-  el.innerHTML = ops.slice(0, 15).map(op => {
+  let _opsLimitadas = ops.slice(0, window._opsVisiveis || 20); el.innerHTML = _opsLimitadas.map(op => {
     const lucro  = parseFloat(op.lucro) || 0;
     // ✅ FIX: resultado vem como 'win' / 'loss' do banco
     const ganhou = op.resultado === 'win' || lucro > 0;
@@ -861,6 +869,10 @@ function renderOperacoes(ops) {
       </div>
     `;
   }).join('');
+  if (ops.length > (window._opsVisiveis || 20)) {
+    el.innerHTML += '<div onclick="window._opsVisiveis=(window._opsVisiveis||20)+20;renderOperacoes(window._opsAllCache)" style="text-align:center;padding:12px;cursor:pointer;color:#f59e0b;font-size:13px;border-top:1px solid rgba(255,255,255,0.05);">&#9660; Ver mais (' + (ops.length - (window._opsVisiveis || 20)) + ' restantes)</div>';
+  }
+  window._opsAllCache = ops;
 }
 
 function isRecente(dateStr) {
