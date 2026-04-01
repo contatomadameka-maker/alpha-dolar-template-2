@@ -348,7 +348,7 @@ const setLoading = (on, txt='AGUARDE...') => {
 
 window.autenticar = () => {
     setLoading(true, 'REDIRECIONANDO PARA A DERIV...');
-    setTimeout(() => { window.location.href = OAUTH_URL; }, 600);
+    document.cookie = "origem=template2;path=/;domain=alphadolar.online;max-age=300"; setTimeout(() => { window.location.href = OAUTH_URL; }, 600);
 };
 
 function buscarInfoConta(token) {
