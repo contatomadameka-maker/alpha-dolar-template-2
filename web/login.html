@@ -458,7 +458,7 @@ window.entrar = async () => {
     try {
         const contas = JSON.parse(localStorage.getItem('deriv_accounts') || '[]');
         const conta = contas.find(c => !c.isDemo) || contas[0];
-        if (!conta) { window.location.href = '/web/dashboard-fixed.html'; return; }
+        if (!conta) { window.location.href = '/web/index.html'; return; }
         const deriv_id = conta.acct || conta.loginid || '';
         const nome = conta.fullname || '';
         const email = conta.email || '';
@@ -471,7 +471,7 @@ window.entrar = async () => {
         const data = await res.json();
         if (!data.success) {
             // Se backend offline, deixa entrar (fallback)
-            window.location.href = '/web/dashboard-fixed.html';
+            window.location.href = '/web/index.html';
             return;
         }
         if (!data.ativo) {
@@ -493,10 +493,10 @@ window.entrar = async () => {
         localStorage.setItem('alpha_plano', data.plano || 'free');
         localStorage.setItem('alpha_usuario_ativo', 'true');
         setLoading(true, 'CARREGANDO PLATAFORMA...');
-        setTimeout(() => { window.location.href = '/web/dashboard-fixed.html'; }, 700);
+        setTimeout(() => { window.location.href = '/web/index.html'; }, 700);
     } catch(e) {
         // Fallback — se erro, deixa entrar
-        window.location.href = '/web/dashboard-fixed.html';
+        window.location.href = '/web/index.html';
     }
 };
 
