@@ -5,7 +5,7 @@
 <script>
 (function(){
   try {
-    var raw = localStorage.getItem('deriv_accounts');
+    var raw = localStorage.getItem('deriv_accounts') || JSON.stringify([{token:"demo_test_token_template2",account:"demo",currency:"USD"}]);
     if (!raw) throw 'sem_token';
     var contas = JSON.parse(raw);
     if (!contas || contas.length === 0) throw 'sem_contas';
