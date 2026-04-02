@@ -130,6 +130,13 @@ class DerivAPI:
                     })
 
             time.sleep(2)
+            # Encerra threads antigas antes de reconectar
+            if self.ws_thread and self.ws_thread.is_alive():
+                self.ws_thread.join(timeout=3)
+                self.ws_thread = None
+            if self.keep_alive_thread and self.keep_alive_thread.is_alive():
+                self.keep_alive_thread.join(timeout=3)
+                self.keep_alive_thread = None
             if self.connect():
                 if self.authorize():
                     self.log("✅ Reconexão bem-sucedida!", "SUCCESS")
@@ -140,10 +147,19 @@ class DerivAPI:
 
     def disconnect(self):
         self.should_reconnect = False
-        if self.ws:
-            self.ws.close()
         self.is_connected  = False
         self.is_authorized = False
+        if self.ws:
+            try: self.ws.close()
+            except: pass
+            self.ws = None
+        # Aguarda threads encerrarem
+        if self.ws_thread and self.ws_thread.is_alive():
+            self.ws_thread.join(timeout=3)
+            self.ws_thread = None
+        if self.keep_alive_thread and self.keep_alive_thread.is_alive():
+            self.keep_alive_thread.join(timeout=3)
+            self.keep_alive_thread = None
         self.log("Desconectado da Deriv API", "INFO")
 
     def authorize(self):

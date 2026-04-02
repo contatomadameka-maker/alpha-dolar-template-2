@@ -96,6 +96,29 @@ def clear_bot_instance(deriv_id, bot_type):
     with _local_lock:
         if deriv_id in _local_instances:
             _local_instances[deriv_id].pop(bot_type, None)
+            # Limpa entrada vazia
+            if not _local_instances[deriv_id]:
+                del _local_instances[deriv_id]
+
+def cleanup_old_states(max_age_hours=24):
+    """Remove estados Redis antigos (bots parados há mais de X horas)"""
+    r = _get_redis()
+    if not r:
+        return 0
+    import json, time
+    removed = 0
+    try:
+        for key in r.keys('bot_state:*'):
+            try:
+                data = json.loads(r.get(key) or '{}')
+                if not data.get('running', False):
+                    r.delete(key)
+                    removed += 1
+            except:
+                pass
+    except:
+        pass
+    return removed
 
 def _default_state():
     return {
