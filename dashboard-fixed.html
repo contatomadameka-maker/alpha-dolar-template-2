@@ -1595,6 +1595,10 @@ body { overflow-x: hidden !important; }
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         <span style="font-size:9px;margin-left:2px;">Indicadores</span>
       </button>
+      <button class="tf-btn" onclick="chartToggleVipSignals()" id="chart-vip-btn" title="Sinais VIP" style="display:flex;align-items:center;gap:4px;color:#a855f7;border-color:rgba(168,85,247,0.5);background:rgba(168,85,247,0.15);font-weight:700;padding:4px 10px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <span style="font-size:9px;font-weight:700;">Sinais VIP</span>
+      </button>
       <button class="tf-btn" onclick="chartToggleFullscreen()" title="Tela cheia" id="chart-fs-btn">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
       </button>
@@ -7791,11 +7795,16 @@ function atualizarSinaisGrafico() {
     const underSc=proAnalisarTipo('DIGITUNDER',digits).score;
     const maxSc=Math.max(evenSc,oddSc,overSc,underSc);
     if(maxSc>=70){
-      const dir=(evenSc>=70||overSc>=70)?'⬆️ RISE':'⬇️ FALL';
-      sug.textContent=dir+' '+maxSc+'%';
-      sug.style.background=evenSc>=70||overSc>=70?'rgba(34,197,94,0.2)':'rgba(239,68,68,0.2)';
-      sug.style.borderColor=evenSc>=70||overSc>=70?'rgba(34,197,94,0.5)':'rgba(239,68,68,0.5)';
-      sug.style.color=evenSc>=70||overSc>=70?'#22c55e':'#ef4444';
+      const isRise = evenSc>=70||overSc>=70;
+      const dir = isRise ? '⬆️ RISE' : '⬇️ FALL';
+      sug.textContent = dir + ' ' + maxSc + '%';
+      sug.style.background = isRise ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)';
+      sug.style.borderColor = isRise ? 'rgba(34,197,94,0.5)' : 'rgba(239,68,68,0.5)';
+      sug.style.color = isRise ? '#22c55e' : '#ef4444';
+      // Adiciona marcador no gráfico Canvas
+      if (typeof chartAddSignal === 'function') {
+        chartAddSignal(isRise ? 'rise' : 'fall', maxSc);
+      }
     } else {
       sug.textContent='⏳ Aguardando sinal...';
       sug.style.background='rgba(100,116,139,0.1)';
@@ -8018,6 +8027,11 @@ function chartDraw() {
   });
   } // fim else candle
 
+  // Sinais VIP no gráfico
+  if (typeof chartDrawSignals === 'function' && _chart.showSignals !== false) {
+    chartDrawSignals(visCandles, padL, padR, padT, chartH, chartW, slotW, toY);
+  }
+
   // Linhas do usuário
   if (typeof chartDrawUserLines === 'function') chartDrawUserLines();
 
@@ -8128,6 +8142,24 @@ function chartShowIndicators() {
   modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
 }
 
+
+function chartToggleVipSignals() {
+  _chart.showSignals = !(_chart.showSignals !== false);
+  const btn = document.getElementById('chart-vip-btn');
+  if (btn) {
+    if (_chart.showSignals) {
+      btn.style.color = '#a855f7';
+      btn.style.background = 'rgba(168,85,247,0.2)';
+      btn.style.borderColor = 'rgba(168,85,247,0.5)';
+    } else {
+      btn.style.color = '#64748b';
+      btn.style.background = 'rgba(30,41,59,0.8)';
+      btn.style.borderColor = '#1e293b';
+    }
+  }
+  chartDraw();
+}
+
 function chartToggleFullscreen() {
   const el = document.querySelector('.chart-container');
   if (!el) return;
@@ -8136,6 +8168,62 @@ function chartToggleFullscreen() {
   } else {
     document.exitFullscreen && document.exitFullscreen();
   }
+}
+
+
+// ── SINAIS VIP NO GRÁFICO ──
+_chart.signals = [];
+
+function chartAddSignal(type, score) {
+  // Guarda o sinal com o timestamp atual
+  const now = Date.now();
+  // Evita duplicatas em menos de 5s
+  const last = _chart.signals[_chart.signals.length - 1];
+  if (last && now - last.t < 5000) return;
+  _chart.signals.push({ type, score, t: now, price: _chart.lastP || 0 });
+  // Mantém só os últimos 50 sinais
+  if (_chart.signals.length > 50) _chart.signals.shift();
+  chartDraw();
+}
+
+function chartDrawSignals(visCandles, padL, padR, padT, chartH, chartW, slotW, toY) {
+  if (!_chart.signals || _chart.signals.length === 0) return;
+  const ctx = _chart.ctx;
+  const canvas = _chart.canvas;
+  const now = Date.now();
+
+  _chart.signals.forEach(sig => {
+    // Acha a vela mais próxima do sinal
+    const idx = visCandles.findIndex(c => Math.abs(c.ts - sig.t) < (_chart.tf || 1) * 60 * 1000 * 2);
+    if (idx === -1) return;
+
+    const x = padL + idx * slotW + slotW / 2;
+    const isRise = sig.type === 'rise';
+    const color = isRise ? '#22c55e' : '#ef4444';
+    const y = isRise ? toY(visCandles[idx].l) + 18 : toY(visCandles[idx].h) - 18;
+    const arrow = isRise ? '▲' : '▼';
+
+    // Seta
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.fillText(arrow, x, y);
+
+    // Badge com score
+    ctx.font = 'bold 9px monospace';
+    ctx.fillStyle = color;
+    ctx.fillText(sig.score + '%', x, isRise ? y + 12 : y - 4);
+
+    // Linha vertical pontilhada na vela
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 0.8;
+    ctx.setLineDash([2, 3]);
+    ctx.beginPath();
+    ctx.moveTo(x, padT);
+    ctx.lineTo(x, padT + chartH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  });
 }
 
 function chartSetTool(tool) {
