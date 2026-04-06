@@ -8167,6 +8167,35 @@ function chartConnect(symbol) {
 
 // ── TOOL SELECTOR ──
 
+
+// ── INDICADORES ──
+_chart.indicators = { bb: true, ema9: true, ema21: false, sma20: false, sma50: false };
+
+function chartToggleIndicator(key) {
+  _chart.indicators[key] = !_chart.indicators[key];
+  const el = document.getElementById('ind-' + key);
+  if (el) el.textContent = _chart.indicators[key] ? '●' : '○';
+  if (el) el.style.color = _chart.indicators[key] ? '#3b82f6' : '#64748b';
+  chartDraw();
+}
+
+function chartFilterIndicators(q) {
+  const items = document.querySelectorAll('.ind-item');
+  items.forEach(item => {
+    item.style.display = item.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+function chartInitIndicatorUI() {
+  // Atualiza UI dos indicadores ativos por padrão
+  Object.keys(_chart.indicators).forEach(key => {
+    if (_chart.indicators[key]) {
+      const el = document.getElementById('ind-' + key);
+      if (el) { el.textContent = '●'; el.style.color = '#3b82f6'; }
+    }
+  });
+}
+
 function chartShowIndicators() {
   const modal = document.getElementById('chart-indicators-modal');
   if (!modal) return;
@@ -8606,6 +8635,7 @@ function initTradingViewChart(symbol) {
   window.addEventListener('resize', chartResize);
   chartConnect(symbol || 'R_100');
   setTimeout(chartInitEvents, 500);
+  setTimeout(chartInitIndicatorUI, 600);
 }
 
 // Mapa mercado → símbolo TradingView
