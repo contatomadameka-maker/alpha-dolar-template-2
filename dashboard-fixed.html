@@ -3922,6 +3922,12 @@ body { overflow-x: hidden !important; }
                 // Autorizado → buscar preços
                 if (msg.msg_type === 'authorize' && !msg.error) {
                     atualizarPrecos();
+                    // Executa trade pendente se houver
+                    if (window._pendingTrade) {
+                        const dir = window._pendingTrade;
+                        window._pendingTrade = null;
+                        setTimeout(() => executarTrade(dir), 300);
+                    }
                     // Subscribe ao saldo
                     manualWs.send(JSON.stringify({ balance: 1, subscribe: 1 }));
                 }
@@ -3964,6 +3970,24 @@ body { overflow-x: hidden !important; }
                 // Resultado do contrato
                 if (msg.msg_type === 'proposal_open_contract' && !msg.error) {
                     const c = msg.proposal_open_contract;
+                    // Adiciona contrato aberto no gráfico
+                    if (c.status === 'open' && typeof chartAddContract === 'function') {
+                        const entryPrice = parseFloat(c.entry_spot || c.current_spot || 0);
+                        const alreadyHasEntry = _chart.openContracts && 
+                            _chart.openContracts[c.contract_id] && 
+                            _chart.openContracts[c.contract_id].entryPrice > 0;
+                        if (entryPrice > 0 && !alreadyHasEntry) {
+                            const pc = window._pendingContract || {};
+                            chartAddContract(c.contract_id, pc.direction || 'rise',
+                                entryPrice, pc.stake || 1,
+                                pc.duration || 1, pc.durUnit || 't');
+                            window._pendingContract = null;
+                        }
+                    }
+                    // Remove contrato quando fecha
+                    if ((c.status === 'won' || c.status === 'lost') && typeof chartCloseContract === 'function') {
+                        chartCloseContract(c.contract_id, c.status);
+                    }
                     if (c.status === 'won' || c.status === 'lost') {
                         const isWin = c.status === 'won';
                         const lucro = parseFloat(c.profit) || 0;
@@ -4037,8 +4061,8 @@ body { overflow-x: hidden !important; }
         // ── Executar trade ──
         function executarTrade(direction) {
             if (!isConnected || !manualWs) {
+                window._pendingTrade = direction;
                 conectar();
-                setTimeout(() => executarTrade(direction), 2000);
                 return;
             }
 
@@ -4068,9 +4092,11 @@ body { overflow-x: hidden !important; }
             else fallBtn?.classList.add('loading');
 
             if (window._addLogLine) {
-                window._addLogLine(`📱 Trade manual: ${ct} | ${symbol} | $${stake} | ${duration} tick(s)`, 'log-action');
+                window._addLogLine(`📱 Trade manual: ${ct} | ${symbol} | $${stake} | ${duration} ${durationUnit.value}`, 'log-action');
             }
 
+            // Registra contrato pendente para mostrar no gráfico
+            window._pendingContract = { direction, stake, duration, durUnit };
             manualWs.send(JSON.stringify({
                 buy: 1,
                 price: stake,
@@ -8027,6 +8053,11 @@ function chartDraw() {
   });
   } // fim else candle
 
+  // Contratos abertos no eixo Y
+  if (typeof chartDrawContracts === 'function') {
+    chartDrawContracts(toY, padR, canvas);
+  }
+
   // Sinais VIP no gráfico
   if (typeof chartDrawSignals === 'function' && _chart.showSignals !== false) {
     chartDrawSignals(visCandles, padL, padR, padT, chartH, chartW, slotW, toY);
@@ -8225,6 +8256,95 @@ function chartDrawSignals(visCandles, padL, padR, padT, chartH, chartW, slotW, t
     ctx.setLineDash([]);
   });
 }
+
+
+// ── CONTRATOS ABERTOS NO GRÁFICO ──
+_chart.openContracts = {};
+
+function chartAddContract(id, direction, entryPrice, stake, duration, durUnit) {
+
+  _chart.openContracts[id] = {
+    id, direction, entryPrice: parseFloat(entryPrice),
+    stake: parseFloat(stake), duration, durUnit,
+    openTime: Date.now(), countdown: duration
+  };
+  chartDraw();
+}
+
+function chartCloseContract(id, result) {
+  if (_chart.openContracts[id]) {
+    delete _chart.openContracts[id];
+    chartDraw();
+  }
+}
+
+function chartDrawContracts(toY, padR, canvas) {
+  const ctx = _chart.ctx;
+  const contracts = Object.values(_chart.openContracts);
+  if (!contracts.length) return;
+
+  contracts.forEach((c, i) => {
+    const y = toY(c.entryPrice);
+    const isRise = c.direction === 'rise';
+    const color = isRise ? '#22c55e' : '#ef4444';
+    const colorBg = isRise ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)';
+    const W = canvas.width;
+
+    // Linha horizontal no preço de entrada
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(W - padR, y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Box no eixo Y
+    const elapsed = Math.floor((Date.now() - c.openTime) / 1000);
+    const remaining = Math.max(0, c.duration - elapsed);
+    const mm = String(Math.floor(remaining / 60)).padStart(2, '0');
+    const ss = String(remaining % 60).padStart(2, '0');
+    const countStr = `${mm}:${ss}`;
+    const priceStr = c.entryPrice.toFixed(4);
+
+    ctx.font = 'bold 9px monospace';
+    const pw = ctx.measureText(priceStr).width;
+    const bw = Math.max(pw + 12, 70);
+    const bh = 28;
+    const bx = W - padR + 2;
+    const by = y - bh / 2 - i * 32;
+
+    // Fundo do box
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(bx, by, bw, bh, 3);
+    else ctx.rect(bx, by, bw, bh);
+    ctx.fill();
+
+    // Texto preço
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left';
+    ctx.font = 'bold 9px monospace';
+    ctx.fillText(priceStr, bx + 5, by + 11);
+
+    // Countdown
+    ctx.font = '8px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillText(countStr, bx + 5, by + 22);
+
+    // Seta direção
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#fff';
+    ctx.fillText(isRise ? '▲' : '▼', bx + bw - 4, by + 16);
+  });
+}
+
+// Timer para atualizar countdown
+setInterval(() => {
+  if (Object.keys(_chart.openContracts).length > 0) chartDraw();
+}, 1000);
 
 function chartSetTool(tool) {
   _chart.tool = tool;
