@@ -1933,6 +1933,42 @@ body { overflow-x: hidden !important; }
                     </div>
                 </button>
             </div>
+            <div style="margin-top:8px;background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:8px;">
+              <div style="font-size:10px;color:#64748b;margin-bottom:6px;font-weight:600;">AUTO GRÁFICO</div>
+              <div style="display:flex;gap:6px;margin-bottom:6px;">
+                <div style="flex:1;">
+                  <div style="font-size:9px;color:#64748b;margin-bottom:3px;">Duração/trade</div>
+                  <select id="autoChartDuration" style="width:100%;padding:5px;background:#1e293b;border:1px solid #334155;border-radius:5px;color:#e2e8f0;font-size:11px;">
+                    <option value="1t">1 Tique</option>
+                    <option value="5t">5 Tiques</option>
+                    <option value="1m" selected>1 Min</option>
+                    <option value="5m">5 Min</option>
+                    <option value="15m">15 Min</option>
+                  </select>
+                </div>
+                <div style="flex:1;">
+                  <div style="font-size:9px;color:#64748b;margin-bottom:3px;">Sessão total</div>
+                  <select id="autoChartSession" style="width:100%;padding:5px;background:#1e293b;border:1px solid #334155;border-radius:5px;color:#e2e8f0;font-size:11px;">
+                    <option value="10">10 Min</option>
+                    <option value="30" selected>30 Min</option>
+                    <option value="60">1 Hora</option>
+                    <option value="120">2 Horas</option>
+                  </select>
+                </div>
+              </div>
+              <div id="autoChartTimerBar" style="display:none;margin-bottom:6px;">
+                <div style="display:flex;justify-content:space-between;font-size:9px;color:#64748b;margin-bottom:3px;">
+                  <span>Sessão</span><span id="autoChartTimerLabel">--:--</span>
+                </div>
+                <div style="background:#1e293b;border-radius:3px;height:4px;">
+                  <div id="autoChartTimerFill" style="background:#6366f1;height:4px;border-radius:3px;width:100%;transition:width 1s;"></div>
+                </div>
+              </div>
+              <button id="autoChartBtn" onclick="chartAutoToggle()" style="width:100%;padding:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:6px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span id="autoChartLabel">▶ Auto Gráfico</span>
+              </button>
+            </div>
             <div class="manual-stats">
                 <div class="stat-row">
                     <span class="stat-label">Win Rate:</span>
@@ -3987,6 +4023,25 @@ body { overflow-x: hidden !important; }
                     // Remove contrato quando fecha
                     if ((c.status === 'won' || c.status === 'lost') && typeof chartCloseContract === 'function') {
                         chartCloseContract(c.contract_id, c.status);
+                        // Controla perdas consecutivas no Auto Gráfico
+                        if (_chart.autoMode) {
+                            if (c.status === 'won') {
+                                _chart.autoLosses = 0;
+                            } else {
+                                _chart.autoLosses = (_chart.autoLosses || 0) + 1;
+                                if (_chart.autoLosses >= 3) {
+                                    if (window._addLogLine) window._addLogLine('⏸ Auto Gráfico pausado — 3 perdas. Reiniciando em 2 min...', 'log-warn');
+                                    clearInterval(_chart.autoInterval);
+                                    _chart.autoLosses = 0;
+                                    setTimeout(() => {
+                                      if (_chart.autoMode) {
+                                        _chart.autoInterval = setInterval(chartAutoAnalyze, 3000);
+                                        if (window._addLogLine) window._addLogLine('▶ Auto Gráfico retomado!', 'log-action');
+                                      }
+                                    }, 120000); // 2 minutos
+                                }
+                            }
+                        }
                     }
                     if (c.status === 'won' || c.status === 'lost') {
                         const isWin = c.status === 'won';
@@ -8240,6 +8295,153 @@ function chartSellAll() {
   });
 }
 
+
+// ── AUTO GRÁFICO ──
+_chart.autoMode = false;
+_chart.autoInterval = null;
+_chart.autoLosses = 0;
+
+function chartAutoToggle() {
+  _chart.autoMode = !_chart.autoMode;
+  const btn = document.getElementById('autoChartBtn');
+  const lbl = document.getElementById('autoChartLabel');
+  const timerBar = document.getElementById('autoChartTimerBar');
+
+  if (_chart.autoMode) {
+    // Pega duração da sessão
+    const sessionMins = parseInt(document.getElementById('autoChartSession')?.value || '30');
+    const sessionMs = sessionMins * 60 * 1000;
+    _chart.autoSessionEnd = Date.now() + sessionMs;
+    _chart.autoSessionTotal = sessionMs;
+
+    btn.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)';
+    if (lbl) lbl.textContent = '⏹ Parar Auto';
+    if (timerBar) timerBar.style.display = 'block';
+
+    _chart.autoInterval = setInterval(chartAutoAnalyze, 3000);
+
+    // Timer de sessão
+    _chart.autoSessionTimer = setInterval(() => {
+      const remaining = _chart.autoSessionEnd - Date.now();
+      if (remaining <= 0) {
+        chartAutoToggle(); // Para automaticamente
+        return;
+      }
+      const mm = String(Math.floor(remaining/60000)).padStart(2,'0');
+      const ss = String(Math.floor((remaining%60000)/1000)).padStart(2,'0');
+      const lbl2 = document.getElementById('autoChartTimerLabel');
+      const fill = document.getElementById('autoChartTimerFill');
+      if (lbl2) lbl2.textContent = `${mm}:${ss}`;
+      if (fill) fill.style.width = (remaining/_chart.autoSessionTotal*100) + '%';
+    }, 1000);
+
+    if (window._addLogLine) window._addLogLine(`🤖 Auto Gráfico iniciado — Sessão: ${sessionMins} min`, 'log-action');
+  } else {
+    btn.style.background = 'linear-gradient(135deg,#6366f1,#8b5cf6)';
+    if (lbl) lbl.textContent = '▶ Auto Gráfico';
+    if (timerBar) timerBar.style.display = 'none';
+    clearInterval(_chart.autoInterval);
+    clearInterval(_chart.autoSessionTimer);
+    if (window._addLogLine) window._addLogLine('⏹ Auto Gráfico parado.', 'log-warn');
+  }
+}
+
+function chartAutoAnalyze() {
+  if (!_chart.autoMode) return;
+  const candles = _chart.candles.slice(-60);
+  if (candles.length < 21) return;
+
+  const closes = candles.map(c => c.c);
+  const last = candles[candles.length - 1];
+
+  // 1. Bollinger Bands (20 períodos, 2 desvios)
+  const period = 20;
+  if (closes.length < period) return;
+  const sl = closes.slice(-period);
+  const mean = sl.reduce((a,b)=>a+b,0) / period;
+  const std = Math.sqrt(sl.reduce((a,b)=>a+(b-mean)**2,0)/period);
+  const bbUpper = mean + 2*std;
+  const bbLower = mean - 2*std;
+  const pct = (last.c - bbLower) / (bbUpper - bbLower); // 0=lower, 1=upper
+  const bbSignal = pct <= 0.15 ? 'rise' : pct >= 0.85 ? 'fall' : null;
+
+  // 2. EMA9 vs EMA21
+  const ema = (data, p) => data.reduce((e,v,i) => i===0?v:v*(2/(p+1))+e*(1-2/(p+1)), data[0]);
+  const ema9  = ema(closes.slice(-9), 9);
+  const ema21 = ema(closes.slice(-21), 21);
+  const emaSignal = ema9 > ema21 ? 'rise' : ema9 < ema21 ? 'fall' : null;
+
+  // 3. Score dos dígitos
+  let digitSignal = null;
+  const sug = document.getElementById('sinalSugestao');
+  if (sug) {
+    const txt = sug.textContent || '';
+    if (txt.includes('RISE') || txt.includes('OVER') || txt.includes('EVEN')) digitSignal = 'rise';
+    else if (txt.includes('FALL') || txt.includes('UNDER') || txt.includes('ODD')) digitSignal = 'fall';
+  }
+
+  // Conta confirmações
+  const signals = [bbSignal, emaSignal, digitSignal];
+  const riseCount = signals.filter(s => s === 'rise').length;
+  const fallCount = signals.filter(s => s === 'fall').length;
+
+  let direction = null;
+  if (riseCount >= 2) direction = 'rise';
+  else if (fallCount >= 2) direction = 'fall';
+  // Fallback: só EMA quando BB e DIG não disponíveis
+  else if (emaSignal && !bbSignal && !digitSignal) direction = emaSignal;
+
+  if (!direction) return;
+
+  // Evita entradas se já tem contrato aberto
+  const openCount = Object.keys(_chart.openContracts || {}).length;
+  if (openCount > 0) { if(window._addLogLine) window._addLogLine(`⏳ Aguardando contrato fechar (${openCount} aberto)`, 'log-warn'); return; }
+  const now = Date.now();
+  if (_chart._lastAutoTrade && now - _chart._lastAutoTrade < 2000) return;
+  _chart._lastAutoTrade = now;
+
+  // Define tipo de contrato
+  const digitScore = sug ? parseInt((sug.textContent||'').match(/\d+/)?.[0]||'0') : 0;
+  const useDigit = digitScore >= 75 && digitSignal === direction;
+
+  if (window._addLogLine) {
+    const conf = `BB:${bbSignal||'—'} EMA:${emaSignal||'—'} DIG:${digitSignal||'—'}`;
+    window._addLogLine(`🤖 Auto: ${direction.toUpperCase()} | ${conf} | ${useDigit?'Digit':'Rise/Fall'}`, 'log-action');
+  }
+
+  // Aplica duração selecionada
+  const autoDur = document.getElementById('autoChartDuration')?.value || '1t';
+  const durMap = {'1t':[1,'ticks'],'5t':[5,'ticks'],'1m':[1,'minutes'],'5m':[5,'minutes'],'15m':[15,'minutes']};
+  const [durVal, durUnit2] = durMap[autoDur] || [1,'ticks'];
+  const durationInput = document.getElementById('manualDuration');
+  const durationUnitEl = document.getElementById('durationUnit');
+  if (durationInput) durationInput.value = durVal;
+  if (durationUnitEl) durationUnitEl.value = durUnit2;
+
+  // Executa trade direto
+  if (window._addLogLine) window._addLogLine(`🤖 Entrando: ${direction.toUpperCase()} | ${durVal} ${durUnit2}`, 'log-action');
+  // Reconecta se necessário e clica
+  const btn = document.getElementById(direction === 'rise' ? 'riseBtn' : 'fallBtn');
+  if (typeof isConnected !== 'undefined' && !isConnected) {
+    if (typeof conectar === 'function') {
+      conectar();
+      setTimeout(() => { if (btn) btn.click(); }, 2000);
+    }
+  } else {
+    if (btn) btn.click();
+  }
+  // Timer de segurança — limpa contratos após tempo do trade + 5s
+  const durMap2 = {'1t':7,'5t':15,'1m':65,'5m':305,'15m':905};
+  const safeDur = (durMap2[document.getElementById('autoChartDuration')?.value] || 15) * 1000;
+  setTimeout(() => {
+    if (Object.keys(_chart.openContracts||{}).length > 0) {
+      _chart.openContracts = {};
+      chartDraw();
+      chartUpdateSellAll();
+    }
+  }, safeDur);
+}
+
 function chartToggleVipSignals() {
   _chart.showSignals = !(_chart.showSignals !== false);
   const btn = document.getElementById('chart-vip-btn');
@@ -8343,6 +8545,11 @@ function chartCloseContract(id, result) {
     delete _chart.openContracts[id];
     chartDraw();
     chartUpdateSellAll();
+  } else {
+    // Limpa todos se não achar pelo id
+    _chart.openContracts = {};
+    chartDraw();
+    chartUpdateSellAll();
   }
 }
 
@@ -8409,9 +8616,20 @@ function chartDrawContracts(toY, padR, canvas) {
   });
 }
 
-// Timer para atualizar countdown
+// Timer para atualizar countdown e limpar contratos travados
 setInterval(() => {
-  if (Object.keys(_chart.openContracts).length > 0) chartDraw();
+  if (Object.keys(_chart.openContracts).length > 0) {
+    chartDraw();
+    // Verifica se contrato está travado há mais de 15s
+    const now = Date.now();
+    Object.entries(_chart.openContracts).forEach(([id, c]) => {
+      if (now - c.openTime > 15000) {
+        delete _chart.openContracts[id];
+        chartDraw();
+        chartUpdateSellAll();
+      }
+    });
+  }
 }, 1000);
 
 function chartSetTool(tool) {
