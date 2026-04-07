@@ -9208,18 +9208,8 @@ window.verificarTrialDemo = async function(produto) {
         );
         const d = await r.json();
         if (d && d.length > 0) {
-            // É trial — bloqueia botão real em todos os modais
-            ['proBtnReal','realBtnIA','btnContaReal','btnReal'].forEach(id => {
-                const btn = document.getElementById(id);
-                if (btn) {
-                    btn.disabled = true;
-                    btn.style.opacity = '0.3';
-                    btn.style.cursor = 'not-allowed';
-                    btn.title = 'Trial disponível apenas em conta DEMO';
-                }
-            });
-            // Força conta demo
-            localStorage.setItem('deriv_conta_ativa', 'demo');
+            // É trial — permite demo e real
+            console.log('Trial ativo para:', produto);
         }
     } catch(e) {}
 };
@@ -9326,7 +9316,7 @@ window.ativarTrial = async function(produto, nomeExibicao, callbackAoLiberar) {
     const confirmar = confirm(
         nomeExibicao + '\n\n' +
         'Você ainda não tem acesso.\n\n' +
-        '🎁 Quer ativar 1 TRIAL GRÁTIS de 24h (apenas modo demo)?\n\n' +
+        '🎁 Quer ativar 1 TRIAL GRÁTIS de 3 dias (demo e conta real)?\n\n' +
         'Clique OK para ativar o trial\nou Cancelar para adquirir o plano completo.'
     );
 
@@ -9341,7 +9331,7 @@ window.ativarTrial = async function(produto, nomeExibicao, callbackAoLiberar) {
         const d = await r.json();
 
         if (d.status === 'ok') {
-            alert('✅ Trial de 24h ativado!\nApenas modo DEMO disponível.\nBom teste!');
+            alert('✅ Trial de 3 dias ativado!\nDisponível em DEMO e conta REAL.\nBom teste!');
             if (callbackAoLiberar) callbackAoLiberar();
             window.verificarTrialDemo(produto);
         } else if (d.erro && d.erro.includes('Trial ja utilizado')) {
