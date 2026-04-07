@@ -5764,6 +5764,8 @@ function proOnTick(tick){const s=window._proState;if(!s.running||s.waiting)retur
     const rt='Score '+scoreDisplay+'% → '+ctFinal.replace('DIGIT','');
     proFalar('Sinal detectado. '+rt+'. Entrando.');
     proExecutar(ctFinal,a.barrier);
+  } else {
+    proAddFeed('📊 Freq. dígitos: aguardando condição...','#22c55e');
   }
 }}
 function proGetPayout(ct){
