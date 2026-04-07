@@ -5363,6 +5363,52 @@ window._MKT_DATA = {
       </div>
       <input type="hidden" id="proMultiplier" value="2.2">
     </div>
+    <!-- FREQUÊNCIA DE DÍGITOS -->
+    <div style="background:#0a0614;border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:12px;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:9px;color:#22c55e;font-weight:700;letter-spacing:1px;">📊 FREQUÊNCIA DE DÍGITOS</div>
+        <button onclick="proToggleFreqDigitos()" id="proFreqBtn" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:6px;color:#22c55e;font-size:11px;font-weight:700;padding:3px 10px;cursor:pointer;">+ Ativar</button>
+      </div>
+      <div id="proFreqConfig" style="display:none;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+          <div>
+            <label class="pro-label" style="font-size:9px;">Quantidade para analisar</label>
+            <input type="number" id="proFreqQtd" value="25" min="10" max="100" class="pro-input" style="text-align:center;">
+          </div>
+          <div>
+            <label class="pro-label" style="font-size:9px;">Reanalisar após quantas perdas?</label>
+            <input type="number" id="proFreqReanalisar" value="1" min="1" max="10" class="pro-input" style="text-align:center;">
+          </div>
+        </div>
+        <div style="margin-bottom:8px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <label class="pro-label" style="font-size:9px;margin:0;">Regras de dígitos</label>
+            <button onclick="proAddRegraDigito()" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:6px;color:#22c55e;font-size:11px;font-weight:700;padding:2px 8px;cursor:pointer;">+</button>
+          </div>
+          <div id="proRegrasDigitos" style="display:flex;flex-wrap:wrap;gap:6px;min-height:28px;padding:6px;background:#050308;border:1px solid rgba(34,197,94,0.15);border-radius:8px;">
+            <span style="font-size:10px;color:#475569;">Nenhuma regra adicionada</span>
+          </div>
+        </div>
+        <!-- Modal para adicionar regra -->
+        <div id="proRegraModal" style="display:none;background:#0d1117;border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:10px;margin-bottom:8px;">
+          <div style="font-size:10px;color:#64748b;margin-bottom:8px;">Nova regra: dígito X aparece menos de Y%</div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <select id="proRegraDigito" class="pro-input" style="flex:1;padding:6px;">
+              <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+              <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+              <option value="6">6</option><option value="7">7</option><option value="8">8</option>
+              <option value="9">9</option>
+            </select>
+            <span style="color:#64748b;font-size:11px;">&lt;</span>
+            <input type="number" id="proRegraPct" value="10" min="1" max="50" class="pro-input" style="flex:1;padding:6px;text-align:center;">
+            <span style="color:#64748b;font-size:11px;">%</span>
+            <button onclick="proConfirmarRegra()" style="background:rgba(34,197,94,0.2);border:1px solid rgba(34,197,94,0.4);border-radius:6px;color:#22c55e;font-size:11px;padding:6px 10px;cursor:pointer;">✓</button>
+            <button onclick="document.getElementById('proRegraModal').style.display='none'" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;color:#ef4444;font-size:11px;padding:6px 10px;cursor:pointer;">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- MODO DE NEGOCIAÇÃO -->
     <div style="background:#0a0614;border:1px solid rgba(168,85,247,0.2);border-radius:10px;padding:12px;margin-bottom:12px;">
       <div style="font-size:9px;color:#a855f7;font-weight:700;letter-spacing:1px;margin-bottom:8px;">⚡ MODO DE NEGOCIAÇÃO</div>
@@ -5701,7 +5747,7 @@ const sym=document.getElementById('proSymbol').value;s.ws.send(JSON.stringify({t
   const ms=document.getElementById('botRunningSaldo');
   if(ms) ms.innerText='$'+bal.toFixed(2);
 }};s.ws.onclose=()=>{if(s.running){proAddFeed('⚠️ Reconectando...','#eab308');setTimeout(proConectar,3000);}};}
-function proOnTick(tick){const s=window._proState;if(!s.running||s.waiting)return;const q=parseFloat(tick.quote);const ds=q.toFixed(5).replace('.','');const dg=parseInt(ds[ds.length-1]);s.digits.push(dg);if(s.digits.length>500)s.digits.shift();window._digitsBuffer=s.digits;const ct=document.getElementById('proContractType').value;const a=proAnalisar(ct);
+function proOnTick(tick){const s=window._proState;if(!s.running||s.waiting)return;const q=parseFloat(tick.quote);const ds=q.toFixed(5).replace('.','');const dg=parseInt(ds[ds.length-1]);s.digits.push(dg);if(s.digits.length>500)s.digits.shift();window._digitsBuffer=s.digits;window._proUltimosDigitos=s.digits;const ct=document.getElementById('proContractType').value;const a=proAnalisar(ct);
   const scoreDisplay=a.score>1?Math.round(a.score):Math.round(a.score*100);
   document.getElementById('proScore').textContent=scoreDisplay>0?scoreDisplay+'%':'—';
   const ctFinal=a.ctEscolhido||ct;
@@ -5710,7 +5756,16 @@ function proOnTick(tick){const s=window._proState;if(!s.running||s.waiting)retur
   const _liq=s.lucro-s.perda;
   if(_liq>=parseFloat(document.getElementById('proTarget').value)){proParar('take_profit');return;}
   if(s.perdaAcum>=parseFloat(document.getElementById('proStop').value)){proParar('stop_loss');return;}
-  if(a.entrar&&Date.now()>=s.cooldownAte){const rt='Score '+scoreDisplay+'% → '+ctFinal.replace('DIGIT','');proFalar('Sinal detectado. '+rt+'. Entrando.');proExecutar(ctFinal,a.barrier);}}
+  if(a.entrar&&Date.now()>=s.cooldownAte){
+  const freqOkPro = typeof proVerificarFreqDigitos === 'function'
+    ? proVerificarFreqDigitos(window._proUltimosDigitos || [])
+    : true;
+  if(freqOkPro){
+    const rt='Score '+scoreDisplay+'% → '+ctFinal.replace('DIGIT','');
+    proFalar('Sinal detectado. '+rt+'. Entrando.');
+    proExecutar(ctFinal,a.barrier);
+  }
+}}
 function proGetPayout(ct){
   // Payout aproximado por tipo de contrato
   const payouts={'DIGITEVEN':0.87,'DIGITODD':0.87,'DIGITOVER':0.95,'DIGITUNDER':0.95,'DIGITMATCH':8.0,'DIGITDIFF':0.05};
@@ -9309,6 +9364,146 @@ window.getEstrategiasDisponiveis = async function() {
     return lista.sort(() => Math.random() - 0.5);
 };
 
+
+// ── FREQUÊNCIA DE DÍGITOS ──
+window._proRegras = [];
+window._proFreqAtivo = false;
+
+window.proToggleFreqDigitos = function() {
+  window._proFreqAtivo = !window._proFreqAtivo;
+  const config = document.getElementById('proFreqConfig');
+  const btn = document.getElementById('proFreqBtn');
+  if (window._proFreqAtivo) {
+    config.style.display = 'block';
+    btn.textContent = '− Desativar';
+    btn.style.background = 'rgba(239,68,68,0.1)';
+    btn.style.borderColor = 'rgba(239,68,68,0.3)';
+    btn.style.color = '#ef4444';
+  } else {
+    config.style.display = 'none';
+    btn.textContent = '+ Ativar';
+    btn.style.background = 'rgba(34,197,94,0.1)';
+    btn.style.borderColor = 'rgba(34,197,94,0.3)';
+    btn.style.color = '#22c55e';
+  }
+};
+
+window.proAddRegraDigito = function() {
+  document.getElementById('proRegraModal').style.display = 'block';
+};
+
+window.proConfirmarRegra = function() {
+  const digito = document.getElementById('proRegraDigito').value;
+  const pct = document.getElementById('proRegraPct').value;
+  const regra = { digito: parseInt(digito), pct: parseFloat(pct) };
+  window._proRegras.push(regra);
+  proRenderRegras();
+  document.getElementById('proRegraModal').style.display = 'none';
+};
+
+window.proRemoverRegra = function(idx) {
+  window._proRegras.splice(idx, 1);
+  proRenderRegras();
+};
+
+window.proRenderRegras = function() {
+  const container = document.getElementById('proRegrasDigitos');
+  if (!container) return;
+  if (window._proRegras.length === 0) {
+    container.innerHTML = '<span style="font-size:10px;color:#475569;">Nenhuma regra adicionada</span>';
+    return;
+  }
+  container.innerHTML = window._proRegras.map((r, i) =>
+    `<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:20px;padding:3px 10px;font-size:11px;color:#22c55e;">
+      ${r.digito} &lt; ${r.pct}%
+      <button onclick="proRemoverRegra(${i})" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:12px;padding:0;margin-left:2px;">×</button>
+    </span>`
+  ).join('');
+};
+
+// Verifica regras de frequência antes de entrar
+window.proVerificarFreqDigitos = function(ultimosDigitos) {
+  if (!window._proFreqAtivo || window._proRegras.length === 0) return true;
+  const qtd = parseInt(document.getElementById('proFreqQtd')?.value || 25);
+  const recentes = ultimosDigitos.slice(-qtd);
+  if (recentes.length < qtd) return false; // aguarda ter dados suficientes
+
+  for (const regra of window._proRegras) {
+    const count = recentes.filter(d => d === regra.digito).length;
+    const pct = (count / recentes.length) * 100;
+    if (pct >= regra.pct) return false; // regra violada — não entra
+  }
+  return true; // todas as regras OK
+};
+
+
+// ── FREQUÊNCIA DE DÍGITOS - IA AVANÇADO ──
+window._advRegras = [];
+window._advFreqAtivo = false;
+window._advPordasSemReanalisar = 0;
+
+window.advToggleFreq = function() {
+  window._advFreqAtivo = !window._advFreqAtivo;
+  const config = document.getElementById('advFreqConfig');
+  const btn = document.getElementById('advFreqBtn');
+  if (window._advFreqAtivo) {
+    config.style.display = 'block';
+    btn.textContent = '− Desativar';
+    btn.style.color = '#ef4444';
+    btn.style.borderColor = 'rgba(239,68,68,0.3)';
+  } else {
+    config.style.display = 'none';
+    btn.textContent = '+ Ativar';
+    btn.style.color = '#22c55e';
+    btn.style.borderColor = 'rgba(34,197,94,0.3)';
+  }
+};
+
+window.advAddRegra = function() {
+  document.getElementById('advRegraModal').style.display = 'block';
+};
+
+window.advConfirmarRegra = function() {
+  const digito = parseInt(document.getElementById('advRegraDigito').value);
+  const pct = parseFloat(document.getElementById('advRegraPct').value);
+  window._advRegras.push({ digito, pct });
+  advRenderRegras();
+  document.getElementById('advRegraModal').style.display = 'none';
+};
+
+window.advRemoverRegra = function(i) {
+  window._advRegras.splice(i, 1);
+  advRenderRegras();
+};
+
+window.advRenderRegras = function() {
+  const c = document.getElementById('advRegrasContainer');
+  if (!c) return;
+  if (window._advRegras.length === 0) {
+    c.innerHTML = '<span style="font-size:10px;color:#475569;">Nenhuma regra</span>';
+    return;
+  }
+  c.innerHTML = window._advRegras.map((r, i) =>
+    `<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:20px;padding:3px 10px;font-size:11px;color:#22c55e;">
+      ${r.digito} &lt; ${r.pct}%
+      <button onclick="advRemoverRegra(${i})" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:13px;padding:0;">×</button>
+    </span>`
+  ).join('');
+};
+
+window.advVerificarFreqDigitos = function(ultimosDigitos) {
+  if (!window._advFreqAtivo || window._advRegras.length === 0) return true;
+  const qtd = parseInt(document.getElementById('advFreqQtd')?.value || 25);
+  const recentes = ultimosDigitos.slice(-qtd);
+  if (recentes.length < qtd) return false;
+  for (const r of window._advRegras) {
+    const count = recentes.filter(d => d === r.digito).length;
+    const pct = (count / recentes.length) * 100;
+    if (pct >= r.pct) return false;
+  }
+  return true;
+};
+
 window.ativarTrial = async function(produto, nomeExibicao, callbackAoLiberar) {
     const email = localStorage.getItem('alpha_email') || '';
     if (!email) { window.location.href = '/checkout?produto=' + produto; return; }
@@ -9866,6 +10061,50 @@ document.addEventListener('DOMContentLoaded', function() {
           </div>
         </div>
 
+        <!-- FREQUÊNCIA DE DÍGITOS -->
+        <div style="background:#111418;border:1px solid rgba(34,197,94,0.25);border-radius:12px;padding:12px;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:11px;font-weight:700;color:#22c55e;">📊 Frequência de dígitos</span>
+            <button onclick="advToggleFreq()" id="advFreqBtn" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:6px;color:#22c55e;font-size:11px;font-weight:700;padding:3px 10px;cursor:pointer;">+ Ativar</button>
+          </div>
+          <div id="advFreqConfig" style="display:none;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+              <div>
+                <div class="adv-label">Qtd para analisar</div>
+                <input type="number" id="advFreqQtd" value="25" min="10" max="100" class="adv-input" onchange="iaAdvOnChange()" style="width:100%;padding:8px;background:#0a0d12;border:1px solid #23262e;border-radius:8px;color:#e2e8f0;font-size:13px;text-align:center;">
+              </div>
+              <div>
+                <div class="adv-label">Reanalisar após perdas</div>
+                <input type="number" id="advFreqReanalisar" value="1" min="1" max="10" class="adv-input" onchange="iaAdvOnChange()" style="width:100%;padding:8px;background:#0a0d12;border:1px solid #23262e;border-radius:8px;color:#e2e8f0;font-size:13px;text-align:center;">
+              </div>
+            </div>
+            <div style="margin-bottom:8px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                <span class="adv-label">Regras de dígitos</span>
+                <button onclick="advAddRegra()" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:6px;color:#22c55e;font-size:13px;font-weight:700;padding:2px 10px;cursor:pointer;">+</button>
+              </div>
+              <div id="advRegrasContainer" style="display:flex;flex-wrap:wrap;gap:6px;min-height:30px;padding:6px;background:#0a0d12;border:1px solid #23262e;border-radius:8px;">
+                <span style="font-size:10px;color:#475569;">Nenhuma regra</span>
+              </div>
+            </div>
+            <!-- Modal nova regra -->
+            <div id="advRegraModal" style="display:none;background:#0a0d12;border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:10px;margin-top:6px;">
+              <div style="font-size:10px;color:#64748b;margin-bottom:8px;">Dígito X aparece menos de Y% dos últimos N tiques</div>
+              <div style="display:flex;gap:6px;align-items:center;">
+                <select id="advRegraDigito" style="flex:1;padding:8px;background:#111418;border:1px solid #23262e;border-radius:6px;color:#e2e8f0;font-size:12px;">
+                  <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option>
+                  <option>5</option><option>6</option><option>7</option><option>8</option><option>9</option>
+                </select>
+                <span style="color:#64748b;">&lt;</span>
+                <input type="number" id="advRegraPct" value="10" min="1" max="50" style="flex:1;padding:8px;background:#111418;border:1px solid #23262e;border-radius:6px;color:#e2e8f0;font-size:12px;text-align:center;">
+                <span style="color:#64748b;">%</span>
+                <button onclick="advConfirmarRegra()" style="background:rgba(34,197,94,0.2);border:1px solid rgba(34,197,94,0.4);border-radius:6px;color:#22c55e;font-size:13px;padding:6px 10px;cursor:pointer;">✓</button>
+                <button onclick="document.getElementById('advRegraModal').style.display='none'" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;color:#ef4444;font-size:13px;padding:6px 10px;cursor:pointer;">✕</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Info card motor IA -->
         <div class="ia-motor-card">
           <strong>🧠 Motor IA Alpha</strong><br>
@@ -10396,7 +10635,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Decide se entra real — threshold mínimo de score 35%
     const SCORE_MIN = 35;
     if (signal === 'enter' && score >= SCORE_MIN && !st.tradeEmAndamento && st.historico.length >= 20) {
-      iaAdvEntrarReal(d, score, desc);
+      // Verifica frequência de dígitos antes de entrar
+      const freqOk = typeof advVerificarFreqDigitos === 'function'
+        ? advVerificarFreqDigitos(st.historico)
+        : true;
+      if (!freqOk) {
+        if (window._addLogLine) window._addLogLine('📊 Frequência de dígitos: condição não atingida — aguardando...', 'log-warn');
+      } else {
+        iaAdvEntrarReal(d, score, desc);
+      }
     } else if (signal === 'enter' && score < SCORE_MIN) {
       // Score fraco: loga apenas a cada 10 ticks para não poluir
       if (st.historico.length % 15 === 0 && window._addLogLine) {
