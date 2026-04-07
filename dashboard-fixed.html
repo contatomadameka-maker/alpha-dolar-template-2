@@ -4027,7 +4027,9 @@ body { overflow-x: hidden !important; }
                         if (_chart.autoMode) {
                             if (c.status === 'won') {
                                 _chart.autoLosses = 0;
+                                _chart._autoConsecLosses = 0;
                             } else {
+                                _chart._autoConsecLosses = (_chart._autoConsecLosses || 0) + 1;
                                 _chart.autoLosses = (_chart.autoLosses || 0) + 1;
                                 if (_chart.autoLosses >= 3) {
                                     if (window._addLogLine) window._addLogLine('⏸ Auto Gráfico pausado — 3 perdas. Reiniciando em 2 min...', 'log-warn');
@@ -4065,17 +4067,30 @@ body { overflow-x: hidden !important; }
                         showResult(isWin, lucro);
                         // Multiplicador manual
                         if(window._manualMult && window._manualMult.ativo) {
-                          if(isWin) { window._manualMult.perdaAcum = 0; }
-                          else { window._manualMult.perdaAcum += Math.abs(lucro); }
-                          const base = parseFloat(document.getElementById('manualStake')?.value || 1);
-                          const steps = window._manualMult.perdaAcum > 0 ? Math.ceil(window._manualMult.perdaAcum / base) : 0;
-                          const next = steps > 0 ? Math.round(base * Math.pow(window._manualMult.valor, steps) * 100) / 100 : base;
-                          const el = document.getElementById('manualNextStake');
-                          if(el) el.textContent = '$' + next.toFixed(2);
-                          // Atualizar stake automaticamente
                           const stakeInput = document.getElementById('manualStake');
-                          if(stakeInput && !isWin) stakeInput.value = next.toFixed(2);
-                          if(stakeInput && isWin) stakeInput.value = base.toFixed(2);
+                          const elNext = document.getElementById('manualNextStake');
+                          const currentStake = parseFloat(stakeInput?.value || 1);
+
+                          // Salva base original apenas uma vez por sessão
+                          if (!window._manualMult.baseOriginal || window._manualMult.resetBase) {
+                            window._manualMult.baseOriginal = currentStake;
+                            window._manualMult.resetBase = false;
+                          }
+                          const base = window._manualMult.baseOriginal;
+                          const mult = window._manualMult.valor || 2.0;
+
+                          if(isWin) {
+                            // Ganha: volta SEMPRE ao base original
+                            window._manualMult.currentStake = base;
+                            if(stakeInput) stakeInput.value = base.toFixed(2);
+                            if(elNext) elNext.textContent = '$' + base.toFixed(2);
+                          } else {
+                            // Perde: multiplica a stake atual
+                            const next = Math.round(currentStake * mult * 100) / 100;
+                            window._manualMult.currentStake = next;
+                            if(stakeInput) stakeInput.value = next.toFixed(2);
+                            if(elNext) elNext.textContent = '$' + next.toFixed(2);
+                          }
                         }
 
                         if (window.registrarTrade) {
@@ -8354,24 +8369,25 @@ function chartAutoAnalyze() {
   const closes = candles.map(c => c.c);
   const last = candles[candles.length - 1];
 
-  // 1. Bollinger Bands (20 períodos, 2 desvios)
+  // Bollinger Bands
   const period = 20;
-  if (closes.length < period) return;
   const sl = closes.slice(-period);
   const mean = sl.reduce((a,b)=>a+b,0) / period;
   const std = Math.sqrt(sl.reduce((a,b)=>a+(b-mean)**2,0)/period);
-  const bbUpper = mean + 2*std;
-  const bbLower = mean - 2*std;
-  const pct = (last.c - bbLower) / (bbUpper - bbLower); // 0=lower, 1=upper
-  const bbSignal = pct <= 0.15 ? 'rise' : pct >= 0.85 ? 'fall' : null;
+  const pct = (last.c - (mean - 2*std)) / (4*std || 0.001);
+  const bbSignal = pct <= 0.3 ? 'rise' : pct >= 0.7 ? 'fall' : null;
 
-  // 2. EMA9 vs EMA21
-  const ema = (data, p) => data.reduce((e,v,i) => i===0?v:v*(2/(p+1))+e*(1-2/(p+1)), data[0]);
-  const ema9  = ema(closes.slice(-9), 9);
-  const ema21 = ema(closes.slice(-21), 21);
-  const emaSignal = ema9 > ema21 ? 'rise' : ema9 < ema21 ? 'fall' : null;
+  // RSI
+  let rsi = 50;
+  let gains = 0, losses = 0;
+  for (let i = closes.length - 14; i < closes.length; i++) {
+    const diff = closes[i] - closes[i-1];
+    if (diff > 0) gains += diff; else losses -= diff;
+  }
+  rsi = 100 - (100 / (1 + gains/(losses||0.001)));
+  const rsiSignal = rsi < 45 ? 'rise' : rsi > 55 ? 'fall' : null;
 
-  // 3. Score dos dígitos
+  // Dígitos
   let digitSignal = null;
   const sug = document.getElementById('sinalSugestao');
   if (sug) {
@@ -8380,36 +8396,34 @@ function chartAutoAnalyze() {
     else if (txt.includes('FALL') || txt.includes('UNDER') || txt.includes('ODD')) digitSignal = 'fall';
   }
 
-  // Conta confirmações
-  const signals = [bbSignal, emaSignal, digitSignal];
-  const riseCount = signals.filter(s => s === 'rise').length;
-  const fallCount = signals.filter(s => s === 'fall').length;
-
+  // Decisão
   let direction = null;
-  if (riseCount >= 2) direction = 'rise';
-  else if (fallCount >= 2) direction = 'fall';
-  // Fallback: só EMA quando BB e DIG não disponíveis
-  else if (emaSignal && !bbSignal && !digitSignal) direction = emaSignal;
+  if (bbSignal && rsiSignal && bbSignal === rsiSignal) direction = bbSignal;
+  else if (bbSignal && digitSignal && bbSignal === digitSignal) direction = bbSignal;
+  else if (rsiSignal && digitSignal && rsiSignal === digitSignal) direction = rsiSignal;
+  else if (rsiSignal) direction = rsiSignal; // RSI sozinho é suficiente
+
+  // Alternância forçada após 2 perdas na mesma direção
+  if (_chart._lastAutoDir === direction && (_chart._autoConsecLosses || 0) >= 2) {
+    direction = direction === 'rise' ? 'fall' : 'rise';
+    _chart._autoConsecLosses = 0;
+  }
+  _chart._lastAutoDir = direction;
+
+  if (window._addLogLine) window._addLogLine(
+    `🤖 Auto: ${direction||'—'} | BB:${bbSignal||'—'} RSI:${rsiSignal||'—'}(${rsi.toFixed(0)}) DIG:${digitSignal||'—'}`, 'log-action'
+  );
 
   if (!direction) return;
 
   // Evita entradas se já tem contrato aberto
   const openCount = Object.keys(_chart.openContracts || {}).length;
-  if (openCount > 0) { if(window._addLogLine) window._addLogLine(`⏳ Aguardando contrato fechar (${openCount} aberto)`, 'log-warn'); return; }
+  if (openCount > 0) return;
   const now = Date.now();
   if (_chart._lastAutoTrade && now - _chart._lastAutoTrade < 2000) return;
   _chart._lastAutoTrade = now;
 
-  // Define tipo de contrato
-  const digitScore = sug ? parseInt((sug.textContent||'').match(/\d+/)?.[0]||'0') : 0;
-  const useDigit = digitScore >= 75 && digitSignal === direction;
-
-  if (window._addLogLine) {
-    const conf = `BB:${bbSignal||'—'} EMA:${emaSignal||'—'} DIG:${digitSignal||'—'}`;
-    window._addLogLine(`🤖 Auto: ${direction.toUpperCase()} | ${conf} | ${useDigit?'Digit':'Rise/Fall'}`, 'log-action');
-  }
-
-  // Aplica duração selecionada
+  // Aplica duração
   const autoDur = document.getElementById('autoChartDuration')?.value || '1t';
   const durMap = {'1t':[1,'ticks'],'5t':[5,'ticks'],'1m':[1,'minutes'],'5m':[5,'minutes'],'15m':[15,'minutes']};
   const [durVal, durUnit2] = durMap[autoDur] || [1,'ticks'];
@@ -8418,21 +8432,24 @@ function chartAutoAnalyze() {
   if (durationInput) durationInput.value = durVal;
   if (durationUnitEl) durationUnitEl.value = durUnit2;
 
-  // Executa trade direto
-  if (window._addLogLine) window._addLogLine(`🤖 Entrando: ${direction.toUpperCase()} | ${durVal} ${durUnit2}`, 'log-action');
-  // Reconecta se necessário e clica
+  // Marca no gráfico
+  if (_chart.lastP) {
+    _chart.signals = _chart.signals || [];
+    _chart.signals.push({ type: direction, score: 'AUTO', t: Date.now(), price: _chart.lastP, isAuto: true });
+    if (_chart.signals.length > 50) _chart.signals.shift();
+  }
+
+  // Clica no botão
   const btn = document.getElementById(direction === 'rise' ? 'riseBtn' : 'fallBtn');
   if (typeof isConnected !== 'undefined' && !isConnected) {
-    if (typeof conectar === 'function') {
-      conectar();
-      setTimeout(() => { if (btn) btn.click(); }, 2000);
-    }
+    if (typeof conectar === 'function') { conectar(); setTimeout(() => { if (btn) btn.click(); }, 2000); }
   } else {
     if (btn) btn.click();
   }
-  // Timer de segurança — limpa contratos após tempo do trade + 5s
+
+  // Timer segurança
   const durMap2 = {'1t':7,'5t':15,'1m':65,'5m':305,'15m':905};
-  const safeDur = (durMap2[document.getElementById('autoChartDuration')?.value] || 15) * 1000;
+  const safeDur = (durMap2[autoDur] || 15) * 1000;
   setTimeout(() => {
     if (Object.keys(_chart.openContracts||{}).length > 0) {
       _chart.openContracts = {};
@@ -8502,16 +8519,32 @@ function chartDrawSignals(visCandles, padL, padR, padT, chartH, chartW, slotW, t
     const y = isRise ? toY(visCandles[idx].l) + 18 : toY(visCandles[idx].h) - 18;
     const arrow = isRise ? '▲' : '▼';
 
-    // Seta
-    ctx.font = 'bold 14px sans-serif';
-    ctx.fillStyle = color;
-    ctx.textAlign = 'center';
-    ctx.fillText(arrow, x, y);
-
-    // Badge com score
-    ctx.font = 'bold 9px monospace';
-    ctx.fillStyle = color;
-    ctx.fillText(sig.score + '%', x, isRise ? y + 12 : y - 4);
+    if (sig.isAuto) {
+      // Alfinete circular para entradas AUTO
+      ctx.beginPath();
+      ctx.arc(x, y, 9, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.font = 'bold 9px sans-serif';
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.fillText(arrow, x, y + 3);
+      ctx.font = 'bold 7px monospace';
+      ctx.fillStyle = color;
+      ctx.fillText('AUTO', x, isRise ? y + 20 : y - 12);
+    } else {
+      // Seta simples para sinais VIP
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillStyle = color;
+      ctx.textAlign = 'center';
+      ctx.fillText(arrow, x, y);
+      ctx.font = 'bold 9px monospace';
+      ctx.fillStyle = color;
+      ctx.fillText(sig.score + '%', x, isRise ? y + 12 : y - 4);
+    }
 
     // Linha vertical pontilhada na vela
     ctx.strokeStyle = color;
