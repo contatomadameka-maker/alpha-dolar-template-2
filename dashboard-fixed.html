@@ -8203,6 +8203,43 @@ function chartShowIndicators() {
 }
 
 
+
+// ── BOTÃO VENDER TODAS AS OPERAÇÕES ──
+function chartUpdateSellAll() {
+  const contracts = Object.values(_chart.openContracts || {});
+  let el = document.getElementById('chart-sell-all-btn');
+
+  if (contracts.length === 0) {
+    if (el) el.style.display = 'none';
+    return;
+  }
+
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'chart-sell-all-btn';
+    el.style.cssText = 'position:absolute;top:48px;left:50%;transform:translateX(-50%);z-index:50;cursor:pointer;border-radius:6px;padding:4px 14px;font-size:11px;font-weight:700;border:none;display:flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,0.4);white-space:nowrap;';
+    el.onclick = chartSellAll;
+    const container = document.querySelector('.chart-container');
+    if (container) container.appendChild(el);
+  }
+
+  // Calcula lucro total estimado
+  const totalStake = contracts.reduce((s, c) => s + (c.stake || 0), 0);
+  el.style.display = 'flex';
+  el.style.background = '#22c55e';
+  el.style.color = '#fff';
+  el.innerHTML = `<span>Vender todas as operações</span><span style="background:rgba(0,0,0,0.2);padding:2px 8px;border-radius:4px;">$${totalStake.toFixed(2)}</span>`;
+}
+
+function chartSellAll() {
+  const contracts = Object.values(_chart.openContracts || {});
+  if (!contracts.length) return;
+  if (!manualWs || manualWs.readyState !== 1) return;
+  contracts.forEach(c => {
+    manualWs.send(JSON.stringify({ sell: c.id, price: 0 }));
+  });
+}
+
 function chartToggleVipSignals() {
   _chart.showSignals = !(_chart.showSignals !== false);
   const btn = document.getElementById('chart-vip-btn');
@@ -8298,12 +8335,14 @@ function chartAddContract(id, direction, entryPrice, stake, duration, durUnit) {
     openTime: Date.now(), countdown: duration
   };
   chartDraw();
+  chartUpdateSellAll();
 }
 
 function chartCloseContract(id, result) {
   if (_chart.openContracts[id]) {
     delete _chart.openContracts[id];
     chartDraw();
+    chartUpdateSellAll();
   }
 }
 
